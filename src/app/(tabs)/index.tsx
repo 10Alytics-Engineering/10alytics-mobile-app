@@ -51,7 +51,7 @@ export default function Home() {
             <ScrollView style={{ paddingTop: insets.top - 30 }} className='px-6 mb-20 bg-background flex-1'>
                 <View className='mb-14 mt-0 px-4'>
                     <Text className='text-5xl font-bold text-text'>Hello {user?.first_name}!</Text>
-                    <Text className='text-text text-lg opacity-50'>Welcome to your dashboard</Text>
+                    <Text className='text-text text-lg opacity-50'>Let's continue your learning journey</Text>
 
                 </View>
                 <View className="mb-3">
