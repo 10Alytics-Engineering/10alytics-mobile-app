@@ -1,13 +1,8 @@
-import { CardFlipFire, CardFlipRank } from "@/components/card-flip";
-import CourseActionCard from "@/components/CourseActionCard";
-import Header from "@/components/Header";
-import useThemeColors from "@/contexts/ThemeColors";
-import { useAuthStore } from "@/utils/auth-store";
-import { Feather as FeatherIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import { Href, Link } from "expo-router";
+import { Link, router } from "expo-router";
 import React, { useMemo } from "react";
 import {
+    ActivityIndicator,
     Pressable,
     ScrollView,
     Text,
@@ -15,16 +10,36 @@ import {
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import CourseActionCard from "@/components/CourseActionCard";
+import Header from "@/components/Header";
+import { CardFlipFire, CardFlipRank } from "@/components/card-flip";
+import useThemeColors from "@/contexts/ThemeColors";
+import { useUserCourses } from "@/hooks/use-user-courses";
+import type { UserCourse } from "@/lib/api-client";
+import { useAuthStore } from "@/utils/auth-store";
+import { CourseCoverForSlug } from "@/utils/course-cover";
+
 import "../../../global.css";
 
-type FeatherIconName = keyof typeof FeatherIcons.glyphMap;
+function formatSlugLabel(slug: string): string {
+    if (!slug) return "Course";
+    return slug
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+}
 
 export default function Home() {
     const insets = useSafeAreaInsets();
     const { user } = useAuthStore();
     const { width } = useWindowDimensions();
     const cardWidth = Math.round(width * 0.82);
+    const courseCardWidth = Math.round(width * 0.88);
     const colors = useThemeColors();
+
+    const { data, isPending, isError, error, refetch } = useUserCourses();
+    const courses: UserCourse[] = data?.data ?? [];
 
     const nextLiveClass = useMemo(() => {
         const now = new Date();
@@ -92,18 +107,74 @@ export default function Home() {
                         />
                     </View>
                 </ScrollView>
-                <View className="mb-3">
-                    <Text className="text-text text-lg font-semibold">Your Course</Text>
+                <View className="mb-3 flex-row items-center justify-between pr-1">
+                    <Text className="text-text text-lg font-semibold">Your courses</Text>
+                    <Link href="/(tabs)/courses" asChild>
+                        <Pressable hitSlop={8}>
+                            <Text className="text-sm font-semibold text-text opacity-60">See all</Text>
+                        </Pressable>
+                    </Link>
                 </View>
-                <View className="mb-6">
-                    <CourseActionCard
-                        title="React Native Fundamentals"
-                        subtitle="Pick up where you left off"
-                        action="continue"
-                        progress={68}
-                        icon={require("@/assets/courses/data-analysis.webp")}
-                    />
-                </View>
+                {isPending && !data ? (
+                    <View className="mb-6 py-10 items-center justify-center">
+                        <ActivityIndicator size="large" color={colors.icon} />
+                        <Text className="text-text text-sm opacity-60 mt-3">Loading courses…</Text>
+                    </View>
+                ) : isError ? (
+                    <View className="mb-6 rounded-3xl border border-text/10 p-5">
+                        <Text className="text-text font-semibold">Couldn&apos;t load courses</Text>
+                        <Text className="text-text text-sm opacity-60 mt-1">
+                            {error instanceof Error ? error.message : "Something went wrong"}
+                        </Text>
+                        <Pressable
+                            onPress={() => {
+                                refetch();
+                            }}
+                            className="mt-4 self-start rounded-xl bg-text px-4 py-2 active:opacity-80"
+                        >
+                            <Text className="font-semibold text-invert">Try again</Text>
+                        </Pressable>
+                    </View>
+                ) : courses.length === 0 ? (
+                    <View className="mb-6 rounded-3xl border border-text/10 p-5">
+                        <Text className="text-text opacity-70">
+                            You don&apos;t have any courses yet. Open the Courses tab to get started.
+                        </Text>
+                    </View>
+                ) : (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        className="mb-6"
+                        contentContainerStyle={{ gap: 16, paddingRight: 24 }}
+                        snapToInterval={courseCardWidth + 16}
+                        decelerationRate="fast"
+                    >
+                        {courses.map((course) => {
+                            const progress = Math.round(course.progress_percentage);
+                            const action = course.progress_percentage > 0 ? "continue" : "start";
+                            return (
+                                <View key={course.id} style={{ width: courseCardWidth }}>
+                                    <CourseActionCard
+                                        title={course.title}
+                                        subtitle={formatSlugLabel(course.slug)}
+                                        action={action}
+                                        progress={progress}
+                                        thumbnail={
+                                            <CourseCoverForSlug slug={course.slug} size={40} />
+                                        }
+                                        onPress={() =>
+                                            router.push({
+                                                pathname: "/course/[id]",
+                                                params: { id: String(course.course_id) },
+                                            })
+                                        }
+                                    />
+                                </View>
+                            );
+                        })}
+                    </ScrollView>
+                )}
                 <View className="mb-3">
                     <Text className="text-text text-lg font-semibold">Live Class</Text>
                 </View>
@@ -155,70 +226,3 @@ export default function Home() {
         </View>
     );
 }
-
-interface LinkItemProps {
-    href: Href;
-    icon: FeatherIconName;
-    title: string;
-    description: string;
-    comingSoon?: boolean;
-}
-
-const LinkItem = ({
-    href,
-    icon,
-    title,
-    description,
-    comingSoon = false,
-}: LinkItemProps) => {
-    const colors = useThemeColors();
-    return (
-        <Link href={href} asChild>
-            <Pressable
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 6 },
-                    shadowOpacity: 0.07,
-                    shadowRadius: 3.84,
-                    elevation: 5,
-                }}
-                className="flex-row items-center bg-secondary rounded-3xl px-4 py-4 mb-3"
-            >
-                <View className="w-12 h-12 bg-background flex items-center justify-center rounded-full">
-                    <Feather name={icon} size={18} color={colors.icon} />
-                </View>
-                <View className="justify-center ml-4">
-                    <View className="flex-row items-center">
-                        <Text className="text-base font-bold text-text">{title}</Text>
-                        {comingSoon && (
-                            <View className="bg-sky-500 rounded-full px-2 py-[3px] ml-2">
-                                <Text className="text-xs text-white">Soon</Text>
-                            </View>
-                        )}
-                    </View>
-                    <Text className="text-sm text-text opacity-50">{description}</Text>
-                </View>
-                <View className="ml-auto opacity-30">
-                    <Feather name="chevron-right" size={20} color={colors.icon} />
-                </View>
-            </Pressable>
-        </Link>
-    );
-};
-
-const CameraButton = () => {
-    return (
-        <View className="w-20 h-20 p-2 mx-auto rounded-full border border-white items-center justify-center">
-            <View
-                style={{
-                    elevation: 10,
-                    shadowColor: "black",
-                    shadowOffset: { width: 0, height: 10 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 10,
-                }}
-                className="w-full h-full rounded-full bg-white  items-center justify-center"
-            />
-        </View>
-    );
-};

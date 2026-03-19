@@ -17,7 +17,7 @@ import { useUserCourses } from "@/hooks/use-user-courses";
 import type { UserCourse } from "@/lib/api-client";
 import { Text, View } from "@/tw";
 import { Animated } from "@/tw/animated";
-import { getCourseCoverForSlug } from "@/utils/course-cover";
+import { CourseCoverForSlug } from "@/utils/course-cover";
 
 const styles = StyleSheet.create({
   container: {
@@ -72,7 +72,7 @@ export function CoursesScreen() {
         date="instructor led learning"
         progress={Math.round(course.progress_percentage)}
         actionLabel={course.progress_percentage > 0 ? "Continue" : "Start"}
-        image={getCourseCoverForSlug(course.slug)}
+        cover={<CourseCoverForSlug slug={course.slug} />}
         onPress={() =>
           router.push({
             pathname: "/course/[id]",

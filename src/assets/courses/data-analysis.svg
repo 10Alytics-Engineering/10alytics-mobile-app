@@ -1,0 +1,20 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="dataAnalyticsGlow"><feGaussianBlur stdDeviation="8" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g filter="url(#dataAnalyticsGlow)">
+    <rect x="50" y="220" width="60" height="120" rx="8" fill="white" opacity="0.8" style="animation: pulse 2s ease-in-out infinite"/>
+    <rect x="135" y="145" width="60" height="195" rx="8" fill="white" opacity="0.9" style="animation: pulse 2s ease-in-out infinite 0.2s"/>
+    <rect x="220" y="95" width="60" height="245" rx="8" fill="white" opacity="0.95" style="animation: pulse 2s ease-in-out infinite 0.4s"/>
+    <rect x="305" y="45" width="60" height="295" rx="8" fill="white" style="animation: pulse 2s ease-in-out infinite 0.6s"/>
+    <path d="M75 200 L160 120 L250 145 L340 45" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.8" style="filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3))"/>
+    <circle cx="75" cy="200" r="15" fill="white" style="animation: bounce 1s ease-in-out infinite"/>
+    <circle cx="160" cy="120" r="15" fill="white" style="animation: bounce 1s ease-in-out infinite 0.1s"/>
+    <circle cx="250" cy="145" r="15" fill="white" style="animation: bounce 1s ease-in-out infinite 0.2s"/>
+    <circle cx="340" cy="45" r="15" fill="white" style="animation: bounce 1s ease-in-out infinite 0.3s"/>
+  </g>
+  <style>
+    @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+  </style>
+</svg>

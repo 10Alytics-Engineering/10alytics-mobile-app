@@ -8,6 +8,8 @@ interface JournalCardProps {
     title: string;
     imageUrl?: string;
     image?: ImageSourcePropType;
+    /** Local SVG / custom thumbnail (e.g. from react-native-svg). Takes precedence over image/imageUrl. */
+    cover?: React.ReactNode;
     description: string;
     date?: string;
     progress?: number;
@@ -19,6 +21,7 @@ export default function JournalCard({
     title,
     imageUrl,
     image,
+    cover,
     description,
     date = 'Wednesday, Feb 5',
     progress,
@@ -28,6 +31,7 @@ export default function JournalCard({
     const colors = useThemeColors();
     const muted = colors.isDark ? 'rgba(255,255,255,0.65)' : 'rgba(17,17,17,0.6)';
     const resolvedImageSource = image ?? (imageUrl ? { uri: imageUrl } : undefined);
+    const hasMedia = cover != null || resolvedImageSource != null;
 
     return (
         <Pressable
@@ -36,11 +40,18 @@ export default function JournalCard({
             className='bg-secondary overflow-hidden mb-global rounded-2xl'
         >
             <View className="flex-row p-5 gap-4">
-                {resolvedImageSource && (
-                    <Image
-                        source={resolvedImageSource}
-                        className="w-[96px] h-[96px] rounded-2xl"
-                    />
+                {hasMedia && (
+                    <View className="h-[96px] w-[96px] items-center justify-center overflow-hidden rounded-2xl">
+                        {cover != null ? (
+                            cover
+                        ) : (
+                            <Image
+                                source={resolvedImageSource!}
+                                className="h-full w-full"
+                                resizeMode="cover"
+                            />
+                        )}
+                    </View>
                 )}
                 <View className="flex-1">
                     <Text className="text-xs uppercase tracking-wider" style={{ color: muted }}>

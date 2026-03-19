@@ -1,0 +1,19 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="healthTechGlow"><feGaussianBlur stdDeviation="8" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g filter="url(#healthTechGlow)">
+    <path d="M75 200 L125 200 L140 160 L160 240 L180 200 L325 200" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.9" style="animation: heartbeat 1.5s ease-in-out infinite"/>
+    <path d="M125 125 Q125 100 150 100 Q175 100 175 125 Q175 100 200 100 Q225 100 225 125 Q225 175 162.5 225 Q100 175 125 125" fill="white" opacity="0.8" style="animation: pulse 1.5s ease-in-out infinite 0.3s"/>
+    <circle cx="200" cy="325" r="12" fill="white" opacity="0.85" style="animation: pulse 1.5s ease-in-out infinite"/>
+    <circle cx="250" cy="325" r="12" fill="white" opacity="0.7" style="animation: pulse 1.5s ease-in-out infinite 0.3s"/>
+    <circle cx="300" cy="325" r="12" fill="white" opacity="0.6" style="animation: pulse 1.5s ease-in-out infinite 0.6s"/>
+    <line x1="207.5" y1="315" x2="242.5" y2="315" stroke="white" stroke-width="5" opacity="0.5" style="animation: dash 1.5s ease-in-out infinite"/>
+    <line x1="257.5" y1="315" x2="292.5" y2="315" stroke="white" stroke-width="5" opacity="0.5" style="animation: dash 1.5s ease-in-out infinite 0.3s"/>
+  </g>
+  <style>
+    @keyframes heartbeat { 0%, 100% { stroke-dashoffset: 100; } 50% { stroke-dashoffset: 0; } }
+    @keyframes pulse { 0%, 100% { r: 12; opacity: 0.6; } 50% { r: 17; opacity: 1; } }
+    @keyframes dash { 0%, 100% { stroke-dashoffset: 50; } 50% { stroke-dashoffset: 0; } }
+  </style>
+</svg>

@@ -1,7 +1,7 @@
 import useThemeColors from "@/contexts/ThemeColors";
 import Feather from "@expo/vector-icons/Feather";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { type ReactNode } from "react";
 import { Image, ImageSourcePropType, Pressable, Text, View } from "react-native";
 
 type CourseAction = "continue" | "start" | "enroll";
@@ -12,6 +12,8 @@ interface CourseActionCardProps {
     action?: CourseAction;
     progress?: number;
     icon?: ImageSourcePropType;
+    /** When set, shown in the avatar slot instead of `icon` (e.g. SVG cover). */
+    thumbnail?: ReactNode;
     onPress?: () => void;
 }
 
@@ -27,6 +29,7 @@ export default function CourseActionCard({
     action = "continue",
     progress,
     icon,
+    thumbnail,
     onPress,
 }: CourseActionCardProps) {
     const colors = useThemeColors();
@@ -46,7 +49,7 @@ export default function CourseActionCard({
                 {/* Top row */}
                 <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center gap-3">
-                        {icon && (
+                        {(thumbnail || icon) && (
                             <View
                                 className="items-center justify-center rounded-2xl"
                                 style={{
@@ -57,11 +60,15 @@ export default function CourseActionCard({
                                     borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
                                 }}
                             >
-                                <Image
-                                    source={icon}
-                                    style={{ width: 32, height: 32 }}
-                                    resizeMode="contain"
-                                />
+                                {thumbnail ? (
+                                    thumbnail
+                                ) : (
+                                    <Image
+                                        source={icon!}
+                                        style={{ width: 32, height: 32 }}
+                                        resizeMode="contain"
+                                    />
+                                )}
                             </View>
                         )}
                         <View>

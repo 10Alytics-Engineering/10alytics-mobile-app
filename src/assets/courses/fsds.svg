@@ -1,0 +1,20 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="fullStackGlow"><feGaussianBlur stdDeviation="8" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g filter="url(#fullStackGlow)">
+    <rect x="75" y="75" width="250" height="60" rx="10" fill="white" opacity="0.95" style="animation: layerScale 1.5s ease-in-out infinite"/>
+    <rect x="75" y="160" width="250" height="60" rx="10" fill="white" opacity="0.8" style="animation: layerScale 1.5s ease-in-out infinite 0.3s"/>
+    <rect x="75" y="245" width="250" height="60" rx="10" fill="white" opacity="0.65" style="animation: layerScale 1.5s ease-in-out infinite 0.6s"/>
+    <circle cx="100" cy="290" r="10" fill="white" style="animation: pulse 1.5s ease-in-out infinite"/>
+    <circle cx="200" cy="315" r="10" fill="white" style="animation: pulse 1.5s ease-in-out infinite 0.3s"/>
+    <circle cx="300" cy="290" r="10" fill="white" style="animation: pulse 1.5s ease-in-out infinite 0.6s"/>
+    <line x1="100" y1="290" x2="200" y2="315" stroke="white" stroke-width="8" opacity="0.5" style="animation: dash 2s ease-in-out infinite"/>
+    <line x1="300" y1="290" x2="200" y2="315" stroke="white" stroke-width="8" opacity="0.5" style="animation: dash 2s ease-in-out infinite 0.5s"/>
+  </g>
+  <style>
+    @keyframes layerScale { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    @keyframes pulse { 0%, 100% { r: 10; } 50% { r: 15; } }
+    @keyframes dash { 0%, 100% { stroke-dashoffset: 50; } 50% { stroke-dashoffset: 0; } }
+  </style>
+</svg>

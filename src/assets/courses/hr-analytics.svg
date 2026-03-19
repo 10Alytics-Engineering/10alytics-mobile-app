@@ -1,0 +1,20 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="hrAnalyticsGlow"><feGaussianBlur stdDeviation="8" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g filter="url(#hrAnalyticsGlow)">
+    <circle cx="125" cy="125" r="35" fill="white" opacity="0.9" style="animation: pulse 2s ease-in-out infinite"/>
+    <circle cx="200" cy="100" r="35" fill="white" opacity="0.85" style="animation: pulse 2s ease-in-out infinite 0.2s"/>
+    <circle cx="275" cy="125" r="35" fill="white" opacity="0.9" style="animation: pulse 2s ease-in-out infinite 0.4s"/>
+    <path d="M100 165 L150 200 L125 250 L100 240" fill="white" opacity="0.7" style="animation: sway 3s ease-in-out infinite"/>
+    <path d="M175 165 L225 185 L225 250 L175 240" fill="white" opacity="0.75" style="animation: sway 3s ease-in-out infinite 0.3s"/>
+    <path d="M250 165 L300 200 L275 250 L250 240" fill="white" opacity="0.7" style="animation: sway 3s ease-in-out infinite 0.6s"/>
+    <path d="M75 300 L125 275 L175 310" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.8" style="animation: slideRight 2s ease-in-out infinite"/>
+    <path d="M175 310 L225 285 L275 325" stroke="white" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.8" style="animation: slideRight 2s ease-in-out infinite 0.5s"/>
+  </g>
+  <style>
+    @keyframes pulse { 0%, 100% { r: 35; } 50% { r: 40; } }
+    @keyframes sway { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(15px); } }
+    @keyframes slideRight { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+  </style>
+</svg>
