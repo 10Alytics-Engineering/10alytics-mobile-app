@@ -134,7 +134,6 @@ export default function CourseActionCard({
                 >
                     <View>
                         <Text className="text-white font-bold text-base">{actionLabels[action]}</Text>
-                        <Text className="text-white/70 text-xs mt-1">Resume in 3 mins</Text>
                     </View>
                     <View
                         className="items-center justify-center rounded-full"

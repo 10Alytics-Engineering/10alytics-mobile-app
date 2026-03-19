@@ -75,38 +75,13 @@ export default function Home() {
             >
                 <View className="mb-14 mt-0 px-4">
                     <Text className="text-5xl font-bold text-text">
-                        Hello {user?.first_name}!
+                        Hello, {user?.first_name}!
                     </Text>
                     <Text className="text-text text-lg opacity-50">
                         Let's continue your learning journey
                     </Text>
                 </View>
-                <View className="mb-3">
-                    <Text className="text-text text-lg font-semibold">
-                        Streaks & Rank
-                    </Text>
-                </View>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    className="mb-6"
-                    style={{ height: 280 }}
-                    contentContainerStyle={{ gap: 16, paddingRight: 24 }}
-                    snapToInterval={cardWidth + 16}
-                    decelerationRate="fast"
-                >
-                    <View style={{ width: cardWidth }}>
-                        <CardFlipFire days={10} title="Current Streak" price="10 days" />
-                    </View>
-                    <View style={{ width: cardWidth }}>
-                        <CardFlipRank
-                            title="Your Rank"
-                            rank={7}
-                            subtitle="Leaderboard rank"
-                            total={120}
-                        />
-                    </View>
-                </ScrollView>
+
                 <View className="mb-3 flex-row items-center justify-between pr-1">
                     <Text className="text-text text-lg font-semibold">Your courses</Text>
                     <Link href="/(tabs)/courses" asChild>
@@ -176,7 +151,33 @@ export default function Home() {
                     </ScrollView>
                 )}
                 <View className="mb-3">
-                    <Text className="text-text text-lg font-semibold">Live Class</Text>
+                    <Text className="text-text text-lg font-semibold">
+                        Streaks & Rank
+                    </Text>
+                </View>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    className="mb-6"
+                    style={{ height: 280 }}
+                    contentContainerStyle={{ gap: 16, paddingRight: 24 }}
+                    snapToInterval={cardWidth + 16}
+                    decelerationRate="fast"
+                >
+                    <View style={{ width: cardWidth }}>
+                        <CardFlipFire days={10} title="Current Streak" price="10 days" />
+                    </View>
+                    <View style={{ width: cardWidth }}>
+                        <CardFlipRank
+                            title="Your Rank"
+                            rank={7}
+                            subtitle="Leaderboard rank"
+                            total={120}
+                        />
+                    </View>
+                </ScrollView>
+                <View className="mb-3">
+                    <Text className="text-text text-lg font-semibold">Classroom</Text>
                 </View>
                 <View
                     className="rounded-[24px] p-5 mb-10"

@@ -1,46 +1,59 @@
-import { Colors } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { Icon, Label, Tabs } from "expo-router";
 import { NativeTabs } from "expo-router/build/native-tabs";
 import React from "react";
-import { DynamicColorIOS, Platform, useColorScheme } from "react-native";
+import { Platform, StyleSheet } from "react-native";
+
+import { HapticTab } from "@/components/haptic-tab";
+import useThemeColors from "@/contexts/ThemeColors";
+import { useTheme } from "@/contexts/ThemeContext";
 import useThemedNavigation from "@/hooks/useThemedNavigation";
 
 function IOSTabLayout() {
     const { screenOptions } = useThemedNavigation();
+    const { theme } = useTheme();
+    const tc = useThemeColors();
 
     return (
         <NativeTabs
+            key={theme}
             backgroundColor={screenOptions.backgroundColor}
             labelStyle={{
-                color: DynamicColorIOS({
-                    dark: Colors.dark.text,
-                    light: Colors.light.text,
-                }),
+                color: tc.tabLabel,
             }}
-            tintColor={DynamicColorIOS({
-                dark: Colors.dark.tint,
-                light: Colors.light.tint,
-            })}
+            tintColor={tc.tabTint}
         >
             <NativeTabs.Trigger name="index">
-                <Icon sf="square.grid.2x2" drawable="" />
+                <Icon
+                    sf={{ default: "square.grid.2x2", selected: "square.grid.2x2.fill" }}
+                    drawable=""
+                />
                 <Label>Dashboard</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="courses">
-                <Icon sf="book.closed" drawable="" />
+                <Icon
+                    sf={{ default: "book.closed", selected: "book.closed.fill" }}
+                    drawable=""
+                />
                 <Label>Courses</Label>
             </NativeTabs.Trigger>
-            <NativeTabs.Trigger name="calendar">
-                <Icon sf="calendar" drawable="" />
-                <Label>Classes</Label>
+            <NativeTabs.Trigger name="classroom">
+                <Icon
+                    sf={{ default: "graduationcap", selected: "graduationcap.fill" }}
+                    drawable=""
+                />
+                <Label>Classroom</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="chat">
-                <Icon sf="message" drawable="" />
+                <Icon sf={{ default: "message", selected: "message.fill" }} drawable="" />
                 <Label>Chat</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="profile">
-                <Icon sf="person.circle" drawable="" />
+                <Icon
+                    sf={{ default: "person.circle", selected: "person.circle.fill" }}
+                    drawable=""
+                />
                 <Label>Profile</Label>
             </NativeTabs.Trigger>
         </NativeTabs>
@@ -48,46 +61,59 @@ function IOSTabLayout() {
 }
 
 function AndroidTabLayout() {
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === "dark";
-    const colors = isDark ? Colors.dark : Colors.light;
+    const { theme } = useTheme();
+    const tc = useThemeColors();
 
     return (
         <Tabs
+            key={theme}
             screenOptions={{
-                tabBarActiveTintColor: colors.primary,
-                tabBarInactiveTintColor: colors.tabIconDefault,
+                tabBarActiveTintColor: tc.primary,
+                tabBarInactiveTintColor: tc.textMuted,
+                tabBarHideOnKeyboard: true,
+                tabBarButton: (props) => <HapticTab {...props} />,
+                tabBarBackground: () => (
+                    <BlurView
+                        intensity={tc.tabBlurIntensity}
+                        tint={tc.isDark ? "dark" : "light"}
+                        style={StyleSheet.absoluteFill}
+                    />
+                ),
                 tabBarStyle: {
-                    backgroundColor: isDark ? "rgba(21, 23, 24, 0.85)" : "rgba(255, 255, 255, 0.85)",
-                    borderTopWidth: 1,
-                    borderTopColor: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.5)",
-                    elevation: 0,
-                    shadowColor: colors.primary,
-                    shadowOffset: { width: 0, height: -4 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 16,
-                    height: 70,
-                    paddingBottom: 12,
-                    paddingTop: 10,
                     position: "absolute",
                     bottom: 0,
                     left: 0,
                     right: 0,
+                    height: 72,
+                    paddingBottom: 10,
+                    paddingTop: 8,
+                    borderTopWidth: StyleSheet.hairlineWidth,
+                    borderTopColor: tc.tabBarBorder,
+                    borderTopLeftRadius: 22,
+                    borderTopRightRadius: 22,
+                    overflow: "hidden",
+                    backgroundColor: tc.tabBarSurface,
+                    elevation: 0,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: -6 },
+                    shadowOpacity: tc.tabShadowOpacity,
+                    shadowRadius: 14,
                 },
                 tabBarLabelStyle: {
-                    fontSize: 11,
-                    fontWeight: "600",
-                    marginTop: 4,
+                    fontSize: 10,
+                    fontWeight: "700",
+                    letterSpacing: 0.2,
+                    marginTop: 2,
                 },
                 tabBarItemStyle: {
-                    paddingVertical: 4,
+                    paddingVertical: 2,
                 },
                 headerStyle: {
-                    backgroundColor: isDark ? colors.background : "#F5F0EB",
+                    backgroundColor: tc.headerSurface,
                     elevation: 0,
                     shadowOpacity: 0,
                 },
-                headerTintColor: colors.text,
+                headerTintColor: tc.text,
                 headerTitleStyle: {
                     fontWeight: "700",
                     fontSize: 18,
@@ -102,7 +128,7 @@ function AndroidTabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? "grid" : "grid-outline"}
-                            size={24}
+                            size={focused ? 26 : 24}
                             color={color}
                         />
                     ),
@@ -115,20 +141,20 @@ function AndroidTabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? "book" : "book-outline"}
-                            size={24}
+                            size={focused ? 26 : 24}
                             color={color}
                         />
                     ),
                 }}
             />
             <Tabs.Screen
-                name="calendar"
+                name="classroom"
                 options={{
-                    title: "Classes",
+                    title: "Classroom",
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
-                            name={focused ? "calendar" : "calendar-outline"}
-                            size={24}
+                            name={focused ? "school" : "school-outline"}
+                            size={focused ? 27 : 24}
                             color={color}
                         />
                     ),
@@ -141,7 +167,7 @@ function AndroidTabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? "chatbubble" : "chatbubble-outline"}
-                            size={24}
+                            size={focused ? 26 : 24}
                             color={color}
                         />
                     ),
@@ -154,7 +180,7 @@ function AndroidTabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? "person-circle" : "person-circle-outline"}
-                            size={24}
+                            size={focused ? 26 : 24}
                             color={color}
                         />
                     ),

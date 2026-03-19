@@ -41,7 +41,7 @@ export default function JournalCard({
         >
             <View className="flex-row p-5 gap-4">
                 {hasMedia && (
-                    <View className="h-[96px] w-[96px] items-center justify-center overflow-hidden rounded-2xl">
+                    <View className="h-[96px] w-[96px] bg-[#000000] items-center justify-center overflow-hidden rounded-2xl">
                         {cover != null ? (
                             cover
                         ) : (

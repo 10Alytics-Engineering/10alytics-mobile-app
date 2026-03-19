@@ -1,18 +1,39 @@
+import useThemeColors from '@/contexts/ThemeColors';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { PlatformPressable } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
+import { View } from 'react-native';
 
-export function HapticTab(props: BottomTabBarButtonProps) {
+export function HapticTab({
+  children,
+  style,
+  onPressIn,
+  accessibilityState,
+  ...rest
+}: BottomTabBarButtonProps) {
+  const colors = useThemeColors();
+  const focused = accessibilityState?.selected === true;
+
   return (
     <PlatformPressable
-      {...props}
+      {...rest}
+      accessibilityState={accessibilityState}
+      style={[style, { flex: 1, alignItems: 'center', justifyContent: 'center' }]}
       onPressIn={(ev) => {
         if (process.env.EXPO_OS === 'ios') {
-          // Add a soft haptic feedback when pressing down on the tabs.
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
-        props.onPressIn?.(ev);
+        onPressIn?.(ev);
       }}
-    />
+    >
+      <View
+        className="items-center justify-center rounded-full px-3 py-1.5"
+        style={{
+          backgroundColor: focused ? colors.tabPillActive : 'transparent',
+        }}
+      >
+        {children}
+      </View>
+    </PlatformPressable>
   );
 }

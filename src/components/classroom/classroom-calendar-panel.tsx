@@ -1,12 +1,18 @@
-import useThemedNavigation from "@/hooks/useThemedNavigation";
-import { PressableScale, ScrollView, Text, View } from "@/tw";
+import { PressableScale, Text, View } from "@/tw";
 import { Animated } from "@/tw/animated";
 import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView } from "expo-symbols";
 import React, { useMemo, useState } from "react";
 import { StyleSheet } from "react-native";
 import { FadeInDown, FadeInRight } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+export type ClassroomCalendarColors = {
+  bg: string;
+  text: string;
+  secondary: string;
+  invert: string;
+  border: string;
+};
 
 type EventItem = {
   id: number;
@@ -20,14 +26,6 @@ type EventItem = {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 120,
-    gap: 18,
-  },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -153,9 +151,11 @@ const getWeekDays = (date: Date) => {
   });
 };
 
-export function CalendarScreen() {
-  const { colors, isDark } = useThemedNavigation();
-  const insets = useSafeAreaInsets();
+interface ClassroomCalendarPanelProps {
+  colors: ClassroomCalendarColors;
+}
+
+export function ClassroomCalendarPanel({ colors }: ClassroomCalendarPanelProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate]);
@@ -170,16 +170,11 @@ export function CalendarScreen() {
   const nextEvent = upcomingEvents[0]?.event;
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      showsVerticalScrollIndicator={false}
-      style={[styles.container, { backgroundColor: colors.bg }]}
-      contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 10 }]}
-    >
+    <View className="gap-[18px]">
       <Animated.View entering={FadeInDown.delay(50).springify()}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={[styles.title, { color: colors.text }]}>Calendar</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Schedule</Text>
             <Text style={[styles.monthText, { color: colors.text, opacity: 0.6 }]}>
               {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </Text>
@@ -238,7 +233,7 @@ export function CalendarScreen() {
       </Animated.View>
 
       <View>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Next Up</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Next up</Text>
         {nextEvent ? (
           <View style={[styles.card, { backgroundColor: colors.secondary, marginTop: 10 }]}>
             <View style={styles.eventRow}>
@@ -255,18 +250,11 @@ export function CalendarScreen() {
                 <SymbolView name="video.fill" size={20} tintColor={nextEvent.color} />
               </LinearGradient>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.eventTitle, { color: colors.text }]}>
-                  {nextEvent.title}
-                </Text>
+                <Text style={[styles.eventTitle, { color: colors.text }]}>{nextEvent.title}</Text>
                 <Text style={[styles.eventMeta, { color: colors.text }]}>
                   {nextEvent.time} • {nextEvent.location}
                 </Text>
-                <View
-                  style={[
-                    styles.badge,
-                    { backgroundColor: `${nextEvent.color}15` },
-                  ]}
-                >
+                <View style={[styles.badge, { backgroundColor: `${nextEvent.color}15` }]}>
                   <Text style={{ color: nextEvent.color, fontSize: 12, fontWeight: "600" }}>
                     {nextEvent.attendees} attending
                   </Text>
@@ -308,9 +296,7 @@ export function CalendarScreen() {
                     <SymbolView name="clock.fill" size={18} tintColor={event.color} />
                   </LinearGradient>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.eventTitle, { color: colors.text }]}>
-                      {event.title}
-                    </Text>
+                    <Text style={[styles.eventTitle, { color: colors.text }]}>{event.title}</Text>
                     <Text style={[styles.eventMeta, { color: colors.text }]}>
                       {event.time} • {event.location}
                     </Text>
@@ -322,9 +308,7 @@ export function CalendarScreen() {
         ) : (
           <View style={[styles.card, { backgroundColor: colors.secondary, marginTop: 10 }]}>
             <Text style={[styles.eventTitle, { color: colors.text }]}>No events today</Text>
-            <Text style={[styles.eventMeta, { color: colors.text }]}>
-              You are clear for the day.
-            </Text>
+            <Text style={[styles.eventMeta, { color: colors.text }]}>You are clear for the day.</Text>
           </View>
         )}
       </View>
@@ -354,9 +338,7 @@ export function CalendarScreen() {
                     <SymbolView name="calendar" size={18} tintColor={event.color} />
                   </LinearGradient>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.eventTitle, { color: colors.text }]}>
-                      {event.title}
-                    </Text>
+                    <Text style={[styles.eventTitle, { color: colors.text }]}>{event.title}</Text>
                     <Text style={[styles.eventMeta, { color: colors.text }]}>
                       {new Date(event.date).toLocaleDateString("en-US", {
                         weekday: "short",
@@ -371,6 +353,6 @@ export function CalendarScreen() {
             </Animated.View>
           ))}
       </View>
-    </ScrollView>
+    </View>
   );
 }
