@@ -37,7 +37,7 @@ export const Colors = {
     primaryDark: '#B8541E',
     text: '#ECEDEE',
     textSecondary: '#9BA1A6',
-    background: '#151718',
+    background: '#0A0A0A',
     backgroundSecondary: '#1E2021',
     tint: tintColorDark,
     icon: '#9BA1A6',

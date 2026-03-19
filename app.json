@@ -7,7 +7,6 @@
     "icon": "./src/assets/images/10alytics-iOS-Default-1024x1024@1x.png",
     "scheme": "tenalyticsapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.davidghena.tenalyticsapp",
@@ -20,7 +19,6 @@
         "backgroundImage": "./src/assets/images/adaptive-icon.png",
         "monochromeImage": "./src/assets/images/adaptive-icon.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.davidghena.tenalyticsapp"
     },

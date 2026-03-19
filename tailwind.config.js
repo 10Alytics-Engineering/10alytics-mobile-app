@@ -24,7 +24,6 @@ module.exports = {
         text: "var(--color-text)",
         highlight: "var(--color-highlight)",
         border: "var(--color-border)",
-        invert: "var(--color-invert)",
         darker: "var(--color-darker)",
       },
     },

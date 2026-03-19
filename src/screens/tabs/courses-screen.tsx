@@ -1,13 +1,23 @@
+import { router } from "expo-router";
+import React, { useCallback } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
+import { FadeInRight } from "react-native-reanimated";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+
 import JournalCard from "@/components/JournalCard";
 import { Colors, GlassStyles } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useUserCourses } from "@/hooks/use-user-courses";
+import type { UserCourse } from "@/lib/api-client";
 import { Text, View } from "@/tw";
 import { Animated } from "@/tw/animated";
-import { router } from "expo-router";
-import React from "react";
-import { FlatList, StyleSheet } from "react-native";
-import { FadeInRight } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getCourseCoverForSlug } from "@/utils/course-cover";
 
 const styles = StyleSheet.create({
   container: {
@@ -22,26 +32,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: GlassStyles.spacing.sm,
-    marginTop: GlassStyles.spacing.xs,
+    marginBottom: GlassStyles.spacing.md,
+    marginTop: GlassStyles.spacing.md,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
   },
+  centerState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: GlassStyles.spacing.lg,
+  },
 });
 
-type CourseItem = {
-  id: number;
-  title: string;
-  instructor: string;
-  progress: number;
-  image: any;
-  lessons: number;
-  completed: number;
-  level: string;
-  color: string;
-};
+function formatSlugLabel(slug: string): string {
+  if (!slug) return "Course";
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
 export function CoursesScreen() {
   const colorScheme = useColorScheme();
@@ -49,54 +61,27 @@ export function CoursesScreen() {
   const isDark = colorScheme === "dark";
   const insets = useSafeAreaInsets();
 
-  const courses: CourseItem[] = [
-    {
-      id: 1,
-      title: "React Native Fundamentals",
-      instructor: "John Doe",
-      progress: 75,
-      image: require("@/assets/courses/fsds.webp"),
-      lessons: 24,
-      completed: 18,
-      level: "Beginner",
-      color: "#DA6728",
-    },
-    {
-      id: 2,
-      title: "Advanced TypeScript",
-      instructor: "Jane Smith",
-      progress: 45,
-      image: require("@/assets/courses/devops.webp"),
-      lessons: 32,
-      completed: 14,
-      level: "Intermediate",
-      color: "#4A90E2",
-    },
-    {
-      id: 3,
-      title: "UI/UX Design Mastery",
-      instructor: "Alex Johnson",
-      progress: 90,
-      image: require("@/assets/courses/product-design.webp"),
-      lessons: 18,
-      completed: 16,
-      level: "Advanced",
-      color: "#9B59B6",
-    },
-  ];
+  const { data, isPending, isError, error, refetch, isFetching } = useUserCourses();
+  const courses: UserCourse[] = data?.data ?? [];
 
-  const renderCourseCard = ({ item: course }: { item: CourseItem }) => (
-    <JournalCard
-      title={course.title}
-      description={`${course.instructor} • ${course.lessons} lessons`}
-      date={course.level}
-      progress={course.progress}
-      actionLabel={course.progress > 0 ? "Continue" : "Start"}
-      image={course.image}
-      onPress={() =>
-        router.push({ pathname: "/course-details", params: { id: course.id } })
-      }
-    />
+  const renderCourseCard = useCallback(
+    ({ item: course }: { item: UserCourse }) => (
+      <JournalCard
+        title={course.title}
+        description={formatSlugLabel(course.slug)}
+        date="instructor led learning"
+        progress={Math.round(course.progress_percentage)}
+        actionLabel={course.progress_percentage > 0 ? "Continue" : "Start"}
+        image={getCourseCoverForSlug(course.slug)}
+        onPress={() =>
+          router.push({
+            pathname: "/course/[id]",
+            params: { id: String(course.course_id) },
+          })
+        }
+      />
+    ),
+    []
   );
 
   const ListHeader = () => (
@@ -107,16 +92,76 @@ export function CoursesScreen() {
     </Animated.View>
   );
 
+  if (isPending && !data) {
+    return (
+      <SafeAreaView
+        className="flex-1"
+        style={{ backgroundColor: isDark ? colors.background : "#F5F0EB", paddingTop: insets.top }}
+      >
+        <View style={styles.centerState}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text className="mt-4 text-base" style={{ color: colors.text }}>
+            Loading your courses…
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isError) {
+    return (
+      <SafeAreaView
+        className="flex-1"
+        style={{ backgroundColor: isDark ? colors.background : "#F5F0EB", paddingTop: insets.top }}
+      >
+        <View style={styles.centerState}>
+          <Text className="text-center text-base font-semibold" style={{ color: colors.text }}>
+            Couldn&apos;t load courses
+          </Text>
+          <Text className="mt-2 text-center text-sm opacity-70" style={{ color: colors.text }}>
+            {error instanceof Error ? error.message : "Something went wrong"}
+          </Text>
+          <Pressable
+            onPress={() => {
+              refetch();
+            }}
+            className="mt-6 rounded-xl bg-text px-6 py-3 active:opacity-80"
+          >
+            <Text className="font-semibold text-invert">Try again</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <FlatList
-      data={courses}
-      renderItem={renderCourseCard}
-      keyExtractor={(item) => item.id.toString()}
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={styles.listContent}
-      ListHeaderComponent={ListHeader}
-      style={[styles.container, { backgroundColor: isDark ? colors.background : "#F5F0EB" }]}
-      showsVerticalScrollIndicator={false}
-    />
+    <SafeAreaView className="flex-1" style={{ backgroundColor: isDark ? colors.background : "#F5F0EB" }}>
+      <FlatList
+        data={courses}
+        renderItem={renderCourseCard}
+        keyExtractor={(item) => String(item.id)}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={[styles.listContent, courses.length === 0 && { flexGrow: 1 }]}
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={
+          <View className="flex-1 items-center justify-center py-16">
+            <Text className="text-center text-base" style={{ color: colors.text }}>
+              You don&apos;t have any courses yet.
+            </Text>
+          </View>
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isPending}
+            onRefresh={() => {
+              refetch();
+            }}
+            tintColor={colors.primary}
+          />
+        }
+        style={[styles.container, { backgroundColor: isDark ? colors.background : "#F5F0EB" }]}
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
   );
 }

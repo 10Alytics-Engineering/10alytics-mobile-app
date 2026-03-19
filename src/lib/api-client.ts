@@ -27,6 +27,21 @@ interface ApiError {
   errors?: Record<string, string[]>;
 }
 
+export interface UserCourse {
+  course_id: number;
+  title: string;
+  slug: string;
+  /** Enrollment / user-course row id */
+  id: number;
+  progress_percentage: number;
+}
+
+export interface UserCoursesApiResponse {
+  data: UserCourse[];
+  message: string;
+  status: string;
+}
+
 class ApiClient {
   private baseURL: string;
   private tokenKey = "auth_token";
@@ -155,7 +170,7 @@ class ApiClient {
   }
 
   async logout(): Promise<{ data?: { message: string }; error?: ApiError }> {
-    const result = await this.request("/api/v2/logout", {
+    await this.request("/api/v2/logout", {
       method: "POST",
     });
     await this.removeToken();
@@ -167,6 +182,15 @@ class ApiClient {
     error?: ApiError;
   }> {
     return this.request<LoginResponse["user"]>("/api/v2/user", {
+      method: "GET",
+    });
+  }
+
+  async getUserCourses(): Promise<{
+    data?: UserCoursesApiResponse;
+    error?: ApiError;
+  }> {
+    return this.request<UserCoursesApiResponse>("/api/v2/user/courses", {
       method: "GET",
     });
   }

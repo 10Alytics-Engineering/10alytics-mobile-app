@@ -1,18 +1,26 @@
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { apiClient } from "@/lib/api-client";
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from "@/tw";
-import { useAuthStore } from "@/utils/auth-store";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Linking, Platform, StyleSheet } from "react-native";
 
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { apiClient } from "@/lib/api-client";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "@/tw";
+import { useAuthStore } from "@/utils/auth-store";
+
 const INPUT_RADIUS = 12;
 const BUTTON_RADIUS = 14;
 const SPACING = 24;
-const TERMS_URL = "https://10alytics.com/terms"; // Replace with your actual terms URL
+const TERMS_URL = "https://www.10alytics.io/terms"; // Replace with your actual terms URL
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -41,10 +49,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   primaryButtonText: { fontSize: 16, fontWeight: "700", color: "#fff" },
-  googleIconWrap: { marginRight: 12 },
+  googleIconWrap: {
+    gap: 12,
+    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+  },
   dividerRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     marginVertical: 28,
   },
   dividerLine: { flex: 1, height: 1, opacity: 0.35 },
@@ -56,6 +71,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: BUTTON_RADIUS,
     borderWidth: 2,
+    width: "100%",
   },
   secondaryButtonText: { fontSize: 16, fontWeight: "600" },
   termsWrap: { marginTop: 22, paddingHorizontal: 8 },
@@ -149,7 +165,10 @@ export function SignInScreen() {
           </Text>
         </View>
 
-        <View style={{ opacity: loading ? 0.6 : 1 }} pointerEvents={loading ? "none" : "auto"}>
+        <View
+          style={{ opacity: loading ? 0.6 : 1 }}
+          pointerEvents={loading ? "none" : "auto"}
+        >
           <Pressable
             onPress={handleGoogleSignIn}
             style={({ pressed }) => [
@@ -168,17 +187,23 @@ export function SignInScreen() {
                     size={22}
                     color="#fff"
                   />
+                  <Text style={styles.primaryButtonText}>
+                    Continue with Google
+                  </Text>
                 </View>
-                <Text style={styles.primaryButtonText}>Continue with Google</Text>
               </>
             )}
           </Pressable>
         </View>
 
         <View style={styles.dividerRow}>
-          <View style={[styles.dividerLine, { backgroundColor: colors.icon }]} />
+          <View
+            style={[styles.dividerLine, { backgroundColor: colors.icon }]}
+          />
           <Text style={[styles.dividerText, { color: colors.icon }]}>OR</Text>
-          <View style={[styles.dividerLine, { backgroundColor: colors.icon }]} />
+          <View
+            style={[styles.dividerLine, { backgroundColor: colors.icon }]}
+          />
         </View>
 
         <View style={styles.fieldWrap}>
@@ -244,7 +269,10 @@ export function SignInScreen() {
             />
             <Pressable
               onPress={() => setShowPassword(!showPassword)}
-              style={({ pressed }) => [styles.eyeButton, pressed && { opacity: 0.7 }]}
+              style={({ pressed }) => [
+                styles.eyeButton,
+                pressed && { opacity: 0.7 },
+              ]}
             >
               {showPassword ? (
                 <AntDesign name="eye-invisible" size={20} color={colors.icon} />
@@ -253,24 +281,36 @@ export function SignInScreen() {
               )}
             </Pressable>
           </View>
+          <View
+            style={{
+              opacity: loading ? 0.6 : 1,
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "row",
+              marginTop: 20,
+            }}
+            pointerEvents={loading ? "none" : "auto"}
+          >
+            <Pressable
+              onPress={handleEmailSignIn}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                { borderColor: colors.primary, width: "100%" },
+                pressed && !loading && { opacity: 0.88 },
+              ]}
+            >
+              <Text
+                style={[styles.secondaryButtonText, { color: colors.primary }]}
+              >
+                {loading ? "Signing in..." : "Sign In with Email"}
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: colors.background }]}>
-        <View style={{ opacity: loading ? 0.6 : 1 }} pointerEvents={loading ? "none" : "auto"}>
-          <Pressable
-            onPress={handleEmailSignIn}
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              { borderColor: colors.primary },
-              pressed && !loading && { opacity: 0.88 },
-            ]}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
-              {loading ? "Signing in..." : "Sign In with Email"}
-            </Text>
-          </Pressable>
-        </View>
+
 
         <View style={styles.termsWrap}>
           <Text style={[styles.termsText, { color: colors.icon }]}>
