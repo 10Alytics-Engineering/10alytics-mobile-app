@@ -22,7 +22,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Image, Platform, Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CourseInAppVideoModal } from "@/components/course-in-app-video-modal";
+import { CourseInlineVideoPlayer } from "@/components/course-in-app-video-modal";
 import { LuminaCourseDetailSkeleton } from "@/components/ui/course-loading-skeletons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUserCourseDetail } from "@/hooks/use-user-course-detail";
@@ -188,6 +188,7 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
             : null;
 
     const didBootstrapWeekFromProgress = useRef(false);
+    const mainScrollRef = useRef<ScrollView>(null);
     useEffect(() => {
         didBootstrapWeekFromProgress.current = false;
     }, [courseId]);
@@ -278,9 +279,14 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
         setExpandedModuleId(firstPlayableMod?.id ?? first?.id ?? null);
     }, [selectedWeekId, selectedWeek, currentLessonId]);
 
+    useEffect(() => {
+        if (inAppVideoRawUrl == null) return;
+        mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+    }, [inAppVideoRawUrl]);
+
     const heroH = Math.round((width * 9) / 16);
+    const inlinePlayerW = width - 32;
     const heroUri = course?.image ? resolveMediaUrl(course.image) : undefined;
-    const primaryInstructor = course?.instructors?.[0];
     const slug = course?.slug ?? "";
     const categoryLabel = course?.level?.trim()
         ? course.level
@@ -361,7 +367,9 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
             </View>
 
             <ScrollView
+                ref={mainScrollRef}
                 className="flex-1"
+                contentInsetAdjustmentBehavior="automatic"
                 contentContainerStyle={{
                     flexGrow: 1,
                     paddingTop: insets.top + 72,
@@ -405,7 +413,16 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
                     </View>
                 ) : (
                     <>
-                        {/* Hero */}
+                        {inAppVideoRawUrl ? (
+                            <View className="mb-8 mt-2">
+                                <CourseInlineVideoPlayer
+                                    onClose={() => setInAppVideoRawUrl(null)}
+                                    playerWidth={inlinePlayerW}
+                                    rawUrl={inAppVideoRawUrl}
+                                    title={course.title}
+                                />
+                            </View>
+                        ) : (
                         <View className="mb-8 mt-2 overflow-hidden rounded-2xl" style={{ height: heroH }}>
                             {heroUri ? (
                                 <Image
@@ -472,6 +489,7 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
                                 </View>
                             </View>
                         </View>
+                        )}
 
                         {/* Title + instructor + progress */}
                         <View className="mb-10 px-1">
@@ -507,53 +525,6 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
                                     >
                                         {course.title}
                                     </Text>
-                                    {course.tagline ? (
-                                        <Text
-                                            className="mb-4 text-sm leading-relaxed"
-                                            style={{ color: c.onSurfaceVariant }}
-                                            numberOfLines={4}
-                                        >
-                                            {course.tagline}
-                                        </Text>
-                                    ) : null}
-                                    <View className="flex-row items-center gap-3">
-                                        <View
-                                            className="h-10 w-10 overflow-hidden rounded-full"
-                                            style={{ borderWidth: 2, borderColor: c.primaryFixed }}
-                                        >
-                                            {primaryInstructor?.image_url ? (
-                                                <Image
-                                                    accessibilityIgnoresInvertColors
-                                                    source={{ uri: primaryInstructor.image_url }}
-                                                    className="h-full w-full"
-                                                />
-                                            ) : (
-                                                <View
-                                                    className="h-full w-full items-center justify-center"
-                                                    style={{ backgroundColor: c.surfaceHigh }}
-                                                >
-                                                    <Text
-                                                        className="font-outfit-bold"
-                                                        style={{ color: c.primary }}
-                                                    >
-                                                        {primaryInstructor?.name?.charAt(0) ?? "?"}
-                                                    </Text>
-                                                </View>
-                                            )}
-                                        </View>
-                                        <Text className="flex-1 font-medium" style={{ color: c.onSurfaceVariant }}>
-                                            {primaryInstructor?.name ?? "Facilitator team"}{" "}
-                                            {primaryInstructor?.career ? (
-                                                <>
-                                                    <Text style={{ color: c.outlineVariant, opacity: 0.5 }}>
-                                                        {" "}
-                                                        |{" "}
-                                                    </Text>
-                                                    {primaryInstructor.career}
-                                                </>
-                                            ) : null}
-                                        </Text>
-                                    </View>
                                 </View>
 
                                 <View
@@ -785,8 +756,8 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
                                                                             borderColor: isCurrent
                                                                                 ? c.lessonRowCurrentBorder
                                                                                 : canPlay
-                                                                                  ? c.primaryContainer
-                                                                                  : "transparent",
+                                                                                    ? c.primaryContainer
+                                                                                    : "transparent",
                                                                             opacity: canPlay ? 1 : 0.65,
                                                                         }}
                                                                     >
@@ -994,11 +965,6 @@ export function LuminaCourseDetailScreen({ courseId }: LuminaCourseDetailScreenP
                     </>
                 )}
             </ScrollView>
-            <CourseInAppVideoModal
-                onClose={() => setInAppVideoRawUrl(null)}
-                rawUrl={inAppVideoRawUrl}
-                visible={inAppVideoRawUrl != null}
-            />
         </View>
     );
 }

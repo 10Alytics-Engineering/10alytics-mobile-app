@@ -122,18 +122,18 @@ export function ProfileScreen() {
   const { logOut, user } = useAuthStore();
   const isDark = colors.isDark;
 
-  const stats = [
+  const stats = [q
     { label: "Courses", value: "12", color: "#DA6728" },
     { label: "Hours", value: "156", color: "#4A90E2" },
     { label: "Streak", value: "15", color: "#E74C3C" },
   ];
 
   const menuItems = [
-    { id: 1, title: "My Courses", icon: "book.closed.fill" as const, color: "#DA6728", onPress: () => {} },
-    { id: 2, title: "Achievements", icon: "trophy.fill" as const, color: "#9B59B6", onPress: () => {} },
-    { id: 3, title: "Learning Goals", icon: "target" as const, color: "#4A90E2", onPress: () => {} },
-    { id: 4, title: "Notifications", icon: "bell.fill" as const, color: "#FF9F0A", onPress: () => {} },
-    { id: 5, title: "Settings", icon: "gearshape.fill" as const, color: colors.textSecondary, onPress: () => router.push("/settings") },
+    { id: 1, title: "My Courses", icon: "book.closed.fill" as const, color: colors.primary, onPress: () => { router.push("/(tabs)/courses") } },
+    { id: 2, title: "Achievements", icon: "trophy.fill" as const, color: colors.primary, onPress: () => { } },
+    { id: 3, title: "Learning Goals", icon: "target" as const, color: "#4A90E2", onPress: () => { } },
+    { id: 4, title: "Notifications", icon: "bell.fill" as const, color: "#FF9F0A", onPress: () => { } },
+    { id: 5, title: "Settings", icon: "gearshape.fill" as const, color: colors.primary, onPress: () => router.push("/") },
   ];
 
   const handleSignOut = async () => {
@@ -156,8 +156,8 @@ export function ProfileScreen() {
           </View>
           <View style={[styles.avatarWrap, { backgroundColor: colors.secondary }]}
           >
-            {user?.image ? (
-              <Image source={{ uri: user.image }} style={{ width: "100%", height: "100%" }} />
+            {user?.avatar ? (
+              <Image source={{ uri: user.avatar }} style={{ width: "100%", height: "100%" }} />
             ) : (
               <SymbolView name="person.crop.circle.fill" size={52} tintColor={colors.icon} />
             )}

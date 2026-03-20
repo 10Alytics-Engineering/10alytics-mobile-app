@@ -1,48 +1,70 @@
-import { useEvent } from "expo";
-import * as WebBrowser from "expo-web-browser";
+import * as Haptics from "expo-haptics";
 import { useVideoPlayer, VideoView } from "expo-video";
+import * as WebBrowser from "expo-web-browser";
 import { X } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, Text, View, useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useCallback, useMemo, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useVimeoPlayer, VimeoView } from "react-native-vimeo-bridge";
+import { WebView } from "react-native-webview";
 
+import {
+    getYoutubeEmbedPageOrigin,
+    resolveMediaUrl,
+} from "@/utils/resolve-media-url";
 import { parseVideoUrl } from "@/utils/video-platform";
-import { resolveMediaUrl } from "@/utils/resolve-media-url";
 
 function isLikelyDirectVideoUrl(url: string): boolean {
     const path = url.toLowerCase().split("?")[0] ?? "";
     return /\.(mp4|m3u8|webm|mov)$/i.test(path);
 }
 
-function YoutubeExpoPlayer({
-    embedUrl,
+/** YouTube embed pages are HTML, not media streams — AVPlayer/expo-video cannot play them. */
+function youtubeEmbedHtml(videoId: string, pageOrigin: string): string {
+    const id = encodeURIComponent(videoId);
+    const qs = new URLSearchParams({
+        playsinline: "1",
+        rel: "0",
+        modestbranding: "1",
+        enablejsapi: "1",
+        origin: pageOrigin,
+    });
+    const src = `https://www.youtube.com/embed/${id}?${qs.toString()}`;
+    const srcAttr = src.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta name="referrer" content="strict-origin-when-cross-origin"><style>html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden}iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style></head><body><iframe src="${srcAttr}" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></body></html>`;
+}
+
+function YoutubeWebPlayer({
+    videoId,
     openUrl,
+    height,
 }: {
-    embedUrl: string;
+    videoId: string;
     openUrl: string;
+    height: number;
 }) {
     const [failed, setFailed] = useState(false);
-    const player = useVideoPlayer(embedUrl, (p) => {
-        p.loop = false;
-    });
-    const payload = useEvent(player, "statusChange", { status: player.status });
-    const status = payload?.status ?? player.status;
-
-    useEffect(() => {
-        if (status === "error") setFailed(true);
-    }, [status]);
+    const pageOrigin = useMemo(() => getYoutubeEmbedPageOrigin(), []);
+    const html = useMemo(
+        () => youtubeEmbedHtml(videoId, pageOrigin),
+        [videoId, pageOrigin],
+    );
 
     if (failed) {
         return (
-            <View className="flex-1 items-center justify-center gap-4 px-6">
-                <Text className="text-center text-base text-neutral-200">
+            <View
+                className="items-center justify-center gap-4 px-6 bg-black"
+                style={{ height, width: "100%" }}
+            >
+                <Text className="text-center text-base text-neutral-200" selectable>
                     This video could not be played in the app.
                 </Text>
                 <Pressable
                     accessibilityRole="button"
                     className="rounded-xl bg-white/15 px-5 py-3 active:opacity-80"
-                    onPress={() => void WebBrowser.openBrowserAsync(openUrl)}
+                    onPress={() => {
+                        WebBrowser.openBrowserAsync(openUrl).catch(() => { });
+                    }}
                 >
                     <Text className="text-center font-medium text-white">
                         Open in browser
@@ -53,11 +75,15 @@ function YoutubeExpoPlayer({
     }
 
     return (
-        <VideoView
-            className="flex-1 w-full"
-            contentFit="contain"
-            nativeControls
-            player={player}
+        <WebView
+            allowsFullscreenVideo
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            onError={() => setFailed(true)}
+            onHttpError={() => setFailed(true)}
+            originWhitelist={["*"]}
+            source={{ html, baseUrl: pageOrigin }}
+            style={{ height, width: "100%", backgroundColor: "#000" }}
         />
     );
 }
@@ -71,46 +97,67 @@ function VimeoBridgePlayer({
     width: number;
     height: number;
 }) {
-    const player = useVimeoPlayer(playerUrl);
+    const player = useVimeoPlayer(playerUrl, {
+        autoplay: true,
+        controls: true,
+    });
     return (
         <VimeoView
-            height={height}
+            height={process.env.EXPO_OS === "web" ? "auto" : height}
+            iframeStyle={{ aspectRatio: 16 / 9 }}
             player={player}
-            style={{ alignSelf: "center" }}
+            style={{ alignSelf: "center", maxHeight: height }}
+            webViewProps={{
+                renderToHardwareTextureAndroid: true,
+                injectedJavaScriptBeforeContentLoaded: `
+                Object.defineProperty(document, 'referrer', {get : function(){ return "https://www.10alytics.io"; }});
+                true;
+              `,
+            }}
             width={width}
         />
     );
 }
 
-function DirectExpoPlayer({ url }: { url: string }) {
+function DirectExpoPlayer({ url, height }: { url: string; height: number }) {
     const player = useVideoPlayer(url, (p) => {
         p.loop = false;
         p.play();
     });
     return (
         <VideoView
-            className="flex-1 w-full"
             contentFit="contain"
             nativeControls
             player={player}
+            style={{ width: "100%", height }}
         />
     );
 }
 
-export interface CourseInAppVideoModalProps {
-    visible: boolean;
-    rawUrl: string | null;
-    onClose: () => void;
+function hapticLight(): void {
+    if (process.env.EXPO_OS === "ios") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => { });
+    }
 }
 
-export function CourseInAppVideoModal({
-    visible,
+export interface CourseInlineVideoPlayerProps {
+    rawUrl: string;
+    onClose: () => void;
+    playerWidth: number;
+    /** Used for accessibility on the floating close control */
+    title?: string;
+}
+
+/**
+ * In-scroll course video: YouTube (WebView embed), Vimeo (react-native-vimeo-bridge), or direct file (expo-video).
+ */
+export function CourseInlineVideoPlayer({
     rawUrl,
     onClose,
-}: CourseInAppVideoModalProps) {
-    const insets = useSafeAreaInsets();
-    const { width } = useWindowDimensions();
-    const playerHeight = Math.round((width * 9) / 16);
+    playerWidth,
+    title,
+}: CourseInlineVideoPlayerProps) {
+    const playerHeight = Math.round((playerWidth * 9) / 16);
 
     const absoluteUrl = useMemo(() => {
         if (!rawUrl?.trim()) return null;
@@ -125,61 +172,55 @@ export function CourseInAppVideoModal({
     );
 
     const openInBrowser = useCallback(() => {
+        hapticLight();
         const url = parsed?.openUrl ?? absoluteUrl;
-        if (url) void WebBrowser.openBrowserAsync(url);
+        if (url) WebBrowser.openBrowserAsync(url).catch(() => { });
     }, [absoluteUrl, parsed?.openUrl]);
 
-    if (!visible) return null;
+    const handleClose = useCallback(() => {
+        hapticLight();
+        onClose();
+    }, [onClose]);
+
+    const closeA11yLabel = title?.trim()
+        ? `Close video: ${title.trim()}`
+        : "Close video";
 
     return (
-        <Modal
-            animationType="fade"
-            onRequestClose={onClose}
-            presentationStyle="fullScreen"
-            statusBarTranslucent
-            visible
-        >
+        <Animated.View entering={FadeInDown.springify()}>
             <View
-                className="flex-1 bg-black"
-                style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                className="overflow-hidden rounded-2xl bg-black"
+                style={{ borderCurve: "continuous" }}
             >
                 <View
-                    className="absolute right-3 z-10 flex-row items-center gap-2"
-                    style={{ top: insets.top + 8 }}
+                    className="relative w-full items-center justify-center bg-black"
+                    style={{ minHeight: playerHeight }}
                 >
-                    <Pressable
-                        accessibilityLabel="Close video"
-                        accessibilityRole="button"
-                        className="rounded-full bg-white/20 p-2 active:opacity-70"
-                        hitSlop={12}
-                        onPress={onClose}
-                    >
-                        <X color="#fff" size={22} />
-                    </Pressable>
-                </View>
-
-                <View className="mt-12 flex-1 justify-center px-0">
                     {!absoluteUrl ? (
-                        <Text className="px-6 text-center text-neutral-300">
+                        <Text className="px-6 py-8 text-center text-neutral-300" selectable>
                             Invalid video link.
                         </Text>
-                    ) : parsed?.provider === "youtube" && parsed.embedUrl ? (
-                        <YoutubeExpoPlayer
-                            embedUrl={parsed.embedUrl}
+                    ) : parsed?.provider === "youtube" && parsed.videoId ? (
+                        <YoutubeWebPlayer
+                            height={playerHeight}
                             openUrl={parsed.openUrl}
+                            videoId={parsed.videoId}
                         />
                     ) : parsed?.provider === "vimeo" && parsed.embedUrl ? (
                         <VimeoBridgePlayer
                             height={playerHeight}
                             playerUrl={parsed.embedUrl}
-                            width={width}
+                            width={playerWidth}
                         />
                     ) : parsed?.provider === "unknown" &&
-                      isLikelyDirectVideoUrl(parsed.openUrl) ? (
-                        <DirectExpoPlayer url={parsed.openUrl} />
+                        isLikelyDirectVideoUrl(parsed.openUrl) ? (
+                        <DirectExpoPlayer height={playerHeight} url={parsed.openUrl} />
                     ) : (
-                        <View className="flex-1 items-center justify-center gap-4 px-6">
-                            <Text className="text-center text-base text-neutral-200">
+                        <View
+                            className="items-center justify-center gap-4 px-6 py-8"
+                            style={{ minHeight: playerHeight, width: "100%" }}
+                        >
+                            <Text className="text-center text-base text-neutral-200" selectable>
                                 Open this link in your browser to watch.
                             </Text>
                             <Pressable
@@ -193,8 +234,18 @@ export function CourseInAppVideoModal({
                             </Pressable>
                         </View>
                     )}
+
+                    <Pressable
+                        accessibilityLabel={closeA11yLabel}
+                        accessibilityRole="button"
+                        className="absolute left-3 top-3 z-50 h-10 w-10 items-center justify-center rounded-full bg-black/50 active:opacity-80"
+                        hitSlop={10}
+                        onPress={handleClose}
+                    >
+                        <X color="#ffffff" size={20} strokeWidth={2.2} />
+                    </Pressable>
                 </View>
             </View>
-        </Modal>
+        </Animated.View>
     );
 }
