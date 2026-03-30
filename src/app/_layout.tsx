@@ -48,33 +48,20 @@ export default function RootLayout() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
-                <>
-                    <NetworkToastBridge />
-                    <StatusBar style={isDark ? 'light' : 'dark'} />
-                    <Stack screenOptions={screenOptions}>
-                        <Stack.Protected guard={!hasCompletedOnboarding}>
-                            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                        </Stack.Protected>
-                        <Stack.Protected guard={!isLoggedIn && hasCompletedOnboarding}>
-                            <Stack.Screen name="index" />
-                            <Stack.Screen
-                                name="sign-in"
-                                options={{
-                                    title: 'Sign In',
-                                    presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
-                                    sheetGrabberVisible: true,
-                                    sheetAllowedDetents: [0.4],
-                                    sheetCornerRadius: 24,
-                                    headerShown: false,
-                                    contentStyle: { backgroundColor: 'transparent' },
-                                }}
-                            />
-                            <Stack.Protected guard={shouldCreateAccount}>
+                <ThemeProvider>
+                    <>
+                        <NetworkToastBridge />
+                        <StatusBar style={isDark ? 'light' : 'dark'} />
+                        <Stack screenOptions={screenOptions}>
+                            <Stack.Protected guard={!hasCompletedOnboarding}>
+                                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                            </Stack.Protected>
+                            <Stack.Protected guard={!isLoggedIn && hasCompletedOnboarding}>
+                                <Stack.Screen name="index" />
                                 <Stack.Screen
-                                    name="create-account"
+                                    name="sign-in"
                                     options={{
-                                        title: 'Create Account',
+                                        title: 'Sign In',
                                         presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
                                         sheetGrabberVisible: true,
                                         sheetAllowedDetents: [0.4],
@@ -83,38 +70,54 @@ export default function RootLayout() {
                                         contentStyle: { backgroundColor: 'transparent' },
                                     }}
                                 />
+                                <Stack.Protected guard={shouldCreateAccount}>
+                                    <Stack.Screen
+                                        name="create-account"
+                                        options={{
+                                            title: 'Create Account',
+                                            presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+                                            sheetGrabberVisible: true,
+                                            sheetAllowedDetents: [0.4],
+                                            sheetCornerRadius: 24,
+                                            headerShown: false,
+                                            contentStyle: { backgroundColor: 'transparent' },
+                                        }}
+                                    />
+                                </Stack.Protected>
                             </Stack.Protected>
-                        </Stack.Protected>
-                        <Stack.Protected guard={isLoggedIn}>
-                            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                            <Stack.Screen
-                                name="chat-room"
-                                options={{
-                                    headerShown: false,
-                                    presentation: 'card',
-                                    animation: 'default',
-                                }}
-                            />
-                            <Stack.Screen
-                                name="(screens)"
-                                options={{
-                                    headerShown: false,
-                                    presentation: 'card',
-                                    animation: 'default',
-                                }}
-                            />
-                            <Stack.Screen
-                                name="settings"
-                                options={{
-                                    headerShown: false,
-                                    presentation: 'card',
-                                    animation: 'default',
-                                }}
-                            />
-                        </Stack.Protected>
-                    </Stack>
-                </>
-            </ThemeProvider>
+                            <Stack.Protected guard={isLoggedIn}>
+                                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                                <Stack.Screen
+                                    name="chat-room"
+                                    options={{
+                                        headerShown: false,
+                                        presentation: 'card',
+                                        animation: 'default',
+                                    }}
+                                />
+                                <Stack.Screen
+                                    name="(screens)"
+                                    options={{
+                                        headerShown: false,
+                                        presentation: Platform.OS === 'ios' ? 'fullScreenModal' : 'modal',
+                                        animation: 'slide_from_bottom',
+                                        gestureEnabled: true,
+                                        fullScreenGestureEnabled: Platform.OS === 'ios',
+                                        animationMatchesGesture: Platform.OS === 'ios',
+                                    }}
+                                />
+                                <Stack.Screen
+                                    name="settings"
+                                    options={{
+                                        headerShown: false,
+                                        presentation: 'card',
+                                        animation: 'default',
+                                    }}
+                                />
+                            </Stack.Protected>
+                        </Stack>
+                    </>
+                </ThemeProvider>
             </QueryClientProvider>
         </GestureHandlerRootView>
     );

@@ -142,10 +142,13 @@ function hapticLight(): void {
 
 export interface CourseInlineVideoPlayerProps {
     rawUrl: string;
-    onClose: () => void;
+    onClose?: () => void;
     playerWidth: number;
+    aspectRatio?: number;
     /** Used for accessibility on the floating close control */
     title?: string;
+    showCloseButton?: boolean;
+    rounded?: boolean;
 }
 
 /**
@@ -155,9 +158,12 @@ export function CourseInlineVideoPlayer({
     rawUrl,
     onClose,
     playerWidth,
+    aspectRatio = 16 / 9,
     title,
+    showCloseButton = true,
+    rounded = true,
 }: CourseInlineVideoPlayerProps) {
-    const playerHeight = Math.round((playerWidth * 9) / 16);
+    const playerHeight = Math.round(playerWidth / aspectRatio);
 
     const absoluteUrl = useMemo(() => {
         if (!rawUrl?.trim()) return null;
@@ -179,7 +185,7 @@ export function CourseInlineVideoPlayer({
 
     const handleClose = useCallback(() => {
         hapticLight();
-        onClose();
+        onClose?.();
     }, [onClose]);
 
     const closeA11yLabel = title?.trim()
@@ -189,8 +195,15 @@ export function CourseInlineVideoPlayer({
     return (
         <Animated.View entering={FadeInDown.springify()}>
             <View
-                className="overflow-hidden rounded-2xl bg-black"
-                style={{ borderCurve: "continuous" }}
+                className="overflow-hidden bg-black"
+                style={{
+                    ...(rounded
+                        ? {
+                            borderRadius: 24,
+                            borderCurve: "continuous",
+                        }
+                        : null),
+                }}
             >
                 <View
                     className="relative w-full items-center justify-center bg-black"
@@ -235,15 +248,17 @@ export function CourseInlineVideoPlayer({
                         </View>
                     )}
 
-                    <Pressable
-                        accessibilityLabel={closeA11yLabel}
-                        accessibilityRole="button"
-                        className="absolute left-3 top-3 z-50 h-10 w-10 items-center justify-center rounded-full bg-black/50 active:opacity-80"
-                        hitSlop={10}
-                        onPress={handleClose}
-                    >
-                        <X color="#ffffff" size={20} strokeWidth={2.2} />
-                    </Pressable>
+                    {showCloseButton ? (
+                        <Pressable
+                            accessibilityLabel={closeA11yLabel}
+                            accessibilityRole="button"
+                            className="absolute left-3 top-3 z-50 h-10 w-10 items-center justify-center rounded-full bg-black/50 active:opacity-80"
+                            hitSlop={10}
+                            onPress={handleClose}
+                        >
+                            <X color="#ffffff" size={20} strokeWidth={2.2} />
+                        </Pressable>
+                    ) : null}
                 </View>
             </View>
         </Animated.View>

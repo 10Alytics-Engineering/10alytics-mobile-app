@@ -5,8 +5,9 @@ export default function ScreensLayout() {
         <Stack
             screenOptions={{
                 headerShown: false,
-                animation: "default",
             }}
-        />
+        >
+            <Stack.Screen name="course/[id]" />
+        </Stack>
     );
 }

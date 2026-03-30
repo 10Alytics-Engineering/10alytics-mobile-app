@@ -122,7 +122,7 @@ export function ProfileScreen() {
   const { logOut, user } = useAuthStore();
   const isDark = colors.isDark;
 
-  const stats = [q
+  const stats = [
     { label: "Courses", value: "12", color: "#DA6728" },
     { label: "Hours", value: "156", color: "#4A90E2" },
     { label: "Streak", value: "15", color: "#E74C3C" },

@@ -1,5 +1,6 @@
-import { LuminaCourseDetailScreen } from "@/screens/course/lumina-course-detail-screen";
 import { useLocalSearchParams } from "expo-router";
+
+import { CourseDetailScreen } from "@/screens/course/course-detail-screen";
 
 export default function CourseDetailRoute() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -7,5 +8,5 @@ export default function CourseDetailRoute() {
     if (!courseId) {
         return null;
     }
-    return <LuminaCourseDetailScreen courseId={courseId} />;
+    return <CourseDetailScreen courseId={courseId} />;
 }

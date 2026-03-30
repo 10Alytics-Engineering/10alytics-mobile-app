@@ -1,8 +1,8 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Linking, Platform, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -15,81 +15,167 @@ import {
   TextInput,
   View,
 } from "@/tw";
+import { Image } from "@/tw/image";
 import { useAuthStore } from "@/utils/auth-store";
 
-const INPUT_RADIUS = 12;
-const BUTTON_RADIUS = 14;
-const SPACING = 24;
-const TERMS_URL = "https://www.10alytics.io/terms"; // Replace with your actual terms URL
+const TERMS_URL = "https://www.10alytics.io/terms";
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { flex: 1, paddingHorizontal: SPACING, paddingTop: 4 },
-  scrollContent: { paddingBottom: SPACING * 1.5 },
-  welcomeWrap: { marginBottom: 28 },
-  welcomeTitle: { fontSize: 28, fontWeight: "700", letterSpacing: -0.6 },
-  welcomeSubtitle: { fontSize: 15, marginTop: 8, lineHeight: 22, opacity: 0.9 },
-  fieldWrap: { marginBottom: 20 },
-  fieldLabel: { fontSize: 14, fontWeight: "600", marginBottom: 8 },
+  screen: { flex: 1 },
+  content: { flexGrow: 1, justifyContent: "center" },
+  shell: { width: "100%", alignSelf: "center" },
+  brandWrap: { alignItems: "center", gap: 28 },
+  brandMark: {
+    width: 84,
+    height: 84,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandBlob: {
+    width: 64,
+    height: 64,
+    transform: [{ rotate: "-24deg" }],
+  },
+  titleWrap: { alignItems: "center", gap: 10 },
+  title: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: "700",
+    textAlign: "center",
+    letterSpacing: -0.8,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  formWrap: { gap: 14, marginTop: 36 },
   inputRow: {
+    minHeight: 64,
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: INPUT_RADIUS,
-    paddingHorizontal: 16,
-    minHeight: 52,
+    borderRadius: 20,
+    paddingHorizontal: 18,
   },
-  input: { flex: 1, paddingVertical: 14, fontSize: 16 },
-  eyeButton: { padding: 8 },
-  footer: { paddingHorizontal: SPACING, paddingTop: 24, paddingBottom: 40 },
+  input: {
+    flex: 1,
+    fontSize: 17,
+    paddingVertical: 18,
+  },
+  eyeButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   primaryButton: {
-    paddingVertical: 16,
-    borderRadius: BUTTON_RADIUS,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-  },
-  primaryButtonText: { fontSize: 16, fontWeight: "700", color: "#fff" },
-  googleIconWrap: {
-    gap: 12,
-    marginRight: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 28,
-  },
-  dividerLine: { flex: 1, height: 1, opacity: 0.35 },
-  dividerText: { marginHorizontal: 14, fontSize: 13, fontWeight: "600" },
-  secondaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: BUTTON_RADIUS,
-    borderWidth: 2,
+    minHeight: 64,
+    borderRadius: 20,
+    marginTop: 8,
     width: "100%",
   },
-  secondaryButtonText: { fontSize: 16, fontWeight: "600" },
-  termsWrap: { marginTop: 22, paddingHorizontal: 8 },
-  termsText: { fontSize: 13, textAlign: "center", lineHeight: 20 },
-  termsLink: { fontWeight: "600" },
-  footerRow: { flexDirection: "row", justifyContent: "center", marginTop: 28 },
-  footerHint: { fontSize: 14 },
-  footerLink: { fontSize: 14, fontWeight: "600" },
+  primaryButtonInner: {
+    minHeight: 64,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  primaryButtonText: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  dividerText: {
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  secondaryButton: {
+    minHeight: 64,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+    width: "100%",
+    paddingHorizontal: 22,
+  },
+  secondaryButtonInner: {
+    minHeight: 64,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    paddingHorizontal: 22,
+  },
+  secondaryButtonIconWrap: {
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryButtonIcon: {
+    width: 22,
+    height: 22,
+  },
+  secondaryButtonText: {
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  footerWrap: {
+    alignItems: "center",
+    gap: 20,
+    marginTop: 28,
+  },
+  termsText: {
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  termsLink: {
+    fontWeight: "700",
+  },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+  footerHint: {
+    fontSize: 14,
+  },
+  footerLink: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
 });
 
 export function SignInScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const isDark = (colorScheme ?? "light") === "dark";
+  const insets = useSafeAreaInsets();
   const { logIn } = useAuthStore();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const palette = {
+    background: isDark ? "#0B0B0C" : "#FAFAF8",
+    surface: isDark ? "#171719" : "#ECECEC",
+    surfaceBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+    text: colors.text,
+    muted: isDark ? "#A1A1AA" : "#6B7280",
+    primaryFill: isDark ? "#FFFFFF" : "#0A0A0A",
+    primaryText: isDark ? "#0A0A0A" : "#FFFFFF",
+    secondaryFill: isDark ? "#111214" : "#FFFFFF",
+    secondaryBorder: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.14)",
+    brand: isDark ? "#FFFFFF" : "#0A0A0A",
+  };
 
   const handleEmailSignIn = async () => {
     if (!email || !password) {
@@ -146,198 +232,200 @@ export function SignInScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={[styles.screen, { backgroundColor: palette.background }]}
     >
       <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.scrollContent}
         contentInsetAdjustmentBehavior="automatic"
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: Math.max(insets.top + 20, 40),
+            paddingBottom: Math.max(insets.bottom + 28, 40),
+            paddingHorizontal: 24,
+          },
+        ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.welcomeWrap}>
-          <Text style={[styles.welcomeTitle, { color: colors.text }]}>
-            Welcome back!
-          </Text>
-          <Text style={[styles.welcomeSubtitle, { color: colors.text }]}>
-            Choose how you&apos;d like to sign in
-          </Text>
-        </View>
+        <View style={[styles.shell, { maxWidth: 440 }]}>
+          <View style={styles.brandWrap}>
+            <View style={styles.brandMark}>
+              <Image source={require("@/assets/icon.png")} style={{ width: 84, height: 84 }} />
+            </View>
 
-        <View
-          style={{ opacity: loading ? 0.6 : 1 }}
-          pointerEvents={loading ? "none" : "auto"}
-        >
-          <Pressable
-            onPress={handleGoogleSignIn}
-            style={({ pressed }) => [
-              styles.primaryButton,
-              { backgroundColor: colors.primary },
-              pressed && !loading && { opacity: 0.88 },
-            ]}
-          >
-            {loading ? (
-              <Text style={styles.primaryButtonText}>Signing in...</Text>
-            ) : (
-              <>
-                <View style={styles.googleIconWrap}>
-                  <MaterialCommunityIcons
-                    name="google"
-                    size={22}
-                    color="#fff"
-                  />
-                  <Text style={styles.primaryButtonText}>
-                    Continue with Google
-                  </Text>
-                </View>
-              </>
-            )}
-          </Pressable>
-        </View>
-
-        <View style={styles.dividerRow}>
-          <View
-            style={[styles.dividerLine, { backgroundColor: colors.icon }]}
-          />
-          <Text style={[styles.dividerText, { color: colors.icon }]}>OR</Text>
-          <View
-            style={[styles.dividerLine, { backgroundColor: colors.icon }]}
-          />
-        </View>
-
-        <View style={styles.fieldWrap}>
-          <Text style={[styles.fieldLabel, { color: colors.text }]}>Email</Text>
-          <View
-            style={[
-              styles.inputRow,
-              {
-                backgroundColor: `${colors.primary}10`,
-                borderWidth: 1,
-                borderColor: `${colors.primary}30`,
-              },
-            ]}
-          >
-            <AntDesign
-              name="mail"
-              size={20}
-              color={colors.icon}
-              style={{ marginRight: 12 }}
-            />
-            <TextInput
-              style={[styles.input, { color: colors.text }]}
-              placeholder="Enter your email"
-              placeholderTextColor={colors.icon}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-            />
+            <View style={styles.titleWrap}>
+              <Text style={[styles.title, { color: palette.text }]}>
+                Log in to continue
+              </Text>
+              <Text style={[styles.subtitle, { color: palette.muted }]}>
+                Use your email and password or continue with Google.
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.fieldWrap}>
-          <Text style={[styles.fieldLabel, { color: colors.text }]}>
-            Password
-          </Text>
-          <View
-            style={[
-              styles.inputRow,
-              {
-                backgroundColor: `${colors.primary}10`,
-                borderWidth: 1,
-                borderColor: `${colors.primary}30`,
-              },
-            ]}
-          >
-            <AntDesign
-              name="lock"
-              size={20}
-              color={colors.icon}
-              style={{ marginRight: 12 }}
-            />
-            <TextInput
-              style={[styles.input, { color: colors.text }]}
-              placeholder="Enter your password"
-              placeholderTextColor={colors.icon}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-              autoComplete="password"
-            />
-            <Pressable
-              onPress={() => setShowPassword(!showPassword)}
-              style={({ pressed }) => [
-                styles.eyeButton,
-                pressed && { opacity: 0.7 },
+          <View style={styles.formWrap}>
+            <View
+              style={[
+                styles.inputRow,
+                {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.surfaceBorder,
+                  borderWidth: 1,
+                  borderCurve: "continuous",
+                },
               ]}
             >
-              {showPassword ? (
-                <AntDesign name="eye-invisible" size={20} color={colors.icon} />
-              ) : (
-                <AntDesign name="eye" size={20} color={colors.icon} />
-              )}
-            </Pressable>
-          </View>
-          <View
-            style={{
-              opacity: loading ? 0.6 : 1,
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "row",
-              marginTop: 20,
-            }}
-            pointerEvents={loading ? "none" : "auto"}
-          >
+              <AntDesign
+                color={palette.muted}
+                name="mail"
+                size={20}
+                style={{ marginRight: 14 }}
+              />
+              <TextInput
+                autoCapitalize="none"
+                autoComplete="email"
+                keyboardType="email-address"
+                placeholder="Enter your email"
+                placeholderTextColor={palette.muted}
+                style={[styles.input, { color: palette.text }]}
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            <View
+              style={[
+                styles.inputRow,
+                {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.surfaceBorder,
+                  borderWidth: 1,
+                  borderCurve: "continuous",
+                },
+              ]}
+            >
+              <AntDesign
+                color={palette.muted}
+                name="lock"
+                size={20}
+                style={{ marginRight: 14 }}
+              />
+              <TextInput
+                autoCapitalize="none"
+                autoComplete="password"
+                placeholder="Enter your password"
+                placeholderTextColor={palette.muted}
+                secureTextEntry={!showPassword}
+                style={[styles.input, { color: palette.text }]}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowPassword((value) => !value)}
+                style={({ pressed }) => [
+                  styles.eyeButton,
+                  pressed && { opacity: 0.75 },
+                ]}
+              >
+                {showPassword ? (
+                  <AntDesign color={palette.muted} name="eye-invisible" size={20} />
+                ) : (
+                  <AntDesign color={palette.muted} name="eye" size={20} />
+                )}
+              </Pressable>
+            </View>
+
             <Pressable
+              accessibilityRole="button"
+              android_ripple={{ color: isDark ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.16)" }}
               onPress={handleEmailSignIn}
+              pointerEvents={loading ? "none" : "auto"}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                pressed && !loading && { opacity: 0.88 },
+                loading && { opacity: 0.7 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.primaryButtonInner,
+                  {
+                    backgroundColor: palette.primaryFill,
+                    borderCurve: "continuous",
+                  },
+                ]}
+              >
+                <Text style={[styles.primaryButtonText, { color: palette.primaryText }]}>
+                  {loading ? "Continuing..." : "Continue"}
+                </Text>
+              </View>
+            </Pressable>
+
+            <Text style={[styles.dividerText, { color: palette.muted }]}>or</Text>
+
+            <Pressable
+              accessibilityRole="button"
+              android_ripple={{ color: "rgba(66,133,244,0.08)" }}
+              onPress={handleGoogleSignIn}
+              pointerEvents={loading ? "none" : "auto"}
               style={({ pressed }) => [
                 styles.secondaryButton,
-                { borderColor: colors.primary, width: "100%" },
-                pressed && !loading && { opacity: 0.88 },
+                pressed && !loading && { opacity: 0.9 },
+                loading && { opacity: 0.7 },
               ]}
             >
-              <Text
-                style={[styles.secondaryButtonText, { color: colors.primary }]}
+              <View
+                style={[
+                  styles.secondaryButtonInner,
+                  {
+                    backgroundColor: palette.secondaryFill,
+                    borderColor: palette.secondaryBorder,
+                    borderWidth: 1.5,
+                    borderCurve: "continuous",
+                  },
+                ]}
               >
-                {loading ? "Signing in..." : "Sign In with Email"}
-              </Text>
+                <View style={styles.secondaryButtonIconWrap}>
+                  <Image
+                    source={require("@/assets/images/onboarding/google.png")}
+                    style={styles.secondaryButtonIcon}
+                  />
+                </View>
+                <Text style={[styles.secondaryButtonText, { color: palette.text }]}>
+                  Continue with Google
+                </Text>
+              </View>
             </Pressable>
+          </View>
+
+          <View style={styles.footerWrap}>
+            <Text style={[styles.termsText, { color: palette.muted }]}>
+              By continuing you agree to our{" "}
+              <Text
+                onPress={() => Linking.openURL(TERMS_URL)}
+                style={[styles.termsLink, { color: palette.text }]}
+              >
+                Terms of Service
+              </Text>
+            </Text>
+
+            <View style={styles.footerRow}>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push("/create-account")}
+                style={({ pressed }) => pressed && { opacity: 0.72 }}
+              >
+                <Text style={[styles.footerLink, { color: palette.text }]}>
+                  Sign Up
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>
-
-      <View style={[styles.footer, { backgroundColor: colors.background }]}>
-
-
-        <View style={styles.termsWrap}>
-          <Text style={[styles.termsText, { color: colors.icon }]}>
-            By continuing you agree to our{" "}
-            <Text
-              style={[styles.termsLink, { color: colors.primary }]}
-              onPress={() => Linking.openURL(TERMS_URL)}
-            >
-              Terms of Service
-            </Text>
-          </Text>
-        </View>
-
-        <View style={styles.footerRow}>
-          <Text style={[styles.footerHint, { color: colors.icon }]}>
-            Don&apos;t have an account?{" "}
-          </Text>
-          <Pressable
-            onPress={() => router.push("/create-account")}
-            style={({ pressed }) => pressed && { opacity: 0.7 }}
-          >
-            <Text style={[styles.footerLink, { color: colors.primary }]}>
-              Sign Up
-            </Text>
-          </Pressable>
-        </View>
-      </View>
     </KeyboardAvoidingView>
   );
 }
