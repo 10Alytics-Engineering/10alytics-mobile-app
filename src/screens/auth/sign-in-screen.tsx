@@ -1,5 +1,6 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Alert, Linking, Platform, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,138 +20,6 @@ import { Image } from "@/tw/image";
 import { useAuthStore } from "@/utils/auth-store";
 
 const TERMS_URL = "https://www.10alytics.io/terms";
-
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  content: { flexGrow: 1, justifyContent: "center" },
-  shell: { width: "100%", alignSelf: "center" },
-  brandWrap: { alignItems: "center", gap: 28 },
-  brandMark: {
-    width: 84,
-    height: 84,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  brandBlob: {
-    width: 64,
-    height: 64,
-    transform: [{ rotate: "-24deg" }],
-  },
-  titleWrap: { alignItems: "center", gap: 10 },
-  title: {
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: "700",
-    textAlign: "center",
-    letterSpacing: -0.8,
-  },
-  subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  formWrap: { gap: 14, marginTop: 36 },
-  inputRow: {
-    minHeight: 64,
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 20,
-    paddingHorizontal: 18,
-  },
-  input: {
-    flex: 1,
-    fontSize: 17,
-    paddingVertical: 18,
-  },
-  eyeButton: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryButton: {
-    minHeight: 64,
-    borderRadius: 20,
-    marginTop: 8,
-    width: "100%",
-  },
-  primaryButtonInner: {
-    minHeight: 64,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-  primaryButtonText: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  dividerText: {
-    fontSize: 18,
-    textAlign: "center",
-    marginTop: 10,
-  },
-  secondaryButton: {
-    minHeight: 64,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 14,
-    width: "100%",
-    paddingHorizontal: 22,
-  },
-  secondaryButtonInner: {
-    minHeight: 64,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    paddingHorizontal: 22,
-  },
-  secondaryButtonIconWrap: {
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  secondaryButtonIcon: {
-    width: 22,
-    height: 22,
-  },
-  secondaryButtonText: {
-    fontSize: 17,
-    fontWeight: "700",
-  },
-  footerWrap: {
-    alignItems: "center",
-    gap: 20,
-    marginTop: 28,
-  },
-  termsText: {
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  termsLink: {
-    fontWeight: "700",
-  },
-  footerRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 6,
-    flexWrap: "wrap",
-  },
-  footerHint: {
-    fontSize: 14,
-  },
-  footerLink: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-});
 
 export function SignInScreen() {
   const colorScheme = useColorScheme();
@@ -208,6 +77,30 @@ export function SignInScreen() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await apiClient.appleAuth();
+
+      if (error) {
+        if (error.message !== "Sign in was cancelled.") {
+          Alert.alert("Sign In Failed", error.message);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        logIn(data);
+        router.replace("/(tabs)");
+      }
+    } catch {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
@@ -235,6 +128,7 @@ export function SignInScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={[styles.screen, { backgroundColor: palette.background }]}
     >
+      <StatusBar style={isDark ? "light" : "dark"} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={[
@@ -251,15 +145,15 @@ export function SignInScreen() {
         <View style={[styles.shell, { maxWidth: 440 }]}>
           <View style={styles.brandWrap}>
             <View style={styles.brandMark}>
-              <Image source={require("@/assets/icon.png")} style={{ width: 84, height: 84 }} />
+              <Image source={require("@/assets/images/splash-icon-light.png")} style={{ width: 150, height: 120 }} />
             </View>
 
             <View style={styles.titleWrap}>
               <Text style={[styles.title, { color: palette.text }]}>
-                Log in to continue
+                Log in to 10Alytics
               </Text>
               <Text style={[styles.subtitle, { color: palette.muted }]}>
-                Use your email and password or continue with Google.
+                Use your email and password or continue with Google or Apple.
               </Text>
             </View>
           </View>
@@ -398,6 +292,39 @@ export function SignInScreen() {
                 </Text>
               </View>
             </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleAppleSignIn}
+              pointerEvents={loading ? "none" : "auto"}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                pressed && !loading && { opacity: 0.9 },
+                loading && { opacity: 0.7 },
+              ]}
+            >
+              <View
+                style={[
+                  styles.secondaryButtonInner,
+                  {
+                    backgroundColor: palette.secondaryFill,
+                    borderColor: palette.secondaryBorder,
+                    borderWidth: 1.5,
+                    borderCurve: "continuous",
+                  },
+                ]}
+              >
+                <View style={styles.secondaryButtonIconWrap}>
+                  <Image
+                    source={require("@/assets/images/onboarding/apple.png")}
+                    style={styles.secondaryButtonIcon}
+                  />
+                </View>
+                <Text style={[styles.secondaryButtonText, { color: palette.text }]}>
+                  Continue with Apple
+                </Text>
+              </View>
+            </Pressable>
           </View>
 
           <View style={styles.footerWrap}>
@@ -410,22 +337,143 @@ export function SignInScreen() {
                 Terms of Service
               </Text>
             </Text>
-
-            <View style={styles.footerRow}>
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push("/create-account")}
-                style={({ pressed }) => pressed && { opacity: 0.72 }}
-              >
-                <Text style={[styles.footerLink, { color: palette.text }]}>
-                  Sign Up
-                </Text>
-              </Pressable>
-            </View>
           </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  content: { flexGrow: 1, justifyContent: "center" },
+  shell: { width: "100%", alignSelf: "center" },
+  brandWrap: { alignItems: "center", gap: 28 },
+  brandMark: {
+    width: 84,
+    height: 84,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandBlob: {
+    width: 64,
+    height: 64,
+    transform: [{ rotate: "-24deg" }],
+  },
+  titleWrap: { alignItems: "center", gap: 10 },
+  title: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: "700",
+    textAlign: "center",
+    letterSpacing: -0.8,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  formWrap: { gap: 14, marginTop: 36 },
+  inputRow: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 20,
+    paddingHorizontal: 18,
+  },
+  input: {
+    flex: 1,
+    fontSize: 17,
+    paddingVertical: 18,
+  },
+  eyeButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryButton: {
+    minHeight: 64,
+    borderRadius: 20,
+    marginTop: 8,
+    width: "100%",
+  },
+  primaryButtonInner: {
+    minHeight: 64,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
+  primaryButtonText: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  dividerText: {
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  secondaryButton: {
+    minHeight: 64,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 14,
+    width: "100%",
+    paddingHorizontal: 22,
+  },
+  secondaryButtonInner: {
+    minHeight: 64,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    paddingHorizontal: 22,
+  },
+  secondaryButtonIconWrap: {
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+  },
+  secondaryButtonIcon: {
+    width: 22,
+    height: 22,
+  },
+  secondaryButtonText: {
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  footerWrap: {
+    alignItems: "center",
+    gap: 20,
+    marginTop: 28,
+  },
+  termsText: {
+    fontSize: 14,
+    lineHeight: 22,
+    textAlign: "center",
+  },
+  termsLink: {
+    fontWeight: "700",
+  },
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+  footerHint: {
+    fontSize: 14,
+  },
+  footerLink: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+});

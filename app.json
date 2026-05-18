@@ -10,7 +10,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.davidghena.tenalyticsapp",
-      "icon": "./src/assets/images/10alytics.icon"
+      "icon": "./src/assets/images/10alytics.icon",
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {

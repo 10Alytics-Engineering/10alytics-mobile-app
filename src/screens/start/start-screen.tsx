@@ -1,138 +1,73 @@
-import { Colors, GlassStyles, Gradients } from "@/constants/theme";
+import { Colors } from "@/constants/theme";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuthStore } from "@/utils/auth-store";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import LottieView from "lottie-react-native";
 import { PressableScale } from "pressto";
 import React, { useRef, useState } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-} from "react-native-reanimated";
+import { StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const { width, height } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  floatingShape1: {
-    position: "absolute",
-    top: height * 0.1,
-    left: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    opacity: 0.3,
-  },
-  floatingShape2: {
-    position: "absolute",
-    top: height * 0.3,
-    right: -80,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    opacity: 0.25,
-  },
-  floatingShape3: {
-    position: "absolute",
-    bottom: height * 0.15,
-    left: width * 0.3,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    opacity: 0.2,
-  },
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: GlassStyles.spacing.lg,
-  },
-  lottieContainer: {
-    width: 280,
-    height: 280,
-    borderRadius: GlassStyles.borderRadius.xl,
+  container: { flex: 1 },
+  safe: { flex: 1, alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 32, paddingBottom: 40 },
+
+  top: { flex: 1, alignItems: "center", justifyContent: "center", width: "100%" },
+
+  lottieWrap: {
+    width: 260,
+    height: 260,
+    borderRadius: 32,
     overflow: "hidden",
-    marginBottom: GlassStyles.spacing.xl,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-    ...GlassStyles.shadow.medium,
+    marginBottom: 40,
   },
-  lottieBlur: {
-    ...StyleSheet.absoluteFillObject,
+  lottie: { width: "100%", height: "100%" },
+
+  badge: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginBottom: 16,
   },
-  lottie: {
-    width: "100%",
-    height: "100%",
-  },
-  textContainer: {
-    alignItems: "center",
-    marginBottom: GlassStyles.spacing.xl,
-  },
+  badgeText: { fontSize: 13, fontWeight: "600", letterSpacing: 0.5 },
+
   title: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: "800",
-    letterSpacing: -0.8,
+    letterSpacing: -1,
+    lineHeight: 42,
     textAlign: "center",
-    marginBottom: GlassStyles.spacing.sm,
-    textShadowColor: "rgba(0,0,0,0.1)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    marginBottom: 14,
   },
   subtitle: {
-    fontSize: 17,
-    lineHeight: 26,
+    fontSize: 16,
+    lineHeight: 24,
     textAlign: "center",
-    opacity: 0.9,
-    paddingHorizontal: GlassStyles.spacing.md,
+    paddingHorizontal: 8,
   },
-  buttonContainer: {
+
+  bottom: { width: "100%", gap: 12 },
+
+  primaryBtn: {
     width: "100%",
-    alignItems: "center",
-  },
-  glassButton: {
-    width: "100%",
-    maxWidth: 280,
-    borderRadius: GlassStyles.borderRadius.lg,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.4)",
-    ...GlassStyles.shadow.heavy,
-  },
-  buttonBlur: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  buttonGradient: {
     paddingVertical: 18,
-    paddingHorizontal: 32,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#fff",
-    letterSpacing: 0.3,
+  primaryBtnText: { fontSize: 17, fontWeight: "700", color: "#FFFFFF" },
+
+  signinRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 4,
+    paddingTop: 4,
   },
-  buttonGlow: {
-    position: "absolute",
-    top: -50,
-    left: "25%",
-    width: "50%",
-    height: 100,
-    borderRadius: 50,
-    opacity: 0.4,
-  },
+  signinHint: { fontSize: 14 },
+  signinLink: { fontSize: 14, fontWeight: "700" },
 });
 
 export function StartScreen() {
@@ -143,10 +78,11 @@ export function StartScreen() {
   const [isNavigationReady, setIsNavigationReady] = useState(false);
   const { isLoggedIn, hasCompletedOnboarding } = useAuthStore();
 
+  const surface = isDark ? "#1C1C1E" : "#F4F4F5";
+  const surfaceBorder = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
+
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsNavigationReady(true);
-    }, 0);
+    const timer = setTimeout(() => setIsNavigationReady(true), 0);
     return () => clearTimeout(timer);
   }, []);
 
@@ -169,85 +105,64 @@ export function StartScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Animated gradient background */}
-      <LinearGradient
-        colors={isDark ? ["#1a1a2e", "#16213e", "#0f0f23"] : ["#FFF5EE", "#FFE4D6", "#FFD4B8"]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-
-      {/* Floating glassmorphic shapes */}
-      <Animated.View entering={FadeIn.delay(200).duration(1000)}>
-        <LinearGradient
-          colors={[colors.primary, colors.primaryLight]}
-          style={styles.floatingShape1}
-        />
-      </Animated.View>
-      <Animated.View entering={FadeIn.delay(400).duration(1000)}>
-        <LinearGradient
-          colors={[colors.primaryLight, colors.primary]}
-          style={styles.floatingShape2}
-        />
-      </Animated.View>
-      <Animated.View entering={FadeIn.delay(600).duration(1000)}>
-        <LinearGradient
-          colors={[colors.primary, "#FFB088"]}
-          style={styles.floatingShape3}
-        />
-      </Animated.View>
-
-      <SafeAreaView style={styles.content} edges={["top", "bottom"]}>
-        {/* Glassmorphic Lottie container */}
-        <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <View style={[styles.lottieContainer, { backgroundColor: colors.glass.background }]}>
-            <BlurView
-              intensity={GlassStyles.blur.light}
-              tint={isDark ? "dark" : "light"}
-              style={styles.lottieBlur}
-            />
-            <LottieView
-              ref={lottieRef}
-              source={require("@/assets/lottie/welcome-1.json")}
-              style={styles.lottie}
-              loop
-              autoPlay
-            />
-          </View>
-        </Animated.View>
-
-        {/* Text content */}
-        <Animated.View entering={FadeInUp.delay(300).springify()} style={styles.textContainer}>
-          <Text style={[styles.title, { color: isDark ? "#fff" : colors.text }]}>
-            Welcome to 10Alytics
-          </Text>
-          <Text style={[styles.subtitle, { color: isDark ? "rgba(255,255,255,0.8)" : colors.textSecondary }]}>
-            {hasCompletedOnboarding
-              ? "Your analytics companion. Get started in seconds."
-              : "Complete your onboarding to unlock your learning journey."}
-          </Text>
-        </Animated.View>
-
-        {/* Glassmorphic CTA button */}
-        <Animated.View entering={FadeInUp.delay(500).springify()} style={styles.buttonContainer}>
-          <PressableScale onPress={handleGetStarted} style={styles.glassButton}>
-            <BlurView
-              intensity={GlassStyles.blur.medium}
-              tint="default"
-              style={styles.buttonBlur}
-            />
-            <LinearGradient
-              colors={Gradients.primary as [string, string]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.buttonGradient}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+        <View style={styles.top}>
+          {/* Lottie animation */}
+          <Animated.View entering={FadeInDown.duration(500)}>
+            <View
+              style={[
+                styles.lottieWrap,
+                { backgroundColor: surface, borderWidth: 1, borderColor: surfaceBorder },
+              ]}
             >
-              {/* Glow effect */}
-              <View style={[styles.buttonGlow, { backgroundColor: "#fff" }]} />
-              <Text style={styles.buttonText}>Get Started</Text>
-            </LinearGradient>
+              <LottieView
+                ref={lottieRef}
+                source={require("@/assets/lottie/welcome-1.json")}
+                style={styles.lottie}
+                loop
+                autoPlay
+              />
+            </View>
+          </Animated.View>
+
+          {/* Text */}
+          <Animated.View entering={FadeInUp.delay(150).duration(500)} style={{ alignItems: "center" }}>
+            <View style={[styles.badge, { backgroundColor: `${colors.primary}18` }]}>
+              <Text style={[styles.badgeText, { color: colors.primary }]}>
+                Data & Strategy
+              </Text>
+            </View>
+
+            <Text style={[styles.title, { color: colors.text }]}>
+              Welcome to 10Alytics
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              {hasCompletedOnboarding
+                ? "Your analytics companion. Get started in seconds."
+                : "Complete your onboarding to unlock your learning journey."}
+            </Text>
+          </Animated.View>
+        </View>
+
+        {/* CTA */}
+        <Animated.View entering={FadeInUp.delay(300).duration(500)} style={styles.bottom}>
+          <PressableScale
+            onPress={handleGetStarted}
+            style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+          >
+            <Text style={styles.primaryBtnText}>Get Started</Text>
           </PressableScale>
+
+          <View style={styles.signinRow}>
+            <Text style={[styles.signinHint, { color: colors.textSecondary }]}>
+              Already have an account?
+            </Text>
+            <PressableScale onPress={() => router.replace("/sign-in")}>
+              <Text style={[styles.signinLink, { color: colors.primary }]}>Sign In</Text>
+            </PressableScale>
+          </View>
         </Animated.View>
       </SafeAreaView>
     </View>

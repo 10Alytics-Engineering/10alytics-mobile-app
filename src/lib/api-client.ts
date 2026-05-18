@@ -1,3 +1,4 @@
+import * as AppleAuthentication from "expo-apple-authentication";
 import * as Linking from "expo-linking";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
@@ -196,7 +197,8 @@ class ApiClient {
       const shouldIncludeAuth = 
         !endpoint.includes("/login") && 
         !endpoint.includes("/register") &&
-        !endpoint.includes("/auth/google");
+        !endpoint.includes("/auth/google") &&
+        !endpoint.includes("/auth/apple");
       
       const headers = await this.getHeaders(shouldIncludeAuth);
 
@@ -376,6 +378,55 @@ class ApiClient {
             error instanceof Error
               ? error.message
               : "Google authentication failed",
+        },
+      };
+    }
+  }
+
+  async appleAuth(): Promise<{
+    data?: LoginResponse["user"];
+    error?: ApiError;
+  }> {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const result = await this.request<LoginResponse>("/api/v2/auth/apple", {
+        method: "POST",
+        body: JSON.stringify({
+          identity_token: credential.identityToken,
+          user_identifier: credential.user,
+          full_name: credential.fullName,
+          email: credential.email,
+        }),
+      });
+
+      if (result.error) return { error: result.error };
+
+      if (result.data?.user) {
+        return { data: result.data.user };
+      }
+
+      return { error: { message: "Apple sign in failed. Please try again." } };
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        (error as { code: string }).code === "ERR_REQUEST_CANCELED"
+      ) {
+        return { error: { message: "Sign in was cancelled." } };
+      }
+      return {
+        error: {
+          message:
+            error instanceof Error
+              ? error.message
+              : "Apple authentication failed",
         },
       };
     }

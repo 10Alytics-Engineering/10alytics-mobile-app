@@ -1,7 +1,6 @@
 import '../../global.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SplashScreen, Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -51,7 +50,6 @@ export default function RootLayout() {
                 <ThemeProvider>
                     <>
                         <NetworkToastBridge />
-                        <StatusBar style={isDark ? 'light' : 'dark'} />
                         <Stack screenOptions={screenOptions}>
                             <Stack.Protected guard={!hasCompletedOnboarding}>
                                 <Stack.Screen name="onboarding" options={{ headerShown: false }} />

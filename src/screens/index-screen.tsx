@@ -2,142 +2,145 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { PressableScale, ScrollView, Text, View } from "@/tw";
 import { Animated } from "@/tw/animated";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { LinearGradient } from "expo-linear-gradient";
+import { Image } from "@/tw/image";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet } from "react-native";
-import {
-  FadeInDown,
-  FadeInRight,
-  FadeInUp,
-} from "react-native-reanimated";
+import { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
-  gradientHeader: {
-    paddingTop: 80,
-    paddingBottom: 64,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+  scrollContent: { flexGrow: 1, paddingBottom: 48 },
+
+  hero: {
+    alignItems: "center",
+    paddingTop: 72,
+    paddingBottom: 40,
+    paddingHorizontal: 32,
   },
-  headerCenter: { alignItems: "center", marginBottom: 24 },
-  iconCircle: {
-    width: 128,
-    height: 128,
-    borderRadius: 9999,
+  logoWrap: {
+    width: 100,
+    height: 100,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+    marginBottom: 28,
+    overflow: "hidden",
   },
+  logo: { width: 100, height: 100 },
+  badge: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginBottom: 16,
+  },
+  badgeText: { fontSize: 13, fontWeight: "600", letterSpacing: 0.5 },
   title: {
-    fontSize: 48,
-    fontWeight: "700",
-    marginBottom: 12,
+    fontSize: 40,
+    fontWeight: "800",
     textAlign: "center",
-    color: "black",
+    letterSpacing: -1,
+    lineHeight: 46,
+    marginBottom: 14,
   },
   subtitle: {
-    fontSize: 18,
-    opacity: 0.9,
+    fontSize: 16,
+    lineHeight: 24,
     textAlign: "center",
-    paddingHorizontal: 16,
-    color: "black",
+    paddingHorizontal: 8,
   },
-  section: { paddingHorizontal: 24, marginTop: 32 },
-  sectionTitle: {
-    fontSize: 24,
+
+  divider: {
+    height: 1,
+    marginHorizontal: 24,
+    marginVertical: 8,
+  },
+
+  section: { paddingHorizontal: 24, paddingTop: 32 },
+  sectionLabel: {
+    fontSize: 12,
     fontWeight: "700",
-    marginBottom: 24,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    marginBottom: 16,
     textAlign: "center",
   },
-  featureList: { gap: 16 },
-  featureRow: {
+  grid: {
     flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 8,
+    flexWrap: "wrap",
+    gap: 12,
   },
-  featureIconBox: {
-    width: 56,
-    height: 56,
+  card: {
+    width: "47.5%",
+    padding: 16,
+    borderRadius: 20,
+    gap: 10,
+  },
+  cardIconWrap: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 16,
   },
-  featureContent: { flex: 1 },
-  featureTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  featureDesc: { fontSize: 14, opacity: 0.7 },
-  ctaSection: { paddingHorizontal: 24, marginTop: 32, marginBottom: 32 },
-  primaryButton: {
-    paddingVertical: 16,
-    borderRadius: 16,
+  cardTitle: { fontSize: 15, fontWeight: "700", lineHeight: 20 },
+  cardDesc: { fontSize: 13, lineHeight: 18 },
+
+  cta: { paddingHorizontal: 24, paddingTop: 36, gap: 12 },
+  primaryBtn: {
+    paddingVertical: 18,
+    borderRadius: 18,
     alignItems: "center",
-    marginBottom: 16,
+    justifyContent: "center",
   },
-  primaryButtonText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "black",
-  },
-  secondaryButton: {
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    borderWidth: 2,
-  },
-  secondaryButtonText: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  footerRow: {
+  primaryBtnText: { fontSize: 17, fontWeight: "700", color: "#FFFFFF" },
+  signinRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 24,
+    alignItems: "center",
+    gap: 4,
+    paddingTop: 8,
   },
-  footerHint: { fontSize: 14, opacity: 0.7 },
-  footerLink: { fontSize: 14, fontWeight: "600" },
+  signinHint: { fontSize: 14 },
+  signinLink: { fontSize: 14, fontWeight: "700" },
 });
+
+const FEATURES = [
+  {
+    icon: "book-open-variant" as const,
+    title: "Interactive Courses",
+    description: "Learn at your own pace",
+    color: "#DA6728",
+  },
+  {
+    icon: "play-circle-outline" as const,
+    title: "Video Library",
+    description: "Thousands of lessons",
+    color: "#4A90E2",
+  },
+  {
+    icon: "trophy-outline" as const,
+    title: "Achievements",
+    description: "Earn badges & rewards",
+    color: "#9B59B6",
+  },
+  {
+    icon: "chart-line" as const,
+    title: "Track Progress",
+    description: "Monitor your journey",
+    color: "#27AE60",
+  },
+];
 
 export function IndexScreen() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const colors = Colors[colorScheme as "light" | "dark"];
 
-  const features = [
-    {
-      icon: "book-open" as const,
-      title: "Interactive Courses",
-      description: "Learn at your own pace with engaging content",
-      color: colors.primary,
-    },
-    {
-      icon: "play-circle" as const,
-      title: "Video Library",
-      description: "Access thousands of educational videos",
-      color: "#4A90E2",
-    },
-    {
-      icon: "trophy" as const,
-      title: "Achievements",
-      description: "Earn badges and track your progress",
-      color: "#9B59B6",
-    },
-    {
-      icon: "chart-line" as const,
-      title: "Track Progress",
-      description: "Monitor your learning journey",
-      color: "#E74C3C",
-    },
-  ];
+  const surface = isDark ? "#161618" : "#F4F4F5";
+  const surfaceBorder = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
@@ -146,109 +149,88 @@ export function IndexScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <LinearGradient
-          colors={[colors.primary, `${colors.primary}DD`, `${colors.primary}AA`]}
-          style={styles.gradientHeader}
-        >
-          <Animated.View entering={FadeInDown.delay(100)}>
-            <View style={styles.headerCenter}>
-              <View
-                style={[styles.iconCircle, { backgroundColor: "rgba(255,255,255,0.2)" }]}
-              >
-                <MaterialCommunityIcons name="book-open" size={64} color="#FFFFFF" />
-              </View>
-              <Text style={styles.title}>Welcome to 10alytics</Text>
-              <Text style={styles.subtitle}>
-                Your journey to excellence starts here
-              </Text>
-            </View>
-          </Animated.View>
-        </LinearGradient>
+        {/* ── Hero ── */}
+        <Animated.View entering={FadeInDown.duration(500)} style={styles.hero}>
+          <View
+            style={[
+              styles.logoWrap,
+              { backgroundColor: `${colors.primary}15`, borderWidth: 1, borderColor: `${colors.primary}25` },
+            ]}
+          >
+            <Image
+              source={
+                isDark
+                  ? require("@/assets/images/splash-icon-dark.png")
+                  : require("@/assets/images/splash-icon-light.png")
+              }
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
 
-        <View style={styles.section}>
-          <Animated.View entering={FadeInUp.delay(200)}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Why Choose 10alytics?
+          <View style={[styles.badge, { backgroundColor: `${colors.primary}18` }]}>
+            <Text style={[styles.badgeText, { color: colors.primary }]}>
+              Data & Strategy
             </Text>
-          </Animated.View>
+          </View>
 
-          <View style={styles.featureList}>
-            {features.map((feature, index) => (
-              <Animated.View
-                key={index}
-                entering={FadeInRight.delay(300 + index * 100)}
+          <Text style={[styles.title, { color: colors.text }]}>
+            Your data career{"\n"}starts here
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Master data analytics, business intelligence, and more — with expert-led courses built for Africa.
+          </Text>
+        </Animated.View>
+
+        <View style={[styles.divider, { backgroundColor: surfaceBorder }]} />
+
+        {/* ── Features grid ── */}
+        <Animated.View entering={FadeInUp.delay(150).duration(500)} style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+            Everything you need
+          </Text>
+
+          <View style={styles.grid}>
+            {FEATURES.map((feature, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: surface,
+                    borderWidth: 1,
+                    borderColor: surfaceBorder,
+                  },
+                ]}
               >
-                <View
-                  style={[
-                    styles.featureRow,
-                    {
-                      backgroundColor: `${feature.color}10`,
-                      borderWidth: 1,
-                      borderColor: `${feature.color}30`,
-                    },
-                  ]}
-                >
-                  <View
-                    style={[styles.featureIconBox, { backgroundColor: `${feature.color}20` }]}
-                  >
-                    <MaterialCommunityIcons name={feature.icon} size={28} color={feature.color} />
-                  </View>
-                  <View style={styles.featureContent}>
-                    <Text style={[styles.featureTitle, { color: colors.text }]}>
-                      {feature.title}
-                    </Text>
-                    <Text style={[styles.featureDesc, { color: colors.text }]}>
-                      {feature.description}
-                    </Text>
-                  </View>
+                <View style={[styles.cardIconWrap, { backgroundColor: `${feature.color}18` }]}>
+                  <MaterialCommunityIcons name={feature.icon} size={22} color={feature.color} />
                 </View>
-              </Animated.View>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>{feature.title}</Text>
+                <Text style={[styles.cardDesc, { color: colors.textSecondary }]}>{feature.description}</Text>
+              </View>
             ))}
           </View>
-        </View>
+        </Animated.View>
 
-        <View style={styles.ctaSection}>
-          <Animated.View entering={FadeInUp.delay(700)}>
-            <PressableScale
-              onPress={() => router.push("/sign-in")}
-              style={[
-                styles.primaryButton,
-                {
-                  backgroundColor: colors.primary,
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
-                },
-              ]}
-            >
-              <Text style={styles.primaryButtonText}>Get Started</Text>
-            </PressableScale>
-          </Animated.View>
+        {/* ── CTA ── */}
+        <Animated.View entering={FadeInUp.delay(300).duration(500)} style={styles.cta}>
+          <PressableScale
+            onPress={() => router.push("/sign-in")}
+            style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+          >
+            <Text style={styles.primaryBtnText}>Get Started</Text>
+          </PressableScale>
 
-          <Animated.View entering={FadeInUp.delay(800)}>
-            <PressableScale
-              onPress={() => router.push("/create-account")}
-              style={[styles.secondaryButton, { borderColor: colors.primary }]}
-            >
-              <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
-                Create Account
-              </Text>
-            </PressableScale>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.delay(900)} style={styles.footerRow}>
-            <Text style={[styles.footerHint, { color: colors.icon }]}>
-              Already have an account?{" "}
+          {/* <View style={styles.signinRow}>
+            <Text style={[styles.signinHint, { color: colors.textSecondary }]}>
+              Already have an account?
             </Text>
             <PressableScale onPress={() => router.push("/sign-in")}>
-              <Text style={[styles.footerLink, { color: colors.primary }]}>
-                Sign In
-              </Text>
+              <Text style={[styles.signinLink, { color: colors.primary }]}>Sign In</Text>
             </PressableScale>
-          </Animated.View>
-        </View>
+          </View> */}
+        </Animated.View>
       </ScrollView>
     </View>
   );

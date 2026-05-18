@@ -1,51 +1,45 @@
-import { ClassroomCalendarPanel } from "@/components/classroom/classroom-calendar-panel";
+import { ClassroomAnnouncementsPanel } from "@/components/classroom/classroom-announcements-panel";
+import { ClassroomAssignmentsPanel } from "@/components/classroom/classroom-assignments-panel";
+import { ClassroomRecordingsPanel } from "@/components/classroom/classroom-recordings-panel";
+import { ClassroomResourcesPanel } from "@/components/classroom/classroom-resources-panel";
+import { ClassroomTimetablePanel } from "@/components/classroom/classroom-timetable-panel";
 import useThemedNavigation from "@/hooks/useThemedNavigation";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import "../../../global.css";
 
 const ACCENT = "#DA6728";
-const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
 
 type SegmentId =
-  | "calendar"
   | "announcements"
+  | "timetable"
   | "resources"
-  | "assessments"
+  | "assignments"
+  | "capstone"
   | "recordings"
   | "participants";
 
-const SEGMENTS: { id: SegmentId; label: string }[] = [
-  { id: "calendar", label: "Calendar" },
-  { id: "announcements", label: "Announcements" },
-  { id: "resources", label: "Resources" },
-  { id: "assessments", label: "Assessments" },
-  { id: "recordings", label: "Recordings" },
-  { id: "participants", label: "Participants" },
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+
+const SEGMENTS: { id: SegmentId; label: string; icon: IoniconName }[] = [
+  { id: "announcements", label: "Announcements", icon: "megaphone-outline" },
+  { id: "timetable", label: "Time Table", icon: "calendar-outline" },
+  { id: "resources", label: "Resources", icon: "folder-outline" },
+  { id: "assignments", label: "Assignments", icon: "document-text-outline" },
+  { id: "capstone", label: "Capstone", icon: "trophy-outline" },
+  { id: "recordings", label: "Recordings", icon: "play-circle-outline" },
+  { id: "participants", label: "Participants", icon: "people-outline" },
 ];
 
-const PLACEHOLDER_COPY: Record<
-  Exclude<SegmentId, "calendar">,
-  { title: string; subtitle: string }
+const PLACEHOLDER_COPY: Partial<
+  Record<SegmentId, { title: string; subtitle: string }>
 > = {
-  announcements: {
-    title: "Announcements",
-    subtitle: "No announcements yet. Class updates will appear here when your instructor posts them.",
-  },
-  resources: {
-    title: "Resources",
-    subtitle: "No resources yet. Slides, links, and files will show up here.",
-  },
-  assessments: {
-    title: "Assessments",
-    subtitle: "No assessments yet. Quizzes and assignments will appear here.",
-  },
-  recordings: {
-    title: "Recordings",
-    subtitle: "No recordings yet. Past sessions and replays will be listed here.",
+  capstone: {
+    title: "Capstone",
+    subtitle: "Your capstone brief and submissions will appear here.",
   },
   participants: {
     title: "Participants",
@@ -60,7 +54,7 @@ function PlaceholderSegment({
 }: {
   title: string;
   subtitle: string;
-  colors: { secondary: string; text: string; border: string };
+  colors: { text: string };
 }) {
   return (
     <View className="rounded-2xl border border-border bg-secondary/80 px-5 py-8">
@@ -80,20 +74,27 @@ function PlaceholderSegment({
 export default function ClassroomScreen() {
   const { ThemedStatusBar, colors } = useThemedNavigation();
   const insets = useSafeAreaInsets();
-  const [segment, setSegment] = useState<SegmentId>("calendar");
-
-  const calendarColors = useMemo(
-    () => ({
-      bg: colors.bg,
-      text: colors.text,
-      secondary: colors.secondary,
-      invert: colors.invert,
-      border: colors.border,
-    }),
-    [colors],
-  );
+  const [segment, setSegment] = useState<SegmentId>("announcements");
 
   const bottomPad = insets.bottom + 100;
+  const placeholder = PLACEHOLDER_COPY[segment];
+
+  const renderPanel = () => {
+    switch (segment) {
+      case "timetable":
+        return <ClassroomTimetablePanel />;
+      case "announcements":
+        return <ClassroomAnnouncementsPanel />;
+      case "resources":
+        return <ClassroomResourcesPanel />;
+      case "assignments":
+        return <ClassroomAssignmentsPanel />;
+      case "recordings":
+        return <ClassroomRecordingsPanel />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -116,8 +117,8 @@ export default function ClassroomScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="max-h-[52px] border-b border-border/30 py-3"
-        contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: "center" }}
+        className="max-h-[64px] border-b border-border/30 py-3"
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 10, alignItems: "center" }}
       >
         {SEGMENTS.map((s) => {
           const active = segment === s.id;
@@ -125,14 +126,27 @@ export default function ClassroomScreen() {
             <Pressable
               key={s.id}
               onPress={() => setSegment(s.id)}
-              className={`rounded-full px-4 py-2.5 ${active ? "" : "bg-secondary/60"}`}
-              style={active ? { backgroundColor: ACCENT_SOFT } : undefined}
+              className="flex-row items-center rounded-2xl px-4 py-2.5"
+              style={{
+                backgroundColor: active ? ACCENT : colors.secondary,
+                shadowColor: active ? ACCENT : "transparent",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: active ? 0.25 : 0,
+                shadowRadius: active ? 8 : 0,
+                elevation: active ? 3 : 0,
+              }}
             >
+              <Ionicons
+                name={s.icon}
+                size={16}
+                color={active ? "#fff" : colors.text}
+                style={{ opacity: active ? 1 : 0.6 }}
+              />
               <Text
-                className="text-sm font-semibold"
+                className="ml-2 text-sm font-semibold"
                 style={{
-                  color: active ? ACCENT : undefined,
-                  opacity: active ? 1 : 0.55,
+                  color: active ? "#fff" : colors.text,
+                  opacity: active ? 1 : 0.65,
                 }}
               >
                 {s.label}
@@ -143,15 +157,7 @@ export default function ClassroomScreen() {
       </ScrollView>
 
       <View className="flex-1 px-5 pt-4">
-        {segment === "calendar" ? (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: bottomPad }}
-          >
-            <ClassroomCalendarPanel colors={calendarColors} />
-          </ScrollView>
-        ) : (
+        {placeholder ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
@@ -161,10 +167,18 @@ export default function ClassroomScreen() {
             }}
           >
             <PlaceholderSegment
-              title={PLACEHOLDER_COPY[segment].title}
-              subtitle={PLACEHOLDER_COPY[segment].subtitle}
+              title={placeholder.title}
+              subtitle={placeholder.subtitle}
               colors={colors}
             />
+          </ScrollView>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: bottomPad }}
+          >
+            {renderPanel()}
           </ScrollView>
         )}
       </View>
