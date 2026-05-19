@@ -2,6 +2,14 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import {
+  formatClassroomDate,
+  formatClassroomTime,
+  getCalendarEventTime,
+  useClassroomCalendar,
+} from "@/hooks/use-classroom";
+import type { ClassroomCalendarEvent } from "@/lib/api-client";
+
 const ACCENT = "#DA6728";
 const BLUE = "#2F6FED";
 const GREEN = "#1BA372";
@@ -16,38 +24,11 @@ type Event = {
   kind: EventKind;
   monthLabel: string;
   day: number;
+  at: number;
   title: string;
   meta: string;
   cta?: string;
 };
-
-const EVENTS: Event[] = [
-  {
-    id: "live-15",
-    kind: "live",
-    monthLabel: "JAN",
-    day: 15,
-    title: "Live Class",
-    meta: "6:00 PM WAT",
-    cta: "Join Now",
-  },
-  {
-    id: "assignment-16",
-    kind: "assignment",
-    monthLabel: "JAN",
-    day: 16,
-    title: "Assignment",
-    meta: "Due date: Jan 16th",
-  },
-  {
-    id: "quiz-16",
-    kind: "quiz",
-    monthLabel: "JAN",
-    day: 16,
-    title: "Quiz",
-    meta: "Due date: Jan 16th",
-  },
-];
 
 const KIND_STYLES: Record<
   EventKind,
@@ -76,10 +57,31 @@ function sameDay(a: Date, b: Date) {
   );
 }
 
-export function ClassroomTimetablePanel() {
+export function ClassroomTimetablePanel({
+  courseEnrollmentId,
+}: {
+  courseEnrollmentId?: number | string;
+}) {
   const today = useMemo(() => new Date(), []);
   const [selected, setSelected] = useState<Date>(today);
   const weekDays = useMemo(() => getWeekDays(selected), [selected]);
+  const { data: rows = [], isLoading, isError, refetch } =
+    useClassroomCalendar(courseEnrollmentId);
+
+  const eventsForSelectedDay = useMemo(() => {
+    const mapped = Array.isArray(rows) ? rows.map(mapCalendarEvent) : [];
+    return mapped
+      .filter((event) => sameDay(new Date(event.at), selected))
+      .sort((a, b) => a.at - b.at);
+  }, [rows, selected]);
+
+  const upcomingEvents = useMemo(() => {
+    const now = Date.now();
+    const mapped = Array.isArray(rows) ? rows.map(mapCalendarEvent) : [];
+    return mapped
+      .filter((event) => event.at >= now)
+      .sort((a, b) => a.at - b.at);
+  }, [rows]);
 
   return (
     <View className="gap-5">
@@ -166,12 +168,45 @@ export function ClassroomTimetablePanel() {
         <View className="flex-row items-center gap-2">
           <Ionicons name="calendar-outline" size={18} color={ACCENT} />
           <Text className="font-outfit-bold text-base text-text">
-            Upcoming Events
+            {sameDay(selected, today) ? "Upcoming Events" : "Events"}
           </Text>
+          {!sameDay(selected, today) ? (
+            <Text className="text-sm text-text opacity-60">
+              {selected.toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </Text>
+          ) : null}
         </View>
 
         <View className="mt-3 gap-3">
-          {EVENTS.map((event) => {
+          {isLoading || isError ? (
+            <Pressable
+              onPress={() => refetch()}
+              className="rounded-2xl border border-border px-4 py-4"
+            >
+              <Text className="text-center font-semibold text-text">
+                {isLoading ? "Loading events..." : "Unable to load events. Tap to retry."}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {!isLoading && !isError ? (
+            (sameDay(selected, today) ? upcomingEvents : eventsForSelectedDay).length ===
+            0 ? (
+              <View className="rounded-2xl border border-border px-4 py-4">
+                <Text className="text-center font-semibold text-text">
+                  {sameDay(selected, today)
+                    ? "No upcoming events."
+                    : "No events on this day."}
+                </Text>
+              </View>
+            ) : null
+          ) : null}
+
+          {(sameDay(selected, today) ? upcomingEvents : eventsForSelectedDay).map((event) => {
             const style = KIND_STYLES[event.kind];
             return (
               <View
@@ -220,4 +255,23 @@ export function ClassroomTimetablePanel() {
       </View>
     </View>
   );
+}
+
+function mapCalendarEvent(row: ClassroomCalendarEvent): Event {
+  const dateValue = getCalendarEventTime(row);
+  const date = dateValue ? new Date(dateValue) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const isLive = row.type === "live_session";
+  return {
+    id: String(row.id),
+    kind: isLive ? "live" : "assignment",
+    monthLabel: safeDate.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+    day: safeDate.getDate(),
+    at: safeDate.getTime(),
+    title: row.title ?? (isLive ? "Live Class" : "Assignment Deadline"),
+    meta: isLive
+      ? formatClassroomTime(row.starts_at)
+      : `Due date: ${formatClassroomDate(dateValue)}`,
+    cta: row.google_meet_link ? "Join Now" : undefined,
+  };
 }

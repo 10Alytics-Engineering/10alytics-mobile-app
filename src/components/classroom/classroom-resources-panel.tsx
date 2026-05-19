@@ -1,6 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
+
+import { useClassroomResources } from "@/hooks/use-classroom";
+import type { ClassroomAttachment, ClassroomResourcePost } from "@/lib/api-client";
+import { openClassroomResourceDetail } from "@/lib/classroom-navigation";
+import { resolveMediaUrl } from "@/utils/resolve-media-url";
 
 const ACCENT = "#DA6728";
 const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
@@ -19,52 +25,7 @@ type Section = {
   index: number;
   title: string;
   resources: Resource[];
-};
-
-const SECTIONS: Section[] = [
-  {
-    id: "important",
-    index: 1,
-    title: "IMPORTANT MATERIALS",
-    resources: [
-      {
-        id: "intro",
-        kind: "pdf",
-        title: "Introduction to Analytics.pdf",
-        meta: "2.3 MB • Updated Jan 5",
-      },
-      {
-        id: "slides-w1",
-        kind: "ppt",
-        title: "Lecture Slides - Week 1.pptx",
-        meta: "5.1 MB • Updated Jan 5",
-      },
-      {
-        id: "python-setup",
-        kind: "link",
-        title: "Python Setup Guide",
-        meta: "External Link",
-      },
-    ],
-  },
-  {
-    id: "mentorship",
-    index: 2,
-    title: "MENTORSHIP SESSION",
-    resources: [],
-  },
-  {
-    id: "drop-in",
-    index: 3,
-    title: "DROP IN SESSION",
-    resources: [],
-  },
-];
-
-const SECTION_COUNTS: Record<string, number> = {
-  important: 4,
-  mentorship: 5,
-  "drop-in": 3,
+  attachments: ClassroomAttachment[];
 };
 
 function ResourceIcon({ kind }: { kind: ResourceKind }) {
@@ -98,9 +59,23 @@ function ResourceIcon({ kind }: { kind: ResourceKind }) {
   );
 }
 
-function ResourceRow({ resource }: { resource: Resource }) {
+function ResourceRow({
+  resource,
+  attachment,
+}: {
+  resource: Resource;
+  attachment?: ClassroomAttachment;
+}) {
+  const url = attachment?.url ? resolveMediaUrl(attachment.url) : null;
+
   return (
-    <View className="mt-2 flex-row items-center rounded-xl bg-background px-3 py-3">
+    <Pressable
+      disabled={!url}
+      onPress={() => {
+        if (url) void WebBrowser.openBrowserAsync(url);
+      }}
+      className="mt-2 flex-row items-center rounded-xl bg-background px-3 py-3"
+    >
       <ResourceIcon kind={resource.kind} />
       <View className="ml-3 flex-1">
         <Text className="font-outfit-bold text-sm text-text" numberOfLines={1}>
@@ -110,20 +85,34 @@ function ResourceRow({ resource }: { resource: Resource }) {
           {resource.meta}
         </Text>
       </View>
-      {resource.kind !== "link" ? (
-        <Pressable className="h-10 w-10 items-center justify-center rounded-lg border border-border bg-background">
+      {url ? (
+        <View className="h-10 w-10 items-center justify-center rounded-lg border border-border bg-background">
           <Ionicons name="download-outline" size={20} color={ACCENT} />
-        </Pressable>
+        </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
-export function ClassroomResourcesPanel() {
+export function ClassroomResourcesPanel({
+  courseEnrollmentId,
+}: {
+  courseEnrollmentId?: number | string;
+}) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({
-    important: true,
+    "0": true,
   });
+  const { data: posts = [], isLoading, isError, refetch } =
+    useClassroomResources(courseEnrollmentId);
+  const sections = posts
+    .map(mapResourceSection)
+    .filter((section) =>
+      section.title.toLowerCase().includes(query.toLowerCase()) ||
+      section.resources.some((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase()),
+      ),
+    );
 
   return (
     <View className="gap-4">
@@ -140,46 +129,82 @@ export function ClassroomResourcesPanel() {
         />
       </View>
 
-      {SECTIONS.map((section) => {
+      {isLoading || isError ? (
+        <Pressable
+          onPress={() => refetch()}
+          className="rounded-2xl border border-border bg-secondary/40 p-5"
+        >
+          <Text className="text-center font-semibold text-text">
+            {isLoading ? "Loading resources..." : "Unable to load resources. Tap to retry."}
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {!isLoading && !isError && sections.length === 0 ? (
+        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
+          <Text className="text-center font-semibold text-text">No resources yet.</Text>
+        </View>
+      ) : null}
+
+      {sections.map((section) => {
         const isOpen = !!open[section.id];
         return (
           <View
             key={section.id}
             className="rounded-2xl border border-border bg-secondary/40 p-4"
           >
-            <Pressable
-              onPress={() =>
-                setOpen((prev) => ({ ...prev, [section.id]: !prev[section.id] }))
-              }
-              className="flex-row items-center"
-            >
-              <View
-                className="h-10 w-10 items-center justify-center rounded-lg"
-                style={{ backgroundColor: ACCENT_SOFT }}
+            <View className="flex-row items-center">
+              <Pressable
+                onPress={() => {
+                  if (courseEnrollmentId) {
+                    openClassroomResourceDetail({
+                      courseEnrollmentId,
+                      resourceId: section.id,
+                    });
+                  }
+                }}
+                className="flex-1 flex-row items-center"
               >
-                <Text className="font-outfit-bold text-base" style={{ color: ACCENT }}>
-                  {section.index}
-                </Text>
-              </View>
-              <View className="ml-3 flex-1">
-                <Text className="font-outfit-bold text-base text-text">
-                  {section.title}
-                </Text>
-                <Text className="text-xs text-text opacity-60">
-                  {SECTION_COUNTS[section.id]} Resources
-                </Text>
-              </View>
-              <Ionicons
-                name={isOpen ? "chevron-up" : "chevron-down"}
-                size={20}
-                color="#9A9A9A"
-              />
-            </Pressable>
+                <View
+                  className="h-10 w-10 items-center justify-center rounded-lg"
+                  style={{ backgroundColor: ACCENT_SOFT }}
+                >
+                  <Text className="font-outfit-bold text-base" style={{ color: ACCENT }}>
+                    {section.index}
+                  </Text>
+                </View>
+                <View className="ml-3 flex-1">
+                  <Text className="font-outfit-bold text-base text-text">
+                    {section.title}
+                  </Text>
+                  <Text className="text-xs text-text opacity-60">
+                    {section.resources.length} Resources
+                  </Text>
+                </View>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  setOpen((prev) => ({ ...prev, [section.id]: !prev[section.id] }))
+                }
+                className="h-10 w-10 items-center justify-center"
+                hitSlop={8}
+              >
+                <Ionicons
+                  name={isOpen ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color="#9A9A9A"
+                />
+              </Pressable>
+            </View>
 
             {isOpen && section.resources.length > 0 ? (
               <View className="mt-2">
-                {section.resources.map((r) => (
-                  <ResourceRow key={r.id} resource={r} />
+                {section.resources.map((r, attachmentIndex) => (
+                  <ResourceRow
+                    key={r.id}
+                    resource={r}
+                    attachment={section.attachments[attachmentIndex]}
+                  />
                 ))}
               </View>
             ) : null}
@@ -188,4 +213,33 @@ export function ClassroomResourcesPanel() {
       })}
     </View>
   );
+}
+
+function mapResourceSection(post: ClassroomResourcePost, index: number): Section {
+  const attachments = post.attachments ?? [];
+  return {
+    id: String(post.id),
+    index: index + 1,
+    title: post.title,
+    attachments,
+    resources: attachments.map(mapAttachmentResource),
+  };
+}
+
+function mapAttachmentResource(attachment: ClassroomAttachment): Resource {
+  const mime = attachment.mime_type ?? "";
+  const name = attachment.name ?? "Resource";
+  const kind: ResourceKind = mime.includes("pdf")
+    ? "pdf"
+    : mime.includes("presentation") || name.endsWith(".pptx") || name.endsWith(".ppt")
+      ? "ppt"
+      : "link";
+  const size = attachment.size ? `${Math.round(attachment.size / 1024)} KB` : "Attachment";
+
+  return {
+    id: String(attachment.id),
+    kind,
+    title: name,
+    meta: `${size}${attachment.type ? ` • ${attachment.type}` : ""}`,
+  };
 }

@@ -32,6 +32,18 @@ function decodeEntity(entity: string): string {
   return entity;
 }
 
+export function containsHtmlMarkup(value: string | null | undefined): boolean {
+  if (!value?.trim()) return false;
+  return /<\/?[a-z][\s\S]*?>/i.test(value);
+}
+
+export function sanitizeHtmlForDisplay(value: string): string {
+  return value
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+}
+
 export function decodeHtmlEntities(value: string): string {
   return value.replace(/&(?:nbsp|amp|quot|apos|lt|gt);|&#\d+;|&#x[0-9a-f]+;/gi, (match) =>
     decodeEntity(match),

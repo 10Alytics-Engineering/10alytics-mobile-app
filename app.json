@@ -44,6 +44,14 @@
         }
       ],
       "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/images/android-icon-monochrome.png",
+          "color": "#FF6600",
+          "defaultChannel": "chat"
+        }
+      ],
       "expo-web-browser"
     ],
     "experiments": {

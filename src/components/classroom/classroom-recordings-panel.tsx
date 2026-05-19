@@ -2,6 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { formatClassroomDate, useClassroomRecordings } from "@/hooks/use-classroom";
+import type { ClassroomRecording } from "@/lib/api-client";
+
 const ACCENT = "#DA6728";
 
 type Recording = {
@@ -13,27 +16,6 @@ type Recording = {
   progress: number;
   thumbBg: string;
 };
-
-const RECORDINGS: Recording[] = [
-  {
-    id: "py-1",
-    title: "Python Fundamentals Part 1",
-    module: "Module 1 | Week 2",
-    date: "Jan 5, 2026",
-    duration: "00:12:52",
-    progress: 0.35,
-    thumbBg: "#E1E5F8",
-  },
-  {
-    id: "pandas",
-    title: "Data Wrangling with Pandas",
-    module: "Module 2 | Week 3",
-    date: "Jan 5, 2026",
-    duration: "00:12:52",
-    progress: 0.35,
-    thumbBg: "#D6F2E2",
-  },
-];
 
 function RecordingCard({ recording }: { recording: Recording }) {
   return (
@@ -99,14 +81,51 @@ function RecordingCard({ recording }: { recording: Recording }) {
   );
 }
 
-export function ClassroomRecordingsPanel() {
+export function ClassroomRecordingsPanel({
+  courseEnrollmentId,
+}: {
+  courseEnrollmentId?: number | string;
+}) {
+  const { data: rows = [], isLoading, isError, refetch } =
+    useClassroomRecordings(courseEnrollmentId);
+  const recordings = rows.map(mapRecording);
+
   return (
     <View className="gap-4">
       <Text className="font-outfit-bold text-xl text-text">Class Recordings</Text>
 
-      {RECORDINGS.map((recording) => (
+      {isLoading || isError ? (
+        <Pressable
+          onPress={() => refetch()}
+          className="rounded-2xl border border-border bg-secondary/40 p-5"
+        >
+          <Text className="text-center font-semibold text-text">
+            {isLoading ? "Loading recordings..." : "Unable to load recordings. Tap to retry."}
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {!isLoading && !isError && recordings.length === 0 ? (
+        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
+          <Text className="text-center font-semibold text-text">No recordings yet.</Text>
+        </View>
+      ) : null}
+
+      {recordings.map((recording) => (
         <RecordingCard key={recording.id} recording={recording} />
       ))}
     </View>
   );
+}
+
+function mapRecording(row: ClassroomRecording): Recording {
+  return {
+    id: String(row.id),
+    title: row.title,
+    module: row.recording_status ?? row.status ?? "Recording",
+    date: formatClassroomDate(row.scheduled_at),
+    duration: row.duration_minutes ? `${row.duration_minutes} min` : "--",
+    progress: row.viewer_attended ? 1 : 0,
+    thumbBg: "#E1E5F8",
+  };
 }

@@ -1,7 +1,15 @@
 import Feather from "@expo/vector-icons/Feather";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { Link, router } from "expo-router";
 import React, { useMemo } from "react";
-import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
+import {
+    Pressable,
+    RefreshControl,
+    ScrollView,
+    Text,
+    useWindowDimensions,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CourseActionCard from "@/components/CourseActionCard";
@@ -9,8 +17,18 @@ import Header from "@/components/Header";
 import { CardFlipFire, CardFlipRank } from "@/components/card-flip";
 import { HomeCoursesCarouselSkeleton } from "@/components/ui/course-loading-skeletons";
 import useThemeColors from "@/contexts/ThemeColors";
+import {
+    flattenClassworkPosts,
+    formatClassroomDate,
+    formatClassroomTime,
+    getCalendarEventTime,
+    getClassroomPostTime,
+    useClassroomClasswork,
+    useClassroomLatest,
+    useClassroomSession,
+} from "@/hooks/use-classroom";
 import { useUserCourses } from "@/hooks/use-user-courses";
-import type { UserCourse } from "@/lib/api-client";
+import type { ClassroomCalendarEvent, ClassroomPost, UserCourse } from "@/lib/api-client";
 import { useAuthStore } from "@/utils/auth-store";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
@@ -31,34 +49,42 @@ export default function Home() {
     const cardWidth = Math.round(width * 0.82);
     const courseCardWidth = Math.round(width * 0.88);
     const colors = useThemeColors();
+    const queryClient = useQueryClient();
 
-    const { data, isPending, isError, error, refetch } = useUserCourses();
+    const { data, isPending, isError, error, refetch, isFetching } = useUserCourses();
+    const {
+        data: classroomSession,
+        isLoading: isClassroomSessionLoading,
+        isError: isClassroomSessionError,
+    } = useClassroomSession();
+    const { data: classroomLatest } = useClassroomLatest(
+        classroomSession?.courseEnrollmentId,
+    );
+    const { data: classroomClasswork } = useClassroomClasswork(
+        classroomSession?.courseEnrollmentId,
+    );
+    const isClassroomFetching = useIsFetching({ queryKey: ["classroom"] }) > 0;
     const courses: UserCourse[] = data?.data ?? [];
 
-    const nextLiveClass = useMemo(() => {
-        const now = new Date();
-        const targetHour = 10;
-        const targetMinute = 0;
-        const targetDay = 6; // Saturday (0=Sun)
+    const nextClassroomEvent = useMemo(() => {
+        const upcoming = [
+            ...(classroomLatest?.upcoming_sessions ?? []),
+            ...(classroomLatest?.upcoming_deadlines ?? []),
+        ];
 
-        const next = new Date(now);
-        const dayDiff = (targetDay - now.getDay() + 7) % 7;
-        next.setDate(now.getDate() + dayDiff);
-        next.setHours(targetHour, targetMinute, 0, 0);
+        return upcoming
+            .filter((item) => getCalendarEventTime(item))
+            .sort((a, b) => {
+                const aTime = new Date(getCalendarEventTime(a) ?? 0).getTime();
+                const bTime = new Date(getCalendarEventTime(b) ?? 0).getTime();
+                return aTime - bTime;
+            })[0];
+    }, [classroomLatest]);
 
-        if (next.getTime() <= now.getTime()) {
-            next.setDate(next.getDate() + 7);
-        }
-
-        const diffMs = next.getTime() - now.getTime();
-        const diffMinutes = Math.floor(diffMs / 60000);
-        const joinEnabled = diffMinutes <= 60 && diffMinutes >= 0;
-
-        return {
-            date: next,
-            joinEnabled,
-        };
-    }, []);
+    const classroomStream = useMemo(
+        () => buildClassroomStream(flattenClassworkPosts(classroomClasswork)),
+        [classroomClasswork],
+    );
 
     return (
         <View className="flex-1 bg-background">
@@ -66,6 +92,19 @@ export default function Home() {
             <ScrollView
                 style={{ paddingTop: insets.top - 30 }}
                 className="px-6 mb-20 bg-background flex-1"
+                refreshControl={
+                    <RefreshControl
+                        refreshing={
+                            (isFetching && !isPending) ||
+                            (isClassroomFetching && !isClassroomSessionLoading)
+                        }
+                        onRefresh={() => {
+                            queryClient.invalidateQueries({ queryKey: ["classroom"] });
+                            refetch();
+                        }}
+                        tintColor={colors.primary}
+                    />
+                }
             >
                 <View className="mb-14 mt-0 px-4">
                     <Text className="text-5xl font-bold text-text">
@@ -176,46 +215,113 @@ export default function Home() {
                     style={{ backgroundColor: colors.secondary }}
                 >
                     <View className="flex-row items-center justify-between">
-                        <View>
+                        <View className="flex-1 pr-4">
                             <Text className="text-text text-base font-semibold">
-                                Your next live class
+                                {classroomSession?.title ?? "Classroom stream"}
                             </Text>
                             <Text className="text-text text-sm opacity-60 mt-1">
-                                {nextLiveClass.date.toLocaleDateString("en-US", {
-                                    weekday: "long",
-                                    month: "short",
-                                    day: "numeric",
-                                })}
-                                {" • "}
-                                {nextLiveClass.date.toLocaleTimeString("en-US", {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                })}
+                                {nextClassroomEvent
+                                    ? getClassroomEventLabel(nextClassroomEvent)
+                                    : "Live classes and deadlines will appear here"}
                             </Text>
                         </View>
-                        <Feather name="video" size={22} color={colors.icon} />
+                        <Feather
+                            name={nextClassroomEvent?.type === "live_session" ? "video" : "calendar"}
+                            size={22}
+                            color={colors.icon}
+                        />
                     </View>
+                    {isClassroomSessionLoading || isClassroomFetching ? (
+                        <Text className="text-text text-sm opacity-60 mt-4">
+                            Refreshing classroom stream...
+                        </Text>
+                    ) : isClassroomSessionError || !classroomSession ? (
+                        <Text className="text-text text-sm opacity-60 mt-4">
+                            Your classroom updates will appear here once available.
+                        </Text>
+                    ) : (
+                        <View className="mt-4 gap-3">
+                            {classroomStream.slice(0, 3).map((item) => (
+                                <View
+                                    key={item.id}
+                                    className="rounded-2xl px-4 py-3"
+                                    style={{ backgroundColor: colors.bg }}
+                                >
+                                    <Text className="text-text text-sm font-semibold" numberOfLines={1}>
+                                        {item.title}
+                                    </Text>
+                                    <Text className="text-text text-xs opacity-60 mt-1" numberOfLines={1}>
+                                        {item.label}
+                                    </Text>
+                                </View>
+                            ))}
+                            {classroomStream.length === 0 ? (
+                                <View
+                                    className="rounded-2xl px-4 py-4"
+                                    style={{ backgroundColor: colors.bg }}
+                                >
+                                    <Text className="text-text text-sm font-semibold">
+                                        No classroom activity yet
+                                    </Text>
+                                    <Text className="text-text text-xs opacity-60 mt-1">
+                                        Announcements, resources, live sessions, assignments, and capstones will show up here.
+                                    </Text>
+                                </View>
+                            ) : null}
+                        </View>
+                    )}
                     <Pressable
-                        disabled={!nextLiveClass.joinEnabled}
+                        onPress={() => router.push("/(tabs)/classroom")}
                         className="mt-4 rounded-xl px-4 py-3 items-center justify-center"
-                        style={{
-                            backgroundColor: nextLiveClass.joinEnabled
-                                ? "#9CA3AF"
-                                : "#E5E7EB",
-                            opacity: nextLiveClass.joinEnabled ? 1 : 0.7,
-                        }}
+                        style={{ backgroundColor: colors.primary }}
                     >
-                        <Text
-                            style={{
-                                color: nextLiveClass.joinEnabled ? "#111827" : "#6B7280",
-                            }}
-                            className="font-semibold"
-                        >
-                            Join class
+                        <Text className="font-semibold text-white">
+                            Open classroom
                         </Text>
                     </Pressable>
                 </View>
             </ScrollView>
         </View>
     );
+}
+
+function getClassroomEventLabel(
+    event?: ClassroomCalendarEvent,
+) {
+    if (!event) return "No upcoming class or deadline";
+
+    const eventTime = getCalendarEventTime(event);
+    const kind =
+        event.type === "live_session" ? "Next live class" : "Upcoming deadline";
+    const date = formatClassroomDate(eventTime);
+    const time = formatClassroomTime(eventTime);
+
+    return [kind, date, time].filter(Boolean).join(" • ");
+}
+
+function buildClassroomStream(posts: ClassroomPost[]) {
+    return posts.map((post) => ({
+        id: `${post.type}-${post.id}`,
+        title: post.title ?? post.body ?? "Classroom update",
+        label: `${formatClassroomPostType(post.type)} • ${formatClassroomDate(
+            getClassroomPostTime(post),
+        )}`,
+    }));
+}
+
+function formatClassroomPostType(type: string) {
+    switch (type) {
+        case "announcement":
+            return "Announcement";
+        case "material":
+            return "Resource";
+        case "live_session":
+            return "Live class";
+        case "capstone_project":
+            return "Capstone";
+        case "assignment":
+            return "Assignment";
+        default:
+            return "Classroom";
+    }
 }

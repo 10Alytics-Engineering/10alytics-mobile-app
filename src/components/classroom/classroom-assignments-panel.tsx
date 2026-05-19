@@ -2,6 +2,14 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import {
+  formatClassroomDate,
+  getAssignmentStatus,
+  useClassroomAssignments,
+} from "@/hooks/use-classroom";
+import type { ClassroomAssignment } from "@/lib/api-client";
+import { openClassroomAssignmentDetail } from "@/lib/classroom-navigation";
+
 const ACCENT = "#DA6728";
 const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
 const RED = "#D7263D";
@@ -9,7 +17,7 @@ const RED_SOFT = "rgba(215, 38, 61, 0.10)";
 const GREEN = "#1BA372";
 const GREEN_SOFT = "rgba(27, 163, 114, 0.12)";
 
-type AssignmentStatus = "not_done" | "graded" | "submitted";
+type AssignmentStatus = "not_done" | "graded" | "submitted" | "turned_in";
 
 type Assignment = {
   id: string;
@@ -24,46 +32,6 @@ type Assignment = {
   score?: number;
   resourceCount: number;
 };
-
-const ASSIGNMENTS: Assignment[] = [
-  {
-    id: "w2-not-done",
-    title: "Week 2: Exploratory Data Analysis with Pandas",
-    description:
-      "Analyze the provided dataset using Pandas and create visualizations to identify key patterns and..",
-    kind: "assignment",
-    status: "not_done",
-    postedLabel: "Posted Jan 1",
-    dueLabel: "Due Date: Feb 28, 2026",
-    points: 100,
-    resourceCount: 1,
-  },
-  {
-    id: "w2-graded",
-    title: "Week 2: Exploratory Data Analysis with Pandas",
-    description:
-      "Analyze the provided dataset using Pandas and create visualizations to iden...",
-    kind: "assignment",
-    status: "graded",
-    postedLabel: "Posted Jan 1",
-    submittedLabel: "Submitted: 3 Feb, 2026",
-    points: 100,
-    score: 89,
-    resourceCount: 0,
-  },
-  {
-    id: "capstone",
-    title: "Capstone Project: Exploratory Data Analysis with Pandas",
-    description:
-      "Analyze the provided dataset using Pandas and create visualizations to iden...",
-    kind: "capstone",
-    status: "not_done",
-    postedLabel: "Posted Jan 1",
-    dueLabel: "Due Date: Aug 28, 2026",
-    points: 100,
-    resourceCount: 4,
-  },
-];
 
 type Filter = "all" | "not_done" | "submitted";
 
@@ -121,15 +89,32 @@ function StatusPill({ status }: { status: AssignmentStatus }) {
       style={{ backgroundColor: RED_SOFT }}
     >
       <Text className="text-xs font-outfit-bold" style={{ color: RED, letterSpacing: 0.5 }}>
-        NOT DONE
+        {status === "submitted" || status === "turned_in" ? "SUBMITTED" : "NOT DONE"}
       </Text>
     </View>
   );
 }
 
-function AssignmentCard({ assignment }: { assignment: Assignment }) {
+function AssignmentCard({
+  assignment,
+  courseEnrollmentId,
+}: {
+  assignment: Assignment;
+  courseEnrollmentId?: number | string;
+}) {
   return (
-    <View className="rounded-2xl border border-border bg-secondary/40 p-4">
+    <Pressable
+      disabled={!courseEnrollmentId}
+      onPress={() => {
+        if (!courseEnrollmentId) return;
+        openClassroomAssignmentDetail({
+          courseEnrollmentId,
+          assignmentId: assignment.id,
+          kind: assignment.kind,
+        });
+      }}
+      className="rounded-2xl border border-border bg-secondary/40 p-4"
+    >
       <View className="flex-row items-start gap-3">
         <AssignmentIcon kind={assignment.kind} status={assignment.status} />
         <View className="flex-1">
@@ -199,27 +184,42 @@ function AssignmentCard({ assignment }: { assignment: Assignment }) {
 
         <StatusPill status={assignment.status} />
       </View>
-    </View>
+    </Pressable>
   );
 }
 
-export function ClassroomAssignmentsPanel() {
+export function ClassroomAssignmentsPanel({
+  courseEnrollmentId,
+  kind = "assignment",
+}: {
+  courseEnrollmentId?: number | string;
+  kind?: "assignment" | "capstone";
+}) {
   const [filter, setFilter] = useState<Filter>("all");
+  const status = filter === "all" ? null : filter;
+  const { data: rows = [], isLoading, isError, refetch } = useClassroomAssignments(
+    courseEnrollmentId,
+    kind,
+    status,
+  );
 
   const visible = useMemo(() => {
-    if (filter === "all") return ASSIGNMENTS;
+    const assignments = rows.map((row) => mapAssignment(row, kind));
+    if (filter === "all") return assignments;
     if (filter === "submitted") {
-      return ASSIGNMENTS.filter(
+      return assignments.filter(
         (a) => a.status === "graded" || a.status === "submitted",
       );
     }
-    return ASSIGNMENTS.filter((a) => a.status === "not_done");
-  }, [filter]);
+    return assignments.filter((a) => a.status === "not_done");
+  }, [filter, kind, rows]);
 
   return (
     <View className="gap-4">
       <View className="flex-row items-center justify-between">
-        <Text className="font-outfit-bold text-xl text-text">Your Classwork</Text>
+        <Text className="font-outfit-bold text-xl text-text">
+          {kind === "capstone" ? "Capstone Projects" : "Your Classwork"}
+        </Text>
         <Pressable
           className="rounded-lg border px-4 py-2"
           style={{ borderColor: ACCENT }}
@@ -254,9 +254,53 @@ export function ClassroomAssignmentsPanel() {
         })}
       </View>
 
+      {isLoading || isError ? (
+        <Pressable
+          onPress={() => refetch()}
+          className="rounded-2xl border border-border bg-secondary/40 p-5"
+        >
+          <Text className="text-center font-semibold text-text">
+            {isLoading ? "Loading..." : "Unable to load classwork. Tap to retry."}
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {!isLoading && !isError && visible.length === 0 ? (
+        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
+          <Text className="text-center font-semibold text-text">
+            No {kind === "capstone" ? "capstones" : "assignments"} yet.
+          </Text>
+        </View>
+      ) : null}
+
       {visible.map((assignment) => (
-        <AssignmentCard key={assignment.id} assignment={assignment} />
+        <AssignmentCard
+          key={assignment.id}
+          assignment={assignment}
+          courseEnrollmentId={courseEnrollmentId}
+        />
       ))}
     </View>
   );
+}
+
+function mapAssignment(row: ClassroomAssignment, kind: "assignment" | "capstone"): Assignment {
+  const status = getAssignmentStatus(row) as AssignmentStatus;
+  const submittedAt = row.submission?.submitted_at ?? row.submitted_at;
+  const score = row.submission?.score_earned ?? row.score_earned ?? undefined;
+  return {
+    id: String(row.classroom_post_id ?? row.id),
+    title: row.title,
+    description: row.description ?? row.body ?? "",
+    kind,
+    status,
+    postedLabel: row.published_at || row.created_at
+      ? `Posted ${formatClassroomDate(row.published_at ?? row.created_at)}`
+      : "",
+    dueLabel: row.due_at ? `Due Date: ${formatClassroomDate(row.due_at)}` : undefined,
+    submittedLabel: submittedAt ? `Submitted: ${formatClassroomDate(submittedAt)}` : undefined,
+    points: row.points_possible ?? 0,
+    score,
+    resourceCount: row.attachments?.length ?? 0,
+  };
 }

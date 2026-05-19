@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NetworkToastBridge } from '@/components/network-toast-bridge';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import useThemedNavigation from '@/hooks/useThemedNavigation';
+import { initializeNotifications } from '@/lib/notifications';
 import { createQueryClient } from '@/lib/query-client';
 import { bindReactQueryOnlineManager } from '@/lib/react-query-netinfo';
 import { useAuthStore } from '@/utils/auth-store';
@@ -25,7 +26,7 @@ if (!isWeb) {
 
 export default function RootLayout() {
     const [queryClient] = useState(() => createQueryClient());
-    const { screenOptions, isDark } = useThemedNavigation();
+    const { screenOptions } = useThemedNavigation();
     const { isLoggedIn, shouldCreateAccount, hasCompletedOnboarding, _hasHydrated, checkAuth } =
         useAuthStore();
 
@@ -40,6 +41,12 @@ export default function RootLayout() {
             SplashScreen.hideAsync();
         }
     }, [_hasHydrated, checkAuth]);
+
+    useEffect(() => {
+        if (_hasHydrated) {
+            initializeNotifications(isLoggedIn);
+        }
+    }, [_hasHydrated, isLoggedIn]);
 
     if (!_hasHydrated && !isWeb) {
         return null;

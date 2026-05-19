@@ -8,6 +8,9 @@ export default function ScreensLayout() {
             }}
         >
             <Stack.Screen name="course/[id]" />
+            <Stack.Screen name="classroom/assignment/[assignmentId]" />
+            <Stack.Screen name="classroom/capstone/[assignmentId]" />
+            <Stack.Screen name="classroom/resource/[resourceId]" />
         </Stack>
     );
 }

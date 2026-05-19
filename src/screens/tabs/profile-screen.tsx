@@ -1,15 +1,16 @@
-import useThemeColors from "@/contexts/ThemeColors";
-import { GlassStyles } from "@/constants/theme";
-import { PressableScale, ScrollView, Text, View } from "@/tw";
-import { Animated } from "@/tw/animated";
-import { useAuthStore } from "@/utils/auth-store";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import React from "react";
-import { Image, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { Image, RefreshControl, StyleSheet } from "react-native";
 import { FadeInDown, FadeInRight, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { GlassStyles } from "@/constants/theme";
+import useThemeColors from "@/contexts/ThemeColors";
+import { PressableScale, ScrollView, Text, View } from "@/tw";
+import { Animated } from "@/tw/animated";
+import { useAuthStore } from "@/utils/auth-store";
 
 const styles = StyleSheet.create({
   container: {
@@ -119,7 +120,8 @@ const styles = StyleSheet.create({
 export function ProfileScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { logOut, user } = useAuthStore();
+  const { checkAuth, logOut, user } = useAuthStore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const isDark = colors.isDark;
 
   const stats = [
@@ -141,12 +143,28 @@ export function ProfileScreen() {
     router.replace("/");
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await checkAuth();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       showsVerticalScrollIndicator={false}
       style={[styles.container, { backgroundColor: colors.bg }]}
       contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 10 }]}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          tintColor={colors.primary}
+        />
+      }
     >
       <Animated.View entering={FadeInDown.delay(50).springify()}>
         <View style={styles.headerRow}>

@@ -1,13 +1,17 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { ClassroomAnnouncementsPanel } from "@/components/classroom/classroom-announcements-panel";
 import { ClassroomAssignmentsPanel } from "@/components/classroom/classroom-assignments-panel";
+import { ClassroomParticipantsPanel } from "@/components/classroom/classroom-participants-panel";
 import { ClassroomRecordingsPanel } from "@/components/classroom/classroom-recordings-panel";
 import { ClassroomResourcesPanel } from "@/components/classroom/classroom-resources-panel";
 import { ClassroomTimetablePanel } from "@/components/classroom/classroom-timetable-panel";
+import { useClassroomSession } from "@/hooks/use-classroom";
 import useThemedNavigation from "@/hooks/useThemedNavigation";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import "../../../global.css";
 
@@ -36,16 +40,7 @@ const SEGMENTS: { id: SegmentId; label: string; icon: IoniconName }[] = [
 
 const PLACEHOLDER_COPY: Partial<
   Record<SegmentId, { title: string; subtitle: string }>
-> = {
-  capstone: {
-    title: "Capstone",
-    subtitle: "Your capstone brief and submissions will appear here.",
-  },
-  participants: {
-    title: "Participants",
-    subtitle: "No roster yet. Teachers, TAs, and classmates will appear here.",
-  },
-};
+> = {};
 
 function PlaceholderSegment({
   title,
@@ -75,22 +70,55 @@ export default function ClassroomScreen() {
   const { ThemedStatusBar, colors } = useThemedNavigation();
   const insets = useSafeAreaInsets();
   const [segment, setSegment] = useState<SegmentId>("announcements");
+  const queryClient = useQueryClient();
+  const isClassroomFetching = useIsFetching({ queryKey: ["classroom"] }) > 0;
+  const { data: session, isLoading, isError, refetch } = useClassroomSession();
 
   const bottomPad = insets.bottom + 100;
   const placeholder = PLACEHOLDER_COPY[segment];
+  const courseEnrollmentId = session?.courseEnrollmentId;
+  const refreshControl = (
+    <RefreshControl
+      refreshing={isClassroomFetching && !isLoading}
+      onRefresh={() => {
+        queryClient.invalidateQueries({ queryKey: ["classroom"] });
+        refetch();
+      }}
+      tintColor={ACCENT}
+    />
+  );
 
   const renderPanel = () => {
     switch (segment) {
       case "timetable":
-        return <ClassroomTimetablePanel />;
+        return <ClassroomTimetablePanel courseEnrollmentId={courseEnrollmentId} />;
       case "announcements":
-        return <ClassroomAnnouncementsPanel />;
+        return <ClassroomAnnouncementsPanel session={session} />;
       case "resources":
-        return <ClassroomResourcesPanel />;
+        return <ClassroomResourcesPanel courseEnrollmentId={courseEnrollmentId} />;
       case "assignments":
-        return <ClassroomAssignmentsPanel />;
+        return (
+          <ClassroomAssignmentsPanel
+            courseEnrollmentId={courseEnrollmentId}
+            kind="assignment"
+          />
+        );
+      case "capstone":
+        return (
+          <ClassroomAssignmentsPanel
+            courseEnrollmentId={courseEnrollmentId}
+            kind="capstone"
+          />
+        );
       case "recordings":
-        return <ClassroomRecordingsPanel />;
+        return <ClassroomRecordingsPanel courseEnrollmentId={courseEnrollmentId} />;
+      case "participants":
+        return (
+          <ClassroomParticipantsPanel
+            classroomId={session?.classroomId}
+            sessionLoading={isLoading}
+          />
+        );
       default:
         return null;
     }
@@ -103,7 +131,9 @@ export default function ClassroomScreen() {
         className="flex-row items-center justify-between border-b border-border/40 px-5 pb-3"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <Text className="font-outfit-bold text-xl text-text">Classroom</Text>
+        <Text className="font-outfit-bold text-xl text-text">
+          {session?.title ?? "Classroom"}
+        </Text>
         <Pressable
           className="active:opacity-70"
           hitSlop={12}
@@ -117,7 +147,7 @@ export default function ClassroomScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="max-h-[64px] border-b border-border/30 py-3"
+        className="max-h-[64px] py-3"
         contentContainerStyle={{ paddingHorizontal: 20, gap: 10, alignItems: "center" }}
       >
         {SEGMENTS.map((s) => {
@@ -157,9 +187,40 @@ export default function ClassroomScreen() {
       </ScrollView>
 
       <View className="flex-1 px-5 pt-4">
-        {placeholder ? (
+        {isLoading || isError || !session ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
+            refreshControl={refreshControl}
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: bottomPad,
+              justifyContent: "center",
+            }}
+          >
+            <Pressable onPress={() => refetch()}>
+              <PlaceholderSegment
+                title={
+                  isLoading
+                    ? "Loading classroom"
+                    : isError
+                      ? "Unable to load classroom"
+                      : "No classroom yet"
+                }
+                subtitle={
+                  isLoading
+                    ? "Fetching your current classroom..."
+                    : isError
+                      ? "Tap to retry when your connection is back."
+                      : "Your active classroom will appear here once available."
+                }
+                colors={colors}
+              />
+            </Pressable>
+          </ScrollView>
+        ) : placeholder ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            refreshControl={refreshControl}
             contentContainerStyle={{
               flexGrow: 1,
               paddingBottom: bottomPad,
@@ -176,6 +237,7 @@ export default function ClassroomScreen() {
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            refreshControl={refreshControl}
             contentContainerStyle={{ paddingBottom: bottomPad }}
           >
             {renderPanel()}

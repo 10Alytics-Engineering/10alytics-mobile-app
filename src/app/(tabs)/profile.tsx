@@ -1,2 +1,2 @@
-import { ProfileScreen } from "@/screens/tabs/profile-screen";
-export default ProfileScreen;
+import { ProfileSettingsScreen } from "@/screens/tabs/profile-settings-screen";
+export default ProfileSettingsScreen;

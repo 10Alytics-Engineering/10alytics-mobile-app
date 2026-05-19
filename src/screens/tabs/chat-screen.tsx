@@ -1,353 +1,372 @@
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Colors, GlassStyles, Gradients } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { PressableScale, Text, TextInput, View } from "@/tw";
-import { Animated } from "@/tw/animated";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import React, { useState } from "react";
-import { FlatList, StyleSheet } from "react-native";
-import { FadeInDown, FadeInRight } from "react-native-reanimated";
+import { PressableScale } from "pressto";
+import React, { useMemo, useState } from "react";
+import {
+  FlatList,
+  Image,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import Animated, { FadeInRight } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: GlassStyles.spacing.lg,
-    paddingBottom: GlassStyles.spacing.md,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: GlassStyles.spacing.md,
-  },
-  headerTitle: {
-    fontSize: 34,
-    fontWeight: "800",
-    letterSpacing: -0.5,
-  },
-  newChatButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  searchContainer: {
-    marginBottom: GlassStyles.spacing.md,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: GlassStyles.spacing.md,
-    height: 48,
-    borderRadius: GlassStyles.borderRadius.md,
-    overflow: "hidden",
-  },
-  searchBlur: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: GlassStyles.spacing.sm,
-    fontSize: 17,
-  },
-  listContent: {
-    paddingHorizontal: GlassStyles.spacing.md,
-    paddingBottom: 120,
-  },
-  chatItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: GlassStyles.spacing.sm,
-  },
-  avatarContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: GlassStyles.spacing.md,
-    overflow: "hidden",
-  },
-  avatarBlur: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  avatar: {
-    fontSize: 28,
-  },
-  chatContent: {
-    flex: 1,
-  },
-  chatHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  groupName: {
-    fontSize: 17,
-    fontWeight: "600",
-    flex: 1,
-    marginRight: GlassStyles.spacing.sm,
-  },
-  time: {
-    fontSize: 13,
-    opacity: 0.6,
-  },
-  chatFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  lastMessage: {
-    fontSize: 15,
-    opacity: 0.7,
-    flex: 1,
-    marginRight: GlassStyles.spacing.sm,
-  },
-  unreadBadge: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  unreadText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  sectionHeader: {
-    marginBottom: GlassStyles.spacing.md,
-    marginTop: GlassStyles.spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    opacity: 0.6,
-  },
-});
+import useThemeColors from "@/contexts/ThemeColors";
+import {
+  formatChatPreview,
+  getConversationTitle,
+  useChatConversations,
+  useChatRealtime,
+} from "@/hooks/use-chat";
+import type { ChatConversation } from "@/lib/api-client";
+import { useAuthStore } from "@/utils/auth-store";
 
-const GROUPS = [
-  {
-    id: "1",
-    name: "React Native Study Group",
-    lastMessage: "Alice: Has anyone tried the new architecture yet?",
-    time: "10:30 AM",
-    unread: 3,
-    members: 24,
-    avatar: "⚛️",
-    color: "#61DAFB",
-  },
-  {
-    id: "2",
-    name: "Design Systems",
-    lastMessage: "Bob: The new Figma updates are insane!",
-    time: "Yesterday",
-    unread: 0,
-    members: 18,
-    avatar: "🎨",
-    color: "#FF2D55",
-  },
-  {
-    id: "3",
-    name: "Job Board & Career",
-    lastMessage: "Sarah: Just posted a new senior role @ Spotify",
-    time: "Tue",
-    unread: 5,
-    members: 156,
-    avatar: "💼",
-    color: "#30D158",
-  },
-  {
-    id: "4",
-    name: "TypeScript Wizards",
-    lastMessage: "Mike: Can someone help with this generic type?",
-    time: "Mon",
-    unread: 1,
-    members: 42,
-    avatar: "📘",
-    color: "#007AFF",
-  },
-  {
-    id: "5",
-    name: "Startup Weekend",
-    lastMessage: "Dave: Pitch deck is ready for review.",
-    time: "Sun",
-    unread: 0,
-    members: 8,
-    avatar: "🚀",
-    color: "#FF9F0A",
-  },
-  {
-    id: "6",
-    name: "Algorithm Practice",
-    lastMessage: "LeetCode Daily: Dynamic Programming problem",
-    time: "Last Week",
-    unread: 0,
-    members: 120,
-    avatar: "🧠",
-    color: "#BF5AF2",
-  },
-  {
-    id: "7",
-    name: "Off-Topic & Chill",
-    lastMessage: "Tom: Anyone gaming tonight?",
-    time: "Last Week",
-    unread: 0,
-    members: 30,
-    avatar: "🎮",
-    color: "#5E5CE6",
-  },
+type FilterKey = "all" | "pod" | "classroom" | "instructor_dm";
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "classroom", label: "Classroom" },
+  { key: "pod", label: "POD Group" },
+  { key: "instructor_dm", label: "Instructors" },
 ];
 
+const BRAND = "#DA6728";
+const ONLINE = "#2BC177";
+
+function getConversationAvatar(
+  conversation: ChatConversation,
+  selfId?: string | number | null,
+): string | undefined {
+  if (conversation.type === "instructor_dm") {
+    const other = conversation.participants?.find(
+      (p) => p.user && String(p.user.id) !== String(selfId ?? ""),
+    );
+    return other?.user?.profile_photo_url ?? undefined;
+  }
+  const firstWithPhoto = conversation.participants?.find(
+    (p) => p.user?.profile_photo_url,
+  );
+  return firstWithPhoto?.user?.profile_photo_url ?? undefined;
+}
+
+
+function isConversationOnline(conversation: ChatConversation): boolean {
+  // Heuristic: treat conversations with recent activity (last 5min) as online.
+  if (!conversation.last_message_at) return false;
+  const diff = Date.now() - new Date(conversation.last_message_at).getTime();
+  return diff >= 0 && diff < 1000 * 60 * 60 * 24;
+}
+
 export function ChatScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
-  const isDark = colorScheme === "dark";
+  const colors = useThemeColors();
+  const isDark = colors.isDark;
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<FilterKey>("all");
+  const user = useAuthStore((state) => state.user);
+  const {
+    data: conversations = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useChatConversations();
 
-  const filteredGroups = GROUPS.filter((group) =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const conversationIds = conversations.map((c) => c.id);
 
-  const renderItem = ({ item, index }: { item: typeof GROUPS[0]; index: number }) => (
-    <Animated.View entering={FadeInRight.delay(100 + index * 50).springify()}>
-      <GlassCard animated={false} variant="light" style={{ marginBottom: GlassStyles.spacing.sm }}>
+  useChatRealtime(conversationIds);
+
+  const filteredConversations = useMemo(() => {
+    const lower = searchQuery.toLowerCase();
+    return conversations.filter((c) => {
+      const matchesFilter = filter === "all" ? true : c.type === filter;
+      const matchesSearch = getConversationTitle(c)
+        .toLowerCase()
+        .includes(lower);
+      return matchesFilter && matchesSearch;
+    });
+  }, [conversations, filter, searchQuery]);
+
+  const dividerColor = isDark ? "#262626" : "#e3e3e3";
+  const mutedText = isDark ? "#9CA3AF" : "#6B7280";
+  const placeholderText = isDark ? "#6B7280" : "#9CA3AF";
+  const surface = isDark ? "#171717" : "#FFFFFF";
+  const inputBorder = isDark ? "#262626" : "#E5E7EB";
+
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: ChatConversation;
+    index: number;
+  }) => {
+    const title = getConversationTitle(item);
+    const unread = item.unread_count ?? 0;
+    const avatarUrl = getConversationAvatar(item, user?.id);
+    const online = isConversationOnline(item);
+
+    return (
+      <Animated.View entering={FadeInRight.delay(80 + index * 40).springify()}>
         <PressableScale
-          style={styles.chatItem}
-          onPress={() => router.push({
-            pathname: "/chat-room",
-            params: { id: item.id, name: item.name }
-          })}
+          onPress={() =>
+            router.push({
+              pathname: "/chat-room" as never,
+              params: { id: String(item.id), name: title },
+            })
+          }
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingVertical: 16,
+            paddingHorizontal: 16,
+          }}
         >
-          <LinearGradient
-            colors={[`${item.color}30`, `${item.color}15`] as const}
-            style={styles.avatarContainer}
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: isDark ? "#262626" : "#F4F4F5",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+            }}
           >
-            <BlurView
-              intensity={GlassStyles.blur.light}
-              tint={isDark ? "dark" : "light"}
-              style={styles.avatarBlur}
-            />
-            <Text style={styles.avatar}>{item.avatar}</Text>
-          </LinearGradient>
-          <View style={styles.chatContent}>
-            <View style={styles.chatHeader}>
-              <Text
-                style={[styles.groupName, { color: colors.text }]}
-                numberOfLines={1}
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <Text style={{ color: mutedText, fontWeight: "700", fontSize: 20 }}>
+                {title.slice(0, 1).toUpperCase()}
+              </Text>
+            )}
+          </View>
+          {/* Status dot */}
+          <View
+            style={{
+              position: "absolute",
+              left: 16 + 56 - 14,
+              top: 16 + 56 - 14,
+              width: 14,
+              height: 14,
+              borderRadius: 7,
+              backgroundColor: online ? ONLINE : "#D1D5DB",
+              borderWidth: 2,
+              borderColor: colors.bg,
+            }}
+          />
+
+          <View style={{ flex: 1, marginLeft: 14 }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                color: colors.text,
+                fontSize: 16,
+                fontWeight: "700",
+                marginBottom: 4,
+              }}
+            >
+              {title}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={{ color: mutedText, fontSize: 14 }}
+            >
+              {formatChatPreview(item.last_message)}
+            </Text>
+          </View>
+
+          <View style={{ alignItems: "flex-end", marginLeft: 8, minWidth: 50 }}>
+            <Text style={{ color: mutedText, fontSize: 13, marginBottom: 6 }}>
+              {formatConversationTime(item.last_message_at)}
+            </Text>
+            {unread > 0 && (
+              <View
+                style={{
+                  minWidth: 22,
+                  height: 22,
+                  paddingHorizontal: 6,
+                  borderRadius: 11,
+                  backgroundColor: ONLINE,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                {item.name}
-              </Text>
-              <Text style={[styles.time, { color: colors.textSecondary }]}>
-                {item.time}
-              </Text>
-            </View>
-            <View style={styles.chatFooter}>
-              <Text
-                style={[styles.lastMessage, { color: colors.textSecondary }]}
-                numberOfLines={1}
-              >
-                {item.lastMessage}
-              </Text>
-              {item.unread > 0 && (
-                <LinearGradient
-                  colors={Gradients.primary as any}
-                  style={styles.unreadBadge}
+                <Text
+                  style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
                 >
-                  <Text style={styles.unreadText}>{item.unread}</Text>
-                </LinearGradient>
-              )}
-            </View>
+                  {unread > 99 ? "99+" : unread}
+                </Text>
+              </View>
+            )}
           </View>
         </PressableScale>
-      </GlassCard>
-    </Animated.View>
-  );
+        <View
+          style={{
+            height: 1,
+            backgroundColor: dividerColor,
+            marginHorizontal: 16,
+          }}
+        />
+      </Animated.View>
+    );
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? colors.background : "#F5F0EB" }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + GlassStyles.spacing.md }]}>
-        <Animated.View entering={FadeInDown.delay(50).springify()}>
-          <View style={styles.headerRow}>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Groups</Text>
-            <GlassCard
-              animated={false}
-              variant="light"
-              style={styles.newChatButton}
-            >
-              <PressableScale>
-                <SymbolView
-                  name="square.and.pencil"
-                  size={22}
-                  tintColor={colors.primary}
-                />
-              </PressableScale>
-            </GlassCard>
-          </View>
-        </Animated.View>
-
-        {/* Search Bar */}
-        <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <View style={styles.searchContainer}>
-            <View
-              style={[
-                styles.searchBar,
-                {
-                  backgroundColor: colors.glass.background,
-                  borderWidth: 1,
-                  borderColor: colors.glass.border,
-                },
-              ]}
-            >
-              <BlurView
-                intensity={GlassStyles.blur.light}
-                tint={isDark ? "dark" : "light"}
-                style={styles.searchBlur}
-              />
-              <SymbolView
-                name="magnifyingglass"
-                size={18}
-                tintColor={colors.textSecondary}
-              />
-              <TextInput
-                style={[styles.searchInput, { color: colors.text }]}
-                placeholder="Search groups..."
-                placeholderTextColor={colors.textSecondary}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </View>
-          </View>
-        </Animated.View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            {filteredGroups.length} Groups
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 16 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            paddingVertical: 8,
+          }}
+        >
+          <PressableScale onPress={() => router.back()}>
+            <SymbolView
+              name="chevron.left"
+              size={20}
+              tintColor={colors.text}
+            />
+          </PressableScale>
+          <Text
+            style={{ color: colors.text, fontSize: 24, fontWeight: "800" }}
+          >
+            Chatroom
           </Text>
         </View>
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: surface,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: inputBorder,
+            paddingHorizontal: 14,
+            height: 48,
+            marginTop: 12,
+            marginBottom: 16,
+          }}
+        >
+          <SymbolView
+            name="magnifyingglass"
+            size={18}
+            tintColor={mutedText}
+          />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search"
+            placeholderTextColor={placeholderText}
+            style={{
+              flex: 1,
+              marginLeft: 10,
+              fontSize: 15,
+              color: colors.text,
+            }}
+          />
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 24, marginBottom: 8 }}>
+          {FILTERS.map((f) => {
+            const active = filter === f.key;
+            return (
+              <PressableScale
+                key={f.key}
+                onPress={() => setFilter(f.key)}
+                style={{ paddingBottom: 8 }}
+              >
+                <Text
+                  style={{
+                    color: active ? BRAND : mutedText,
+                    fontSize: 15,
+                    fontWeight: active ? "700" : "500",
+                  }}
+                >
+                  {f.label}
+                </Text>
+                {active && (
+                  <View
+                    style={{
+                      height: 3,
+                      borderRadius: 2,
+                      backgroundColor: BRAND,
+                      marginTop: 6,
+                    }}
+                  />
+                )}
+              </PressableScale>
+            );
+          })}
+        </View>
+        <View
+          style={{
+            height: 1,
+            backgroundColor: dividerColor,
+            marginHorizontal: -16,
+          }}
+        />
       </View>
 
-      {/* Group List */}
       <FlatList
-        data={filteredGroups}
+        data={filteredConversations}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        keyExtractor={(item) => String(item.id)}
         showsVerticalScrollIndicator={false}
+        refreshing={isLoading}
+        onRefresh={refetch}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        ListEmptyComponent={
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              paddingTop: 60,
+              paddingHorizontal: 32,
+            }}
+          >
+            <Text
+              style={{
+                color: colors.text,
+                fontSize: 16,
+                fontWeight: "600",
+                textAlign: "center",
+              }}
+            >
+              {isError ? "Unable to load conversations" : "No conversations yet"}
+            </Text>
+            <Text
+              style={{
+                color: mutedText,
+                fontSize: 14,
+                marginTop: 6,
+                textAlign: "center",
+              }}
+            >
+              {isError
+                ? "Pull to retry when your connection is back."
+                : "Your classroom, pod, and instructor chats will appear here."}
+            </Text>
+          </View>
+        }
       />
     </View>
   );
+}
+
+function formatConversationTime(value?: string | null) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  if (isToday) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  }
+
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
 }

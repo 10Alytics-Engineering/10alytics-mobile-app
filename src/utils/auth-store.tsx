@@ -1,8 +1,10 @@
-import { apiClient } from "@/lib/api-client";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+import { apiClient } from "@/lib/api-client";
+import { unregisterPushNotifications } from "@/lib/notifications";
 
 const isWeb = Platform.OS === "web";
 
@@ -58,8 +60,13 @@ export const useAuthStore = create(
       },
       logOut: async () => {
         try {
+          await unregisterPushNotifications();
+        } catch {
+          // Ignore device token cleanup errors
+        }
+        try {
           await apiClient.logout();
-        } catch (error) {
+        } catch {
           // Ignore logout errors
         }
         set((state) => {
@@ -117,7 +124,7 @@ export const useAuthStore = create(
               user: null,
             }));
           }
-        } catch (error) {
+        } catch {
           set((state) => ({
             ...state,
             isLoggedIn: false,
