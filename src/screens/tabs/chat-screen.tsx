@@ -218,19 +218,10 @@ export function ChatScreen() {
       <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 16 }}>
         <View
           style={{
-            flexDirection: "row",
             alignItems: "center",
-            gap: 8,
             paddingVertical: 8,
           }}
         >
-          <PressableScale onPress={() => router.back()}>
-            <SymbolView
-              name="chevron.left"
-              size={20}
-              tintColor={colors.text}
-            />
-          </PressableScale>
           <Text
             style={{ color: colors.text, fontSize: 24, fontWeight: "800" }}
           >

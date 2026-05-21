@@ -128,11 +128,15 @@ export default function ClassroomScreen() {
     <View className="flex-1 bg-background">
       <ThemedStatusBar />
       <View
-        className="flex-row items-center justify-between border-b border-border/40 px-5 pb-3"
+        className="flex-row items-center px-5 pb-3"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <Text className="font-outfit-bold text-xl text-text">
-          {session?.title ?? "Classroom"}
+        <View style={{ width: 26 }} />
+        <Text
+          className="flex-1 text-center"
+          style={{ color: colors.text, fontSize: 24, fontWeight: "800" }}
+        >
+          Classroom
         </Text>
         <Pressable
           className="active:opacity-70"

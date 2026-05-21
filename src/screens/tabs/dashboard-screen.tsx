@@ -59,7 +59,8 @@ export function DashboardScreen() {
       >
         {/* Header Section */}
         <View style={styles.header}>
-          <View>
+          <View style={{ width: 50 }} />
+          <View style={{ flex: 1, alignItems: "center" }}>
             <Text style={[styles.welcomeText, { color: colors.textSecondary }]}>Welcome back,</Text>
             <Text style={[styles.nameText, { color: colors.text }]}>David 👋</Text>
           </View>
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   nameText: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "800",
   },
   avatarContainer: {

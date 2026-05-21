@@ -26,13 +26,13 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     marginBottom: GlassStyles.spacing.md,
     marginTop: GlassStyles.spacing.md,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 24,
+    fontWeight: "800",
   },
   centerState: {
     flex: 1,

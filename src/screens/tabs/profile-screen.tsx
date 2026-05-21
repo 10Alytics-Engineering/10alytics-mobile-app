@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "800",
   },
   subtitle: {
@@ -168,7 +168,8 @@ export function ProfileScreen() {
     >
       <Animated.View entering={FadeInDown.delay(50).springify()}>
         <View style={styles.headerRow}>
-          <View>
+          <View style={{ width: 88 }} />
+          <View style={{ flex: 1, alignItems: "center" }}>
             <Text style={[styles.title, { color: colors.text }]}>Profile</Text>
             <Text style={[styles.subtitle, { color: colors.text }]}>Your learning space</Text>
           </View>

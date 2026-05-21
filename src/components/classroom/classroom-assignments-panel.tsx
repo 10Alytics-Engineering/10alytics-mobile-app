@@ -9,6 +9,7 @@ import {
 } from "@/hooks/use-classroom";
 import type { ClassroomAssignment } from "@/lib/api-client";
 import { openClassroomAssignmentDetail } from "@/lib/classroom-navigation";
+import { normalizeHtmlToPlainText } from "@/utils/html-content";
 
 const ACCENT = "#DA6728";
 const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
@@ -218,7 +219,7 @@ export function ClassroomAssignmentsPanel({
     <View className="gap-4">
       <View className="flex-row items-center justify-between">
         <Text className="font-outfit-bold text-xl text-text">
-          {kind === "capstone" ? "Capstone Projects" : "Your Classwork"}
+          {kind === "capstone" ? "Capstone" : "Your Classwork"}
         </Text>
         <Pressable
           className="rounded-lg border px-4 py-2"
@@ -291,7 +292,7 @@ function mapAssignment(row: ClassroomAssignment, kind: "assignment" | "capstone"
   return {
     id: String(row.classroom_post_id ?? row.id),
     title: row.title,
-    description: row.description ?? row.body ?? "",
+    description: normalizeHtmlToPlainText(row.description ?? row.body ?? ""),
     kind,
     status,
     postedLabel: row.published_at || row.created_at

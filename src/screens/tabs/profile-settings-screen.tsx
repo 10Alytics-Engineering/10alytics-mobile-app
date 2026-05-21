@@ -1,4 +1,4 @@
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { PressableScale } from "pressto";
 import React from "react";
@@ -27,8 +27,6 @@ export function ProfileSettingsScreen() {
   const insets = useSafeAreaInsets();
   const isDark = colors.isDark;
   const { logOut } = useAuthStore();
-  const navigation = useNavigation();
-  const canGoBack = navigation.canGoBack();
 
   const handleLogOut = async () => {
     await logOut();
@@ -117,31 +115,13 @@ export function ProfileSettingsScreen() {
         className="px-4 pb-2"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <View className="flex-row items-center justify-between">
-          {canGoBack ? (
-            <PressableScale
-              onPress={() => router.back()}
-              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-            >
-              <SymbolView
-                name="chevron.left"
-                size={18}
-                tintColor={mutedText}
-              />
-              <Text className="text-base" style={{ color: mutedText }}>
-                Back
-              </Text>
-            </PressableScale>
-          ) : (
-            <View style={{ width: 64 }} />
-          )}
+        <View className="flex-row items-center justify-center">
           <Text
-            className="text-xl font-bold"
+            className="text-2xl font-extrabold"
             style={{ color: colors.text }}
           >
             Settings
           </Text>
-          <View style={{ width: 64 }} />
         </View>
       </View>
 
