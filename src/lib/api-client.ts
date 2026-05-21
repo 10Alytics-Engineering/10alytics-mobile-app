@@ -7,6 +7,8 @@ import { Platform } from "react-native";
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
 
+const TIMEZONE_HEADER = "X-Timezone";
+
 // Complete the OAuth flow
 WebBrowser.maybeCompleteAuthSession();
 
@@ -439,6 +441,22 @@ class ApiClient {
     return this.baseURL;
   }
 
+  getClientTimezone(): string | null {
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return typeof timezone === "string" && timezone.trim() !== ""
+        ? timezone
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  getTimezoneHeaders(): Record<string, string> {
+    const timezone = this.getClientTimezone();
+    return timezone ? { [TIMEZONE_HEADER]: timezone } : {};
+  }
+
   private async setToken(token: string): Promise<void> {
     if (Platform.OS === "web") {
       localStorage.setItem(this.tokenKey, token);
@@ -459,6 +477,7 @@ class ApiClient {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...this.getTimezoneHeaders(),
     };
 
     if (includeAuth) {
@@ -473,16 +492,16 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<{ data?: T; error?: ApiError }> {
     try {
       // Don't include auth for login/register endpoints
-      const shouldIncludeAuth = 
-        !endpoint.includes("/login") && 
+      const shouldIncludeAuth =
+        !endpoint.includes("/login") &&
         !endpoint.includes("/register") &&
         !endpoint.includes("/auth/google") &&
         !endpoint.includes("/auth/apple");
-      
+
       const headers = await this.getHeaders(shouldIncludeAuth);
 
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -525,7 +544,10 @@ class ApiClient {
     }
   }
 
-  async login(email: string, password: string): Promise<{
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{
     data?: LoginResponse;
     error?: ApiError;
   }> {
@@ -539,7 +561,7 @@ class ApiClient {
     first_name: string,
     other_names: string,
     email: string,
-    password: string
+    password: string,
   ): Promise<{
     data?: LoginResponse;
     error?: ApiError;
@@ -621,13 +643,16 @@ class ApiClient {
   }
 
   async getChatConversations(perPage = 25): Promise<{
-    data?: ChatApiEnvelope<PaginatedChatResponse<ChatConversation> | ChatConversation[]>;
+    data?: ChatApiEnvelope<
+      PaginatedChatResponse<ChatConversation> | ChatConversation[]
+    >;
     error?: ApiError;
   }> {
-    return this.request<ChatApiEnvelope<PaginatedChatResponse<ChatConversation> | ChatConversation[]>>(
-      `/api/v2/chat/conversations?per_page=${perPage}`,
-      { method: "GET" },
-    );
+    return this.request<
+      ChatApiEnvelope<
+        PaginatedChatResponse<ChatConversation> | ChatConversation[]
+      >
+    >(`/api/v2/chat/conversations?per_page=${perPage}`, { method: "GET" });
   }
 
   async getChatConversation(id: number | string): Promise<{
@@ -710,11 +735,13 @@ class ApiClient {
     }>;
     error?: ApiError;
   }> {
-    return this.request<ChatApiEnvelope<{
-      conversation_id: number | string;
-      last_read_message_id: string;
-      last_read_at: string;
-    }>>(`/api/v2/chat/conversations/${conversationId}/read`, {
+    return this.request<
+      ChatApiEnvelope<{
+        conversation_id: number | string;
+        last_read_message_id: string;
+        last_read_at: string;
+      }>
+    >(`/api/v2/chat/conversations/${conversationId}/read`, {
       method: "POST",
       body: JSON.stringify({ last_read_message_id: lastReadMessageId }),
     });
@@ -753,10 +780,12 @@ class ApiClient {
     }>;
     error?: ApiError;
   }> {
-    return this.request<ChatApiEnvelope<{
-      total: number;
-      per_conversation: Record<string, number>;
-    }>>("/api/v2/chat/unread-count", { method: "GET" });
+    return this.request<
+      ChatApiEnvelope<{
+        total: number;
+        per_conversation: Record<string, number>;
+      }>
+    >("/api/v2/chat/unread-count", { method: "GET" });
   }
 
   async createInstructorDm(payload: {
@@ -840,14 +869,20 @@ class ApiClient {
     courseEnrollmentId: number | string,
     params: { page?: number; status?: string | null } = {},
   ): Promise<{
-    data?: ChatApiEnvelope<ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]>;
+    data?: ChatApiEnvelope<
+      ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]
+    >;
     error?: ApiError;
   }> {
     const search = new URLSearchParams();
     search.set("page", String(params.page ?? 1));
     if (params.status) search.set("status", params.status);
 
-    return this.request<ChatApiEnvelope<ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]>>(
+    return this.request<
+      ChatApiEnvelope<
+        ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]
+      >
+    >(
       `/api/v2/class-room/classrooms/${courseEnrollmentId}/public/assignments?${search.toString()}`,
       { method: "GET" },
     );
@@ -857,7 +892,9 @@ class ApiClient {
     courseEnrollmentId: number | string,
     params: { page?: number; perPage?: number; status?: string | null } = {},
   ): Promise<{
-    data?: ChatApiEnvelope<ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]>;
+    data?: ChatApiEnvelope<
+      ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]
+    >;
     error?: ApiError;
   }> {
     const search = new URLSearchParams();
@@ -865,7 +902,11 @@ class ApiClient {
     search.set("per_page", String(params.perPage ?? 25));
     if (params.status) search.set("status", params.status);
 
-    return this.request<ChatApiEnvelope<ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]>>(
+    return this.request<
+      ChatApiEnvelope<
+        ClassroomPaginated<ClassroomAssignment> | ClassroomAssignment[]
+      >
+    >(
       `/api/v2/class-room/classrooms/${courseEnrollmentId}/public/capstone-projects?${search.toString()}`,
       { method: "GET" },
     );
@@ -901,20 +942,25 @@ class ApiClient {
     data?: ChatApiEnvelope<ClassroomPeople | Record<string, unknown>>;
     error?: ApiError;
   }> {
-    return this.request<ChatApiEnvelope<ClassroomPeople | Record<string, unknown>>>(
-      `/api/v2/class-room/classrooms/${classroomId}/people`,
-      { method: "GET" },
-    );
+    return this.request<
+      ChatApiEnvelope<ClassroomPeople | Record<string, unknown>>
+    >(`/api/v2/class-room/classrooms/${classroomId}/people`, { method: "GET" });
   }
 
   async getClassroomResources(
     courseEnrollmentId: number | string,
     page = 1,
   ): Promise<{
-    data?: ChatApiEnvelope<ClassroomPaginated<ClassroomResourcePost> | ClassroomResourcePost[]>;
+    data?: ChatApiEnvelope<
+      ClassroomPaginated<ClassroomResourcePost> | ClassroomResourcePost[]
+    >;
     error?: ApiError;
   }> {
-    return this.request<ChatApiEnvelope<ClassroomPaginated<ClassroomResourcePost> | ClassroomResourcePost[]>>(
+    return this.request<
+      ChatApiEnvelope<
+        ClassroomPaginated<ClassroomResourcePost> | ClassroomResourcePost[]
+      >
+    >(
       `/api/v2/class-room/classrooms/${courseEnrollmentId}/public/resources?page=${page}`,
       { method: "GET" },
     );
@@ -924,10 +970,16 @@ class ApiClient {
     courseEnrollmentId: number | string,
     page = 1,
   ): Promise<{
-    data?: ChatApiEnvelope<ClassroomPaginated<ClassroomRecording> | ClassroomRecording[]>;
+    data?: ChatApiEnvelope<
+      ClassroomPaginated<ClassroomRecording> | ClassroomRecording[]
+    >;
     error?: ApiError;
   }> {
-    return this.request<ChatApiEnvelope<ClassroomPaginated<ClassroomRecording> | ClassroomRecording[]>>(
+    return this.request<
+      ChatApiEnvelope<
+        ClassroomPaginated<ClassroomRecording> | ClassroomRecording[]
+      >
+    >(
       `/api/v2/class-room/classrooms/${courseEnrollmentId}/public/recordings?page=${page}`,
       { method: "GET" },
     );
@@ -967,13 +1019,22 @@ class ApiClient {
   }> {
     try {
       const redirectUrl = Linking.createURL("/(tabs)", {});
+      const authSearch = new URLSearchParams({ redirect_uri: redirectUrl });
+      const timezone = this.getClientTimezone();
+
+      if (timezone) {
+        authSearch.set("timezone", timezone);
+      }
+
       const authUrl = `${this.baseURL.replace(
         "/api",
-        ""
-      )}/auth/google?redirect_uri=${encodeURIComponent(redirectUrl)}`;
+        "",
+      )}/auth/google?${authSearch.toString()}`;
 
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
-
+      const result = await WebBrowser.openAuthSessionAsync(
+        authUrl,
+        redirectUrl,
+      );
 
       if (result.type === "success" && result.url) {
         try {

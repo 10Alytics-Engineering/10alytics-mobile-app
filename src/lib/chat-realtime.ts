@@ -51,6 +51,7 @@ export async function getChatEcho() {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
+          ...apiClient.getTimezoneHeaders(),
         },
       },
     }),
