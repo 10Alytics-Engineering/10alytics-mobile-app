@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "10Alytics",
-    "slug": "tenalyticsapp",
+    "slug": "tenalytics-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/images/10alytics-iOS-Default-1024x1024@1x.png",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.davidghena.tenalyticsapp",
+      "bundleIdentifier": "com.tenalytics.mobile",
       "icon": "./src/assets/images/10alytics.icon",
       "usesAppleSignIn": true
     },
@@ -21,7 +21,7 @@
         "monochromeImage": "./src/assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.davidghena.tenalyticsapp"
+      "package": "com.tenalytics.mobile"
     },
     "web": {
       "output": "static",
@@ -57,6 +57,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c630d574-0ced-4fce-953f-21234b58a631"
+      }
+    },
+    "owner": "tenalytics"
   }
 }
