@@ -85,46 +85,55 @@ export async function unregisterPushNotifications() {
 export async function registerForPushNotifications() {
   if (Platform.OS === "web") return null;
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  const finalStatus =
-    existingStatus === "granted"
-      ? existingStatus
-      : (
-          await Notifications.requestPermissionsAsync({
-            ios: {
-              allowAlert: true,
-              allowSound: true,
-              allowBadge: true,
-            },
-          })
-        ).status;
+  try {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    const finalStatus =
+      existingStatus === "granted"
+        ? existingStatus
+        : (
+            await Notifications.requestPermissionsAsync({
+              ios: {
+                allowAlert: true,
+                allowSound: true,
+                allowBadge: true,
+              },
+            })
+          ).status;
 
-  if (finalStatus !== "granted") return null;
+    if (finalStatus !== "granted") return null;
 
-  const projectId =
-    Constants.expoConfig?.extra?.eas?.projectId ??
-    Constants.expoConfig?.extra?.projectId ??
-    Constants.easConfig?.projectId;
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.expoConfig?.extra?.projectId ??
+      Constants.easConfig?.projectId;
 
-  if (!projectId) {
-    console.warn("Missing EAS projectId; cannot register Expo push token.");
+    if (!projectId) {
+      console.warn("Missing EAS projectId; cannot register Expo push token.");
+      return null;
+    }
+
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
+      .data;
+    cachedExpoPushToken = token;
+    await SecureStore.setItemAsync(pushTokenStorageKey, token);
+
+    if (Platform.OS === "ios" || Platform.OS === "android") {
+      await apiClient.registerChatDevice({
+        token,
+        platform: Platform.OS,
+        device_name: Device.deviceName,
+        app_version: Constants.expoConfig?.version ?? null,
+      });
+    }
+
+    return token;
+  } catch (error) {
+    // Push isn't available on simulators / unconfigured environments —
+    // skip quietly instead of throwing an unhandled rejection.
+    console.warn("Push notification registration skipped:", error);
     return null;
   }
-
-  const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-  cachedExpoPushToken = token;
-  await SecureStore.setItemAsync(pushTokenStorageKey, token);
-
-  if (Platform.OS === "ios" || Platform.OS === "android") {
-    await apiClient.registerChatDevice({
-      token,
-      platform: Platform.OS,
-      device_name: Device.deviceName,
-      app_version: Constants.expoConfig?.version ?? null,
-    });
-  }
-
-  return token;
 }
 
 export async function showLocalChatNotification(event: SocketChatMessageEvent) {

@@ -37,25 +37,33 @@ export async function getChatEcho() {
   if (!token || !key || !host) return null;
   if (echo) return echo;
 
-  echo = new Echo({
-    broadcaster: "reverb",
-    client: new Pusher(key, {
-      cluster: process.env.EXPO_PUBLIC_REVERB_CLUSTER ?? "mt1",
-      wsHost: host,
-      wsPort: Number(process.env.EXPO_PUBLIC_REVERB_WS_PORT ?? 443),
-      wssPort: Number(process.env.EXPO_PUBLIC_REVERB_WSS_PORT ?? 443),
-      forceTLS: process.env.EXPO_PUBLIC_REVERB_FORCE_TLS !== "false",
-      enabledTransports: ["ws", "wss"],
-      authEndpoint: `${apiClient.getApiBaseURL()}/broadcasting/auth`,
-      auth: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          ...apiClient.getTimezoneHeaders(),
+  try {
+    echo = new Echo({
+      broadcaster: "reverb",
+      client: new Pusher(key, {
+        cluster: process.env.EXPO_PUBLIC_REVERB_CLUSTER ?? "mt1",
+        wsHost: host,
+        wsPort: Number(process.env.EXPO_PUBLIC_REVERB_WS_PORT ?? 443),
+        wssPort: Number(process.env.EXPO_PUBLIC_REVERB_WSS_PORT ?? 443),
+        forceTLS: process.env.EXPO_PUBLIC_REVERB_FORCE_TLS !== "false",
+        enabledTransports: ["ws", "wss"],
+        authEndpoint: `${apiClient.getApiBaseURL()}/broadcasting/auth`,
+        auth: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            ...apiClient.getTimezoneHeaders(),
+          },
         },
-      },
-    }),
-  });
+      }),
+    });
+  } catch (error) {
+    // Realtime chat is non-critical — fail quietly instead of crashing
+    // the screen with an unhandled rejection.
+    console.warn("Chat realtime unavailable:", error);
+    echo = null;
+    return null;
+  }
 
   return echo;
 }

@@ -3,7 +3,7 @@ import { BlurView } from "expo-blur";
 import { Icon, Label, Tabs } from "expo-router";
 import { NativeTabs } from "expo-router/build/native-tabs";
 import React from "react";
-import { Platform, StyleSheet } from "react-native";
+import { Image, Platform, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
@@ -27,35 +27,35 @@ function IOSTabLayout() {
         >
             <NativeTabs.Trigger name="index">
                 <Icon
-                    sf={{ default: "square.grid.2x2", selected: "square.grid.2x2.fill" }}
-                    drawable=""
+                    src={require("../../assets/images/dashboard-tab.png")}
+                    renderingMode="original"
                 />
-                <Label>Dashboard</Label>
+                <Label hidden>Dashboard</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="courses">
                 <Icon
-                    sf={{ default: "book.closed", selected: "book.closed.fill" }}
+                    sf={{ default: "play.circle", selected: "play.circle.fill" }}
                     drawable=""
                 />
-                <Label>Courses</Label>
+                <Label hidden>Courses</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="classroom">
                 <Icon
                     sf={{ default: "graduationcap", selected: "graduationcap.fill" }}
                     drawable=""
                 />
-                <Label>Classroom</Label>
+                <Label hidden>Classroom</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="chat">
                 <Icon sf={{ default: "message", selected: "message.fill" }} drawable="" />
-                <Label>Chat</Label>
+                <Label hidden>Chat</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="profile">
                 <Icon
                     sf={{ default: "person.circle", selected: "person.circle.fill" }}
                     drawable=""
                 />
-                <Label>Profile</Label>
+                <Label hidden>Profile</Label>
             </NativeTabs.Trigger>
         </NativeTabs>
     );
@@ -73,6 +73,7 @@ function AndroidTabLayout() {
                 tabBarActiveTintColor: tc.primary,
                 tabBarInactiveTintColor: tc.textMuted,
                 tabBarHideOnKeyboard: true,
+                tabBarShowLabel: false,
                 tabBarButton: (props) => <HapticTab {...props} />,
                 tabBarBackground: () => (
                     <BlurView
@@ -127,11 +128,14 @@ function AndroidTabLayout() {
                 name="index"
                 options={{
                     title: "Dashboard",
-                    tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? "grid" : "grid-outline"}
-                            size={focused ? 26 : 24}
-                            color={color}
+                    tabBarIcon: ({ focused }) => (
+                        <Image
+                            source={require("../../assets/images/dashboard-tab.png")}
+                            style={{
+                                width: focused ? 26 : 24,
+                                height: focused ? 26 : 24,
+                            }}
+                            resizeMode="contain"
                         />
                     ),
                 }}
@@ -139,10 +143,10 @@ function AndroidTabLayout() {
             <Tabs.Screen
                 name="courses"
                 options={{
-                    title: "Learning",
+                    title: "Courses",
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
-                            name={focused ? "book" : "book-outline"}
+                            name={focused ? "play-circle" : "play-circle-outline"}
                             size={focused ? 26 : 24}
                             color={color}
                         />

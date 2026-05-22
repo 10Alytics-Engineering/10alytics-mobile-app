@@ -4,8 +4,6 @@ import * as WebBrowser from "expo-web-browser";
 import { X } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import { useVimeoPlayer, VimeoView } from "react-native-vimeo-bridge";
 import { WebView } from "react-native-webview";
 
 import {
@@ -88,33 +86,70 @@ function YoutubeWebPlayer({
     );
 }
 
-function VimeoBridgePlayer({
-    playerUrl,
-    width,
+/**
+ * Domain the Vimeo videos are whitelisted for. The WebView document is given
+ * this as its `baseUrl` so the player.vimeo.com iframe sends a matching
+ * `Referer` — required for videos whose Vimeo privacy restricts embedding.
+ */
+const VIMEO_EMBED_ORIGIN = "https://www.10alytics.io";
+
+function vimeoEmbedHtml(embedUrl: string): string {
+    const sep = embedUrl.includes("?") ? "&" : "?";
+    // No autoplay: iOS WKWebView renders autoplayed inline video black —
+    // showing Vimeo's poster + play button lets the user start it with a tap,
+    // which plays and renders correctly.
+    const src = `${embedUrl}${sep}playsinline=1&title=0&byline=0&portrait=0`;
+    const srcAttr = src.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden}iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style></head><body><iframe src="${srcAttr}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></body></html>`;
+}
+
+/** Vimeo embed in a WebView with the correct `baseUrl` so domain-restricted videos play. */
+function VimeoWebPlayer({
+    embedUrl,
+    openUrl,
     height,
 }: {
-    playerUrl: string;
-    width: number;
+    embedUrl: string;
+    openUrl: string;
     height: number;
 }) {
-    const player = useVimeoPlayer(playerUrl, {
-        autoplay: true,
-        controls: true,
-    });
+    const [failed, setFailed] = useState(false);
+    const html = useMemo(() => vimeoEmbedHtml(embedUrl), [embedUrl]);
+
+    if (failed) {
+        return (
+            <View
+                className="items-center justify-center gap-4 px-6 bg-black"
+                style={{ height, width: "100%" }}
+            >
+                <Text className="text-center text-base text-neutral-200" selectable>
+                    This video could not be played in the app.
+                </Text>
+                <Pressable
+                    accessibilityRole="button"
+                    className="rounded-xl bg-white/15 px-5 py-3 active:opacity-80"
+                    onPress={() => {
+                        WebBrowser.openBrowserAsync(openUrl).catch(() => { });
+                    }}
+                >
+                    <Text className="text-center font-medium text-white">
+                        Open in browser
+                    </Text>
+                </Pressable>
+            </View>
+        );
+    }
+
     return (
-        <VimeoView
-            height={process.env.EXPO_OS === "web" ? "auto" : height}
-            iframeStyle={{ aspectRatio: 16 / 9 }}
-            player={player}
-            style={{ alignSelf: "center", maxHeight: height }}
-            webViewProps={{
-                renderToHardwareTextureAndroid: true,
-                injectedJavaScriptBeforeContentLoaded: `
-                Object.defineProperty(document, 'referrer', {get : function(){ return "https://www.10alytics.io"; }});
-                true;
-              `,
-            }}
-            width={width}
+        <WebView
+            allowsFullscreenVideo
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            onError={() => setFailed(true)}
+            onHttpError={() => setFailed(true)}
+            originWhitelist={["*"]}
+            source={{ html, baseUrl: VIMEO_EMBED_ORIGIN }}
+            style={{ height, width: "100%", backgroundColor: "#000" }}
         />
     );
 }
@@ -220,10 +255,10 @@ export function CourseInlineVideoPlayer({
                             videoId={parsed.videoId}
                         />
                     ) : parsed?.provider === "vimeo" && parsed.embedUrl ? (
-                        <VimeoBridgePlayer
+                        <VimeoWebPlayer
+                            embedUrl={parsed.embedUrl}
                             height={playerHeight}
-                            playerUrl={parsed.embedUrl}
-                            width={playerWidth}
+                            openUrl={parsed.openUrl}
                         />
                     ) : parsed?.provider === "unknown" &&
                         isLikelyDirectVideoUrl(parsed.openUrl) ? (

@@ -64,7 +64,17 @@ function extractVimeoId(url: string): string | null {
 function vimeoPrivacyHashFromUrl(url: string): string | null {
   try {
     const u = new URL(url);
-    return u.searchParams.get("h");
+    const queryHash = u.searchParams.get("h");
+    if (queryHash) return queryHash;
+
+    // Unlisted Vimeo videos carry the privacy hash in the path:
+    // vimeo.com/{id}/{hash} or player.vimeo.com/video/{id}/{hash}
+    const parts = u.pathname.split("/").filter(Boolean);
+    const idIndex = parts.findIndex((part) => /^\d+$/.test(part));
+    const pathHash = idIndex >= 0 ? parts[idIndex + 1] : undefined;
+    if (pathHash && /^[A-Za-z0-9]+$/.test(pathHash)) return pathHash;
+
+    return null;
   } catch {
     return null;
   }

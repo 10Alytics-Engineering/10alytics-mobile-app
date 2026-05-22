@@ -85,7 +85,11 @@ export default function JournalCard({
                     )}
 
                     <View className="flex-row items-center justify-between mt-4 w-full">
-                        <Pressable className="bg-text rounded-xl px-4 py-2 w-full flex-row items-center justify-center" style={{ backgroundColor: colors.primary }}>
+                        <Pressable
+                            onPress={onPress}
+                            className="bg-text rounded-xl px-4 py-2 w-full flex-row items-center justify-center active:opacity-80"
+                            style={{ backgroundColor: colors.primary }}
+                        >
                             <Text className="text-white font-semibold text-sm text-center">{actionLabel}</Text>
                             <Feather name='chevron-right' size={18} color="white" />
                         </Pressable>
