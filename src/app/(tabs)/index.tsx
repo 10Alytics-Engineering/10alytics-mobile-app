@@ -141,10 +141,30 @@ export default function Home() {
                         </Pressable>
                     </View>
                 ) : courses.length === 0 ? (
-                    <View className="mb-6 rounded-3xl border border-text/10 p-5">
-                        <Text className="text-text opacity-70">
-                            You don&apos;t have any courses yet. Open the Courses tab to get started.
+                    <View className="mb-6 items-center rounded-3xl border border-text/10 bg-secondary px-6 py-8">
+                        <View
+                            className="h-16 w-16 items-center justify-center rounded-full"
+                            style={{ backgroundColor: colors.tabPillActive }}
+                        >
+                            <Feather name="book-open" size={28} color={colors.primary} />
+                        </View>
+                        <Text className="text-text mt-4 text-xl font-bold">
+                            Start your learning journey
                         </Text>
+                        <Text className="text-text mt-2 text-center text-sm leading-5 opacity-60">
+                            You haven&apos;t enrolled in any courses yet. Browse the
+                            catalog and pick one to get started.
+                        </Text>
+                        <Pressable
+                            onPress={() => router.push("/(tabs)/courses")}
+                            className="mt-5 w-full flex-row items-center justify-center rounded-xl px-4 py-3 active:opacity-90"
+                            style={{ backgroundColor: colors.primary }}
+                        >
+                            <Feather name="compass" size={18} color="#ffffff" />
+                            <Text className="ml-2 font-semibold text-white">
+                                Browse courses
+                            </Text>
+                        </Pressable>
                     </View>
                 ) : (
                     <ScrollView
@@ -181,32 +201,36 @@ export default function Home() {
                         })}
                     </ScrollView>
                 )}
-                <View className="mb-3">
-                    <Text className="text-text text-lg font-semibold">
-                        Streaks & Rank
-                    </Text>
-                </View>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    className="mb-6"
-                    style={{ height: 280 }}
-                    contentContainerStyle={{ gap: 16, paddingRight: 24 }}
-                    snapToInterval={cardWidth + 16}
-                    decelerationRate="fast"
-                >
-                    <View style={{ width: cardWidth }}>
-                        <CardFlipFire days={10} title="Current Streak" price="10 days" />
-                    </View>
-                    <View style={{ width: cardWidth }}>
-                        <CardFlipRank
-                            title="Your Rank"
-                            rank={7}
-                            subtitle="Leaderboard rank"
-                            total={120}
-                        />
-                    </View>
-                </ScrollView>
+                {courses.length > 0 ? (
+                    <>
+                        <View className="mb-3">
+                            <Text className="text-text text-lg font-semibold">
+                                Streaks & Rank
+                            </Text>
+                        </View>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            className="mb-6"
+                            style={{ height: 280 }}
+                            contentContainerStyle={{ gap: 16, paddingRight: 24 }}
+                            snapToInterval={cardWidth + 16}
+                            decelerationRate="fast"
+                        >
+                            <View style={{ width: cardWidth }}>
+                                <CardFlipFire days={10} title="Current Streak" price="10 days" />
+                            </View>
+                            <View style={{ width: cardWidth }}>
+                                <CardFlipRank
+                                    title="Your Rank"
+                                    rank={7}
+                                    subtitle="Leaderboard rank"
+                                    total={120}
+                                />
+                            </View>
+                        </ScrollView>
+                    </>
+                ) : null}
                 <View className="mb-3">
                     <Text className="text-text text-lg font-semibold">Classroom</Text>
                 </View>

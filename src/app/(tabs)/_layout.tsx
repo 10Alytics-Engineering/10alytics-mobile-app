@@ -4,6 +4,7 @@ import { Icon, Label, Tabs } from "expo-router";
 import { NativeTabs } from "expo-router/build/native-tabs";
 import React from "react";
 import { Platform, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
 import useThemeColors from "@/contexts/ThemeColors";
@@ -63,6 +64,7 @@ function IOSTabLayout() {
 function AndroidTabLayout() {
     const { theme } = useTheme();
     const tc = useThemeColors();
+    const insets = useSafeAreaInsets();
 
     return (
         <Tabs
@@ -84,8 +86,8 @@ function AndroidTabLayout() {
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: 72,
-                    paddingBottom: 10,
+                    height: 72 + insets.bottom,
+                    paddingBottom: 10 + insets.bottom,
                     paddingTop: 8,
                     borderTopWidth: StyleSheet.hairlineWidth,
                     borderTopColor: tc.tabBarBorder,
@@ -137,7 +139,7 @@ function AndroidTabLayout() {
             <Tabs.Screen
                 name="courses"
                 options={{
-                    title: "Courses",
+                    title: "Learning",
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? "book" : "book-outline"}

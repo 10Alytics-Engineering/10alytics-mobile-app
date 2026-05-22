@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "305797806571",
+    "project_id": "alytics-mobile",
+    "storage_bucket": "alytics-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305797806571:android:73831c2950594a3d8dc1ae",
+        "android_client_info": {
+          "package_name": "com.tenalytics.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4SQPwPUdxXGs-UQSC9CHGpgpnlUBLF-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

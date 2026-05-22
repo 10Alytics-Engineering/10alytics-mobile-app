@@ -21,7 +21,8 @@
         "monochromeImage": "./src/assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.tenalytics.mobile"
+      "package": "com.tenalytics.mobile",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -47,7 +48,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./src/assets/images/android-icon-monochrome.png",
+          "icon": "./src/assets/images/splash-icon-light.png",
           "color": "#FF6600",
           "defaultChannel": "chat"
         }

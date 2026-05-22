@@ -1,5 +1,5 @@
 import { HEIGHT, MIN_LEDGE, Side, WIDTH } from "@/configs/constants";
-import MaskedView from "@react-native-community/masked-view";
+import MaskedView from "@react-native-masked-view/masked-view";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import Animated, {

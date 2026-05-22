@@ -321,6 +321,36 @@ export interface UserCoursesApiResponse {
   status: string;
 }
 
+export interface CourseBenefit {
+  id: number;
+  title: string;
+}
+
+/**
+ * Public course-catalog row from `GET /api/courses`.
+ * `id` is the catalog course id — matches `UserCourse.course_id`.
+ */
+export interface Course {
+  id: number;
+  title: string;
+  slug: string;
+  short_code: string | null;
+  tagline: string | null;
+  description: string | null;
+  image: string | null;
+  level: string | null;
+  duration: string | null;
+  language: string | null;
+  no_of_projects: string | null;
+  price: number | null;
+  usd_amount: number | null;
+  gbp_amount: number | null;
+  enrolled_students_count?: number;
+  course_benefits?: CourseBenefit[];
+  full_link: string | null;
+  half_link: string | null;
+}
+
 export interface UserCourseLesson {
   id: number;
   course_module_id: number;
@@ -614,6 +644,16 @@ class ApiClient {
     error?: ApiError;
   }> {
     return this.request<UserCoursesApiResponse>("/api/v2/user/courses", {
+      method: "GET",
+    });
+  }
+
+  /** Public course catalog. Responds with a bare array of courses. */
+  async getCourses(): Promise<{
+    data?: Course[];
+    error?: ApiError;
+  }> {
+    return this.request<Course[]>("/api/courses", {
       method: "GET",
     });
   }

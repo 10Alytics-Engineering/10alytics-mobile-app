@@ -41,10 +41,11 @@ export const useShadow = (options?: ShadowProps): ViewStyle => {
     elevation,
   };
 
-  // Return platform-specific shadow styles
-  return Platform.OS === 'ios' 
-    ? iosShadow 
-    : { ...iosShadow, ...androidShadow };
+  // Return platform-specific shadow styles.
+  // Android uses elevation only — spreading the iOS shadow props
+  // (offset/radius) on top of elevation double-renders on the new
+  // architecture and produces a hard, thin shadow band.
+  return Platform.OS === 'ios' ? iosShadow : androidShadow;
 };
 
 /**

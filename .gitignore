@@ -75,3 +75,4 @@ yarn-error.*
 .env.example
 .env
 .agent/skills/vercel-react-native-skills
+alytics-mobile-firebase-adminsdk-fbsvc-293d6ced6b.json

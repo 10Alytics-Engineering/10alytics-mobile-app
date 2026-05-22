@@ -2,7 +2,7 @@
   "name": "playground",
   "version": "1.0.0",
   "scripts": {
-    "android": "expo run:android",
+    "android": "CMAKE_VERSION=3.31.6 expo run:android",
     "ios": "expo run:ios",
     "start": "expo start",
     "prebuild": "expo prebuild",
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@expo-google-fonts/lora": "^0.3.0",
-    "@react-native-community/masked-view": "^0.1.11",
     "@react-native-community/netinfo": "11.5.2",
+    "@react-native-masked-view/masked-view": "0.3.2",
     "@rn-primitives/slot": "^1.1.0",
     "@rn-primitives/types": "^1.1.0",
     "@tanstack/react-query": "^5.91.2",

@@ -139,7 +139,7 @@ export async function showLocalChatNotification(event: SocketChatMessageEvent) {
         conversation_id: event.conversation_id,
         message_id: event.id,
       },
-      sound: "default",
+      sound: true,
     },
     trigger: Platform.OS === "android" ? { channelId: "chat" } : null,
   });
@@ -160,7 +160,7 @@ export async function showLocalClassroomPostNotification(notif: {
         classroom_id: notif.classroom_id,
         post_id: notif.post_id,
       },
-      sound: "default",
+      sound: true,
     },
     trigger: Platform.OS === "android" ? { channelId: "classroom" } : null,
   });
@@ -172,7 +172,6 @@ async function configureNotificationChannels() {
   await Notifications.setNotificationChannelAsync("chat", {
     name: "Chat",
     importance: Notifications.AndroidImportance.HIGH,
-    sound: "default",
     enableVibrate: true,
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PRIVATE,
   });
