@@ -2,18 +2,14 @@ import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import {
-  BookOpen,
   ChevronDown,
   CircleCheckBig,
   Download,
   ExternalLink,
   FileText,
-  MessageCircle,
-  MoreVertical,
   Play,
   PlayCircle,
-  Sparkles,
-  X,
+  X
 } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -104,6 +100,7 @@ interface ActiveVideoState {
   title: string;
   eyebrow: string;
   description?: string | null;
+  previewUrl?: string | null;
 }
 
 type DetailTab = "lectures" | "downloads" | "more";
@@ -116,7 +113,10 @@ function formatSlugLabel(slug: string): string {
     .join(" ");
 }
 
-function findWeekIdForLesson(weeks: UserCourseWeek[], lessonId: number): number | null {
+function findWeekIdForLesson(
+  weeks: UserCourseWeek[],
+  lessonId: number,
+): number | null {
   for (const week of weeks) {
     for (const module of week.course_module ?? []) {
       if (module.course_lessons?.some((lesson) => lesson.id === lessonId)) {
@@ -127,10 +127,15 @@ function findWeekIdForLesson(weeks: UserCourseWeek[], lessonId: number): number 
   return null;
 }
 
-function findLessonById(weeks: UserCourseWeek[], lessonId: number): UserCourseLesson | null {
+function findLessonById(
+  weeks: UserCourseWeek[],
+  lessonId: number,
+): UserCourseLesson | null {
   for (const week of weeks) {
     for (const module of week.course_module ?? []) {
-      const lesson = module.course_lessons?.find((item) => item.id === lessonId);
+      const lesson = module.course_lessons?.find(
+        (item) => item.id === lessonId,
+      );
       if (lesson) return lesson;
     }
   }
@@ -140,10 +145,16 @@ function findLessonById(weeks: UserCourseWeek[], lessonId: number): UserCourseLe
 function findLessonContext(
   weeks: UserCourseWeek[],
   lessonId: number,
-): { week: UserCourseWeek; module: UserCourseModule; lesson: UserCourseLesson } | null {
+): {
+  week: UserCourseWeek;
+  module: UserCourseModule;
+  lesson: UserCourseLesson;
+} | null {
   for (const week of weeks) {
     for (const module of week.course_module ?? []) {
-      const lesson = module.course_lessons?.find((item) => item.id === lessonId);
+      const lesson = module.course_lessons?.find(
+        (item) => item.id === lessonId,
+      );
       if (lesson) {
         return { week, module, lesson };
       }
@@ -152,7 +163,9 @@ function findLessonContext(
   return null;
 }
 
-function findFirstPlayableLesson(weeks: UserCourseWeek[]): UserCourseLesson | null {
+function findFirstPlayableLesson(
+  weeks: UserCourseWeek[],
+): UserCourseLesson | null {
   for (const week of weeks) {
     for (const module of week.course_module ?? []) {
       for (const lesson of module.course_lessons ?? []) {
@@ -163,7 +176,9 @@ function findFirstPlayableLesson(weeks: UserCourseWeek[]): UserCourseLesson | nu
   return null;
 }
 
-function findWeekIdForFirstPlayableLesson(weeks: UserCourseWeek[]): number | null {
+function findWeekIdForFirstPlayableLesson(
+  weeks: UserCourseWeek[],
+): number | null {
   for (const week of weeks) {
     for (const module of week.course_module ?? []) {
       for (const lesson of module.course_lessons ?? []) {
@@ -179,15 +194,24 @@ async function openExternalUrl(url: string | null | undefined) {
   await WebBrowser.openBrowserAsync(url.trim());
 }
 
-function getPrimaryInstructor(course: UserCourseDetailCourse | null | undefined): UserCourseInstructor | null {
-  return course?.instructors?.find((instructor) => instructor.name?.trim()) ?? null;
+function getPrimaryInstructor(
+  course: UserCourseDetailCourse | null | undefined,
+): UserCourseInstructor | null {
+  return (
+    course?.instructors?.find((instructor) => instructor.name?.trim()) ?? null
+  );
 }
 
-function getInstructorLabel(course: UserCourseDetailCourse | null | undefined): string {
+function getInstructorLabel(
+  course: UserCourseDetailCourse | null | undefined,
+): string {
   return "10Alytics";
 }
 
-function getInstructorRole(course: UserCourseDetailCourse | null | undefined, fallback: string): string {
+function getInstructorRole(
+  course: UserCourseDetailCourse | null | undefined,
+  fallback: string,
+): string {
   return getPrimaryInstructor(course)?.career?.trim() || fallback;
 }
 
@@ -212,7 +236,8 @@ function FloatingHeaderButton({
         borderRadius: 22,
         overflow: "hidden",
         borderWidth: 1,
-        borderColor: tint === "dark" ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
+        borderColor:
+          tint === "dark" ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.55)",
       }}
     >
       <Pressable
@@ -223,7 +248,8 @@ function FloatingHeaderButton({
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: tint === "dark" ? "rgba(8,8,10,0.22)" : "rgba(255,255,255,0.24)",
+          backgroundColor:
+            tint === "dark" ? "rgba(8,8,10,0.22)" : "rgba(255,255,255,0.24)",
         }}
       >
         {children}
@@ -254,11 +280,15 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     refetch,
   } = useUserCourseDetail(enrollmentId);
 
-  const bundle = useMemo(() => parseUserCourseDetailBundle(apiResponse), [apiResponse]);
+  const bundle = useMemo(
+    () => parseUserCourseDetailBundle(apiResponse),
+    [apiResponse],
+  );
   const course = bundle?.course ?? null;
   const progressPct = bundle ? Math.round(bundle.progress_percentage) : 0;
   const currentLessonId =
-    bundle?.current_week_video_id != null && Number.isFinite(bundle.current_week_video_id)
+    bundle?.current_week_video_id != null &&
+      Number.isFinite(bundle.current_week_video_id)
       ? bundle.current_week_video_id
       : null;
 
@@ -292,7 +322,8 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
         : findWeekIdForFirstPlayableLesson(sortedWeeks);
 
     setSelectedWeekId((previous) => {
-      const previousIsValid = previous != null && sortedWeeks.some((week) => week.id === previous);
+      const previousIsValid =
+        previous != null && sortedWeeks.some((week) => week.id === previous);
       if (previousIsValid) {
         if (
           !didBootstrapWeekFromProgress.current &&
@@ -331,7 +362,8 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
   }, [sortedWeeks, currentLessonId]);
 
   const resumeLessonContext = useMemo(
-    () => (resumeLesson ? findLessonContext(sortedWeeks, resumeLesson.id) : null),
+    () =>
+      resumeLesson ? findLessonContext(sortedWeeks, resumeLesson.id) : null,
     [sortedWeeks, resumeLesson],
   );
 
@@ -361,14 +393,17 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
 
   const heroUri = course?.image ? resolveMediaUrl(course.image) : undefined;
   const slug = course?.slug ?? "";
-  const categoryLabel = course?.level?.trim() ? course.level : formatSlugLabel(slug);
+  const categoryLabel = course?.level?.trim()
+    ? course.level
+    : formatSlugLabel(slug);
   const lessonCountAcrossCourse = useMemo(
     () =>
       sortedWeeks.reduce(
         (weekAcc, week) =>
           weekAcc +
           week.course_module.reduce(
-            (moduleAcc, module) => moduleAcc + (module.course_lessons?.length ?? 0),
+            (moduleAcc, module) =>
+              moduleAcc + (module.course_lessons?.length ?? 0),
             0,
           ),
         0,
@@ -376,11 +411,19 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     [sortedWeeks],
   );
   const moduleCountAcrossCourse = useMemo(
-    () => sortedWeeks.reduce((count, week) => count + (week.course_module?.length ?? 0), 0),
+    () =>
+      sortedWeeks.reduce(
+        (count, week) => count + (week.course_module?.length ?? 0),
+        0,
+      ),
     [sortedWeeks],
   );
   const totalLessonsInSelectedWeek = useMemo(
-    () => modules.reduce((acc, module) => acc + (module.course_lessons?.length ?? 0), 0),
+    () =>
+      modules.reduce(
+        (acc, module) => acc + (module.course_lessons?.length ?? 0),
+        0,
+      ),
     [modules],
   );
   const selectedWeekAssessments = selectedWeek?.assessments?.length ?? 0;
@@ -418,6 +461,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
             ? `Module ${resumeLessonContext.week.week} • ${resumeLessonContext.module.title}`
             : "Continue learning",
         description: normalizeHtmlToPlainText(resumeLesson.description),
+        previewUrl: resumeLesson.video_preview,
       };
     }
 
@@ -427,7 +471,10 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
         rawUrl: trailerUrl,
         title: course?.title ?? "Course trailer",
         eyebrow: "Course trailer",
-        description: normalizeHtmlToPlainText(course?.tagline || course?.description),
+        description: normalizeHtmlToPlainText(
+          course?.tagline || course?.description,
+        ),
+        previewUrl: null,
       };
     }
 
@@ -435,28 +482,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
   }, [activeVideo, course, resumeLesson, resumeLessonContext]);
 
   const pinnedLessonTitle =
-    pinnedVideo && pinnedVideo.title !== (course?.title ?? "") ? pinnedVideo.title : null;
-
-  const primaryResource = useMemo(() => {
-    if (course?.link_to_brochure) {
-      return { label: "Course guide", subtitle: "Open brochure", url: course.link_to_brochure };
-    }
-    if (course?.career_starter_kit_link) {
-      return {
-        label: "Career starter kit",
-        subtitle: "Prep materials and career assets",
-        url: course.career_starter_kit_link,
-      };
-    }
-    if (course?.whatsapp_community_link) {
-      return {
-        label: "Community chat",
-        subtitle: "Ask questions and connect with learners",
-        url: course.whatsapp_community_link,
-      };
-    }
-    return null;
-  }, [course]);
+    pinnedVideo && pinnedVideo.title !== (course?.title ?? "")
+      ? pinnedVideo.title
+      : null;
 
   const resourceItems = [
     course?.link_to_brochure
@@ -466,24 +494,6 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
         subtitle: "Open the full course guide",
         url: course.link_to_brochure,
         icon: FileText,
-      }
-      : null,
-    course?.career_starter_kit_link
-      ? {
-        key: "starter-kit",
-        label: "Career starter kit",
-        subtitle: "Templates, preparation, and next-step resources",
-        url: course.career_starter_kit_link,
-        icon: BookOpen,
-      }
-      : null,
-    course?.whatsapp_community_link
-      ? {
-        key: "community",
-        label: "WhatsApp community",
-        subtitle: "Get support from mentors and learners",
-        url: course.whatsapp_community_link,
-        icon: MessageCircle,
       }
       : null,
   ].filter(Boolean) as {
@@ -502,8 +512,6 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
 
   const courseMetaItems = [
     `${progressPct}% complete`,
-    course?.duration?.trim() || null,
-    course?.language?.trim() || null,
     `${lessonCountAcrossCourse} lectures`,
   ].filter(Boolean) as string[];
 
@@ -531,26 +539,20 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     setActiveVideo({
       rawUrl,
       title: lesson.title,
-      eyebrow: week && module ? `Module ${week.week} • ${module.title}` : "Course lesson",
+      eyebrow:
+        week && module
+          ? `Module ${week.week} • ${module.title}`
+          : "Course lesson",
       description: normalizeHtmlToPlainText(lesson.description),
+      previewUrl: lesson.video_preview,
     });
     setSelectedTab("lectures");
   }
 
   function toggleModule(moduleId: number) {
-    setExpandedModuleId((previous) => (previous === moduleId ? null : moduleId));
-  }
-
-  function handleHeaderAction() {
-    if (activeVideo) {
-      setActiveVideo(null);
-      return;
-    }
-    if (primaryResource) {
-      openExternalUrl(primaryResource.url).catch(() => { });
-      return;
-    }
-    setSelectedTab("more");
+    setExpandedModuleId((previous) =>
+      previous === moduleId ? null : moduleId,
+    );
   }
 
   function handleHelperAction() {
@@ -563,7 +565,11 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
       return;
     }
     if (resumeLesson) {
-      openLesson(resumeLesson, resumeLessonContext?.week, resumeLessonContext?.module);
+      openLesson(
+        resumeLesson,
+        resumeLessonContext?.week,
+        resumeLessonContext?.module,
+      );
       return;
     }
     setSelectedTab("more");
@@ -596,7 +602,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                 width: 42,
                 height: 5,
                 borderRadius: 999,
-                backgroundColor: isDark ? "rgba(255,255,255,0.28)" : "rgba(17,19,24,0.18)",
+                backgroundColor: isDark
+                  ? "rgba(255,255,255,0.28)"
+                  : "rgba(17,19,24,0.18)",
               }}
             />
           </View>
@@ -613,134 +621,169 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
               onPress={() => router.back()}
               tint={c.blurTint}
             >
-              <X color={isDark ? "#FFFFFF" : "#111318"} size={20} strokeWidth={2.3} />
+              <X
+                color={isDark ? "#FFFFFF" : "#111318"}
+                size={20}
+                strokeWidth={2.3}
+              />
             </FloatingHeaderButton>
 
-            <FloatingHeaderButton
-              accessibilityLabel={activeVideo ? "Close active lesson" : "More course actions"}
-              onPress={handleHeaderAction}
-              tint={c.blurTint}
-            >
-              {activeVideo ? (
-                <X color={isDark ? "#FFFFFF" : "#111318"} size={20} strokeWidth={2.3} />
-              ) : (
-                <MoreVertical color={isDark ? "#FFFFFF" : "#111318"} size={21} strokeWidth={2.2} />
-              )}
-            </FloatingHeaderButton>
+            <View style={{ width: 44, height: 44 }} />
           </View>
         </Animated.View>
       </View>
 
-      <ScrollView
-        ref={mainScrollRef}
-        contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: 0,
-          paddingBottom: insets.bottom + 36,
-          paddingHorizontal: 0,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {enrollmentId == null ? (
-          <View
-            style={{
-              minHeight: 220,
-              alignItems: "center",
-              justifyContent: "center",
-              paddingHorizontal: 24,
-              paddingTop: insets.top + 112,
-              paddingBottom: 32,
-            }}
-          >
-            <Text selectable style={{ color: c.textMuted, fontSize: 15, textAlign: "center" }}>
-              This course link is invalid. Open it again from your course list.
-            </Text>
-          </View>
-        ) : isPending ? (
-          <LuminaCourseDetailSkeleton
-            heroH={topVideoHeight}
-            surfaceHighest={c.panelMuted}
-            surfaceHigh={c.panel}
-          />
-        ) : isError || !course ? (
-          <View
-            style={{
-              minHeight: 220,
-              alignItems: "center",
-              justifyContent: "center",
-              paddingHorizontal: 24,
-              paddingTop: insets.top + 112,
-              paddingBottom: 32,
-              gap: 16,
-            }}
-          >
-            <Text selectable style={{ color: c.textMuted, fontSize: 15, textAlign: "center" }}>
-              {error?.message ?? "Could not load this course."}
-            </Text>
-            <Pressable
-              onPress={async () => {
-                await refetch();
-              }}
+      {enrollmentId == null || isPending || isError || !course ? (
+        <ScrollView
+          ref={mainScrollRef}
+          contentInsetAdjustmentBehavior="never"
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingTop: 0,
+            paddingBottom: insets.bottom + 36,
+            paddingHorizontal: 0,
+          }}
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {enrollmentId == null ? (
+            <View
               style={{
-                borderRadius: 999,
-                backgroundColor: c.accent,
+                minHeight: 220,
+                alignItems: "center",
+                justifyContent: "center",
                 paddingHorizontal: 24,
-                paddingVertical: 12,
+                paddingTop: insets.top + 112,
+                paddingBottom: 32,
               }}
             >
-              <Text style={{ color: "#FFFFFF", fontWeight: "800", fontSize: 15 }}>Try again</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <>
-            <View style={{ backgroundColor: "#000000" }}>
-              {pinnedVideo ? (
-                <CourseInlineVideoPlayer
-                  aspectRatio={topVideoAspectRatio}
-                  playerWidth={width}
-                  rawUrl={pinnedVideo.rawUrl}
-                  rounded={false}
-                  showCloseButton={false}
-                  title={pinnedVideo.title}
-                />
-              ) : (
-                <View
-                  style={{
-                    width,
-                    height: topVideoHeight,
-                    backgroundColor: c.heroFallback,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {heroUri ? (
-                    <Image
-                      source={{ uri: heroUri }}
-                      resizeMode="cover"
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  ) : (
-                    <CourseCoverForSlug slug={slug || "data-analysis"} size={width * 0.56} />
-                  )}
-
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      backgroundColor: c.overlay,
-                    }}
-                  />
-                </View>
-              )}
+              <Text
+                selectable
+                style={{
+                  color: c.textMuted,
+                  fontSize: 15,
+                  textAlign: "center",
+                }}
+              >
+                This course link is invalid. Open it again from your course
+                list.
+              </Text>
             </View>
+          ) : isPending ? (
+            <LuminaCourseDetailSkeleton
+              heroH={topVideoHeight}
+              surfaceHighest={c.panelMuted}
+              surfaceHigh={c.panel}
+            />
+          ) : isError || !course ? (
+            <View
+              style={{
+                minHeight: 220,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingHorizontal: 24,
+                paddingTop: insets.top + 112,
+                paddingBottom: 32,
+                gap: 16,
+              }}
+            >
+              <Text
+                selectable
+                style={{
+                  color: c.textMuted,
+                  fontSize: 15,
+                  textAlign: "center",
+                }}
+              >
+                {error?.message ?? "Could not load this course."}
+              </Text>
+              <Pressable
+                onPress={async () => {
+                  await refetch();
+                }}
+                style={{
+                  borderRadius: 999,
+                  backgroundColor: c.accent,
+                  paddingHorizontal: 24,
+                  paddingVertical: 12,
+                }}
+              >
+                <Text
+                  style={{ color: "#FFFFFF", fontWeight: "800", fontSize: 15 }}
+                >
+                  Try again
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </ScrollView>
+      ) : (
+        <>
+          <View style={{ backgroundColor: "#000000" }}>
+            {pinnedVideo ? (
+              <CourseInlineVideoPlayer
+                aspectRatio={topVideoAspectRatio}
+                playerWidth={width}
+                previewUrl={pinnedVideo.previewUrl}
+                rawUrl={pinnedVideo.rawUrl}
+                rounded={false}
+                showCloseButton={false}
+                title={pinnedVideo.title}
+              />
+            ) : (
+              <View
+                style={{
+                  width,
+                  height: topVideoHeight,
+                  backgroundColor: c.heroFallback,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {heroUri ? (
+                  <Image
+                    source={{ uri: heroUri }}
+                    resizeMode="cover"
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  <CourseCoverForSlug
+                    slug={slug || "data-analysis"}
+                    size={width * 0.56}
+                  />
+                )}
 
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    backgroundColor: c.overlay,
+                  }}
+                />
+              </View>
+            )}
+          </View>
+
+          <ScrollView
+            ref={mainScrollRef}
+            contentInsetAdjustmentBehavior="never"
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: insets.bottom + 36,
+              paddingHorizontal: 0,
+            }}
+            style={{ flex: 1 }}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={{ paddingHorizontal: 18, paddingTop: 16, gap: 18 }}>
-              <Animated.View entering={FadeInDown.duration(300)} style={{ gap: 8 }}>
+              <Animated.View
+                entering={FadeInDown.duration(300)}
+                style={{ gap: 8 }}
+              >
                 <Text
                   style={{
                     color: c.textMuted,
@@ -755,7 +798,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                   selectable
                   style={{
                     color: c.text,
-                    fontSize: 33,
+                    fontSize: 26,
                     lineHeight: 40,
                     fontWeight: "800",
                     letterSpacing: -0.9,
@@ -774,10 +817,17 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                 >
                   {pinnedLessonTitle
                     ? `Now playing: ${pinnedLessonTitle}`
-                    : pinnedVideo?.eyebrow ?? leadInstructorRole}
+                    : (pinnedVideo?.eyebrow ?? leadInstructorRole)}
                 </Text>
 
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingTop: 4 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    paddingTop: 4,
+                  }}
+                >
                   {courseMetaItems.map((item) => (
                     <View
                       key={item}
@@ -806,7 +856,8 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                 </View>
               </Animated.View>
 
-              <Animated.View
+              {/* TODO: Added AI */}
+              {/* <Animated.View
                 entering={FadeInDown.delay(60).duration(320)}
                 style={{
                   borderCurve: "continuous",
@@ -819,7 +870,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                 }}
               >
                 <View style={{ gap: 8 }}>
-                  <Text style={{ color: c.text, fontSize: 18, fontWeight: "800" }}>
+                  <Text
+                    style={{ color: c.text, fontSize: 18, fontWeight: "800" }}
+                  >
                     Ask a question
                   </Text>
                   <Text
@@ -844,13 +897,22 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                   }}
                 >
                   <Sparkles color={c.accent} size={18} strokeWidth={2.2} />
-                  <Text style={{ color: c.accentStrong, fontSize: 16, fontWeight: "800" }}>
+                  <Text
+                    style={{
+                      color: c.accentStrong,
+                      fontSize: 16,
+                      fontWeight: "800",
+                    }}
+                  >
                     {helperCardActionLabel}
                   </Text>
                 </Pressable>
-              </Animated.View>
+              </Animated.View> */}
 
-              <Animated.View entering={FadeInDown.delay(120).duration(340)} style={{ gap: 16 }}>
+              <Animated.View
+                entering={FadeInDown.delay(120).duration(340)}
+                style={{ gap: 16 }}
+              >
                 <View
                   style={{
                     flexDirection: "row",
@@ -864,7 +926,6 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                   {[
                     { key: "lectures" as const, label: "Lectures" },
                     { key: "downloads" as const, label: "Downloads" },
-                    { key: "more" as const, label: "More" },
                   ].map((tab) => {
                     const active = selectedTab === tab.key;
                     return (
@@ -922,7 +983,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                 borderCurve: "continuous",
                                 paddingHorizontal: 14,
                                 paddingVertical: 10,
-                                backgroundColor: active ? c.accentSoft : c.panelMuted,
+                                backgroundColor: active
+                                  ? c.accentSoft
+                                  : c.panelMuted,
                                 borderWidth: 1,
                                 borderColor: active ? c.accent : c.border,
                               }}
@@ -964,7 +1027,13 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                         >
                           {selectedWeek.title}
                         </Text>
-                        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            flexWrap: "wrap",
+                            gap: 8,
+                          }}
+                        >
                           {[
                             `${totalLessonsInSelectedWeek} lectures`,
                             `${selectedWeekAssessments} assessments`,
@@ -1002,8 +1071,14 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                         const isExpanded = expandedModuleId === module.id;
                         const sectionStartIndex = modules
                           .slice(0, moduleIndex)
-                          .reduce((count, item) => count + (item.course_lessons?.length ?? 0), 0);
-                        const moduleHasCurrent = lessons.some((lesson) => lesson.id === currentLessonId);
+                          .reduce(
+                            (count, item) =>
+                              count + (item.course_lessons?.length ?? 0),
+                            0,
+                          );
+                        const moduleHasCurrent = lessons.some(
+                          (lesson) => lesson.id === currentLessonId,
+                        );
 
                         return (
                           <View
@@ -1048,7 +1123,13 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                 </Text>
                               </View>
 
-                              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  gap: 12,
+                                }}
+                              >
                                 {moduleHasCurrent ? (
                                   <View
                                     style={{
@@ -1075,7 +1156,11 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                   size={20}
                                   strokeWidth={2.2}
                                   style={{
-                                    transform: [{ rotate: isExpanded ? "0deg" : "-90deg" }],
+                                    transform: [
+                                      {
+                                        rotate: isExpanded ? "0deg" : "-90deg",
+                                      },
+                                    ],
                                   }}
                                 />
                               </View>
@@ -1086,25 +1171,32 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                 {lessons.map((lesson, lessonIndex) => {
                                   const rawUrl = lesson.video_url?.trim();
                                   const canPlay = !!rawUrl;
-                                  const isCurrent = currentLessonId === lesson.id;
+                                  const isCurrent =
+                                    currentLessonId === lesson.id;
                                   const isWatching =
-                                    activeVideo?.rawUrl === rawUrl && activeVideo?.title === lesson.title;
+                                    activeVideo?.rawUrl === rawUrl &&
+                                    activeVideo?.title === lesson.title;
 
-                                  const lessonMeta =
-                                    isWatching
-                                      ? "Now playing"
-                                      : isCurrent
-                                        ? "Continue here"
-                                        : canPlay
-                                          ? "Video lesson"
-                                          : "No video available";
+                                  const lessonMeta = isWatching
+                                    ? "Now playing"
+                                    : isCurrent
+                                      ? "Continue here"
+                                      : canPlay
+                                        ? "Video lesson"
+                                        : "No video available";
 
                                   return (
                                     <Pressable
                                       key={lesson.id}
                                       accessibilityRole="button"
                                       disabled={!canPlay}
-                                      onPress={() => openLesson(lesson, selectedWeek ?? undefined, module)}
+                                      onPress={() =>
+                                        openLesson(
+                                          lesson,
+                                          selectedWeek ?? undefined,
+                                          module,
+                                        )
+                                      }
                                       style={{
                                         flexDirection: "row",
                                         alignItems: "flex-start",
@@ -1135,19 +1227,36 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                           alignItems: "center",
                                           justifyContent: "center",
                                           backgroundColor:
-                                            isWatching || isCurrent ? c.accent : c.accentSoft,
-                                          borderWidth: isWatching || isCurrent ? 0 : 1,
+                                            isWatching || isCurrent
+                                              ? c.accent
+                                              : c.accentSoft,
+                                          borderWidth:
+                                            isWatching || isCurrent ? 0 : 1,
                                           borderColor: c.accentBorder,
                                         }}
                                       >
                                         {isWatching || isCurrent ? (
-                                          <CircleCheckBig color="#FFFFFF" size={14} strokeWidth={2.4} />
+                                          <CircleCheckBig
+                                            color="#FFFFFF"
+                                            size={14}
+                                            strokeWidth={2.4}
+                                          />
                                         ) : canPlay ? (
-                                          <Play color={c.accentStrong} size={12} fill={c.accentStrong} />
+                                          <Play
+                                            color={c.accentStrong}
+                                            size={12}
+                                            fill={c.accentStrong}
+                                          />
                                         ) : null}
                                       </View>
 
-                                      <View style={{ flex: 1, gap: 4, paddingRight: 8 }}>
+                                      <View
+                                        style={{
+                                          flex: 1,
+                                          gap: 4,
+                                          paddingRight: 8,
+                                        }}
+                                      >
                                         <Text
                                           selectable
                                           style={{
@@ -1162,7 +1271,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                         <Text
                                           style={{
                                             color:
-                                              isWatching || isCurrent ? c.accentStrong : c.textMuted,
+                                              isWatching || isCurrent
+                                                ? c.accentStrong
+                                                : c.textMuted,
                                             fontSize: 13,
                                             fontWeight: "500",
                                           }}
@@ -1179,17 +1290,27 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                           justifyContent: "center",
                                           backgroundColor: c.panelMuted,
                                           borderColor:
-                                            isWatching || isCurrent ? c.accentBorder : c.borderStrong,
+                                            isWatching || isCurrent
+                                              ? c.accentBorder
+                                              : c.borderStrong,
                                         }}
                                       >
                                         {canPlay ? (
                                           <PlayCircle
-                                            color={isWatching || isCurrent ? c.accentStrong : c.textMuted}
+                                            color={
+                                              isWatching || isCurrent
+                                                ? c.accentStrong
+                                                : c.textMuted
+                                            }
                                             size={18}
                                             strokeWidth={2}
                                           />
                                         ) : (
-                                          <FileText color={c.textMuted} size={17} strokeWidth={2} />
+                                          <FileText
+                                            color={c.textMuted}
+                                            size={17}
+                                            strokeWidth={2}
+                                          />
                                         )}
                                       </View>
                                     </Pressable>
@@ -1210,7 +1331,13 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                           padding: 16,
                         }}
                       >
-                        <Text style={{ color: c.textMuted, fontSize: 15, lineHeight: 22 }}>
+                        <Text
+                          style={{
+                            color: c.textMuted,
+                            fontSize: 15,
+                            lineHeight: 22,
+                          }}
+                        >
                           No lectures are available for this course yet.
                         </Text>
                       </View>
@@ -1230,12 +1357,24 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                         gap: 8,
                       }}
                     >
-                      <Text style={{ color: c.text, fontSize: 20, fontWeight: "800" }}>
+                      <Text
+                        style={{
+                          color: c.text,
+                          fontSize: 20,
+                          fontWeight: "800",
+                        }}
+                      >
                         Downloads and resources
                       </Text>
-                      <Text style={{ color: c.textMuted, fontSize: 15, lineHeight: 22 }}>
-                        Keep the supporting material for this course close. Videos continue to stream in
-                        the player above.
+                      <Text
+                        style={{
+                          color: c.textMuted,
+                          fontSize: 15,
+                          lineHeight: 22,
+                        }}
+                      >
+                        Keep the supporting material for this course close.
+                        Videos continue to stream in the player above.
                       </Text>
                     </View>
 
@@ -1273,19 +1412,39 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                 borderColor: c.accentBorder,
                               }}
                             >
-                              <Icon color={c.accentStrong} size={20} strokeWidth={2.1} />
+                              <Icon
+                                color={c.accentStrong}
+                                size={20}
+                                strokeWidth={2.1}
+                              />
                             </View>
 
                             <View style={{ flex: 1, gap: 4 }}>
-                              <Text style={{ color: c.text, fontSize: 16, fontWeight: "800" }}>
+                              <Text
+                                style={{
+                                  color: c.text,
+                                  fontSize: 16,
+                                  fontWeight: "800",
+                                }}
+                              >
                                 {resource.label}
                               </Text>
-                              <Text style={{ color: c.textMuted, fontSize: 14, lineHeight: 20 }}>
+                              <Text
+                                style={{
+                                  color: c.textMuted,
+                                  fontSize: 14,
+                                  lineHeight: 20,
+                                }}
+                              >
                                 {resource.subtitle}
                               </Text>
                             </View>
 
-                            <ExternalLink color={c.textMuted} size={18} strokeWidth={2.1} />
+                            <ExternalLink
+                              color={c.textMuted}
+                              size={18}
+                              strokeWidth={2.1}
+                            />
                           </Pressable>
                         );
                       })
@@ -1300,13 +1459,29 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                           gap: 12,
                         }}
                       >
-                        <Download color={c.textMuted} size={24} strokeWidth={2} />
-                        <Text style={{ color: c.text, fontSize: 17, fontWeight: "800" }}>
+                        <Download
+                          color={c.textMuted}
+                          size={24}
+                          strokeWidth={2}
+                        />
+                        <Text
+                          style={{
+                            color: c.text,
+                            fontSize: 17,
+                            fontWeight: "800",
+                          }}
+                        >
                           No course files yet
                         </Text>
-                        <Text style={{ color: c.textMuted, fontSize: 15, lineHeight: 22 }}>
-                          When brochures, starter kits, or community links are attached to this course,
-                          they’ll show up here.
+                        <Text
+                          style={{
+                            color: c.textMuted,
+                            fontSize: 15,
+                            lineHeight: 22,
+                          }}
+                        >
+                          When brochures, starter kits, or community links are
+                          attached to this course, they’ll show up here.
                         </Text>
                       </View>
                     )}
@@ -1325,7 +1500,13 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                         gap: 12,
                       }}
                     >
-                      <Text style={{ color: c.text, fontSize: 20, fontWeight: "800" }}>
+                      <Text
+                        style={{
+                          color: c.text,
+                          fontSize: 20,
+                          fontWeight: "800",
+                        }}
+                      >
                         About this course
                       </Text>
                       <View style={{ gap: 12 }}>
@@ -1333,15 +1514,29 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                           <Text
                             key={`paragraph-${index}`}
                             selectable
-                            style={{ color: c.textMuted, fontSize: 15, lineHeight: 25 }}
+                            style={{
+                              color: c.textMuted,
+                              fontSize: 15,
+                              lineHeight: 25,
+                            }}
                           >
                             {paragraph}
                           </Text>
                         ))}
                       </View>
                       {shouldTruncateDescription ? (
-                        <Pressable onPress={() => setShowFullDescription((value) => !value)}>
-                          <Text style={{ color: c.accentStrong, fontSize: 15, fontWeight: "800" }}>
+                        <Pressable
+                          onPress={() =>
+                            setShowFullDescription((value) => !value)
+                          }
+                        >
+                          <Text
+                            style={{
+                              color: c.accentStrong,
+                              fontSize: 15,
+                              fontWeight: "800",
+                            }}
+                          >
                             {showFullDescription ? "Show less" : "Show more"}
                           </Text>
                         </Pressable>
@@ -1359,14 +1554,24 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                           gap: 14,
                         }}
                       >
-                        <Text style={{ color: c.text, fontSize: 20, fontWeight: "800" }}>
+                        <Text
+                          style={{
+                            color: c.text,
+                            fontSize: 20,
+                            fontWeight: "800",
+                          }}
+                        >
                           What you&apos;ll learn
                         </Text>
                         <View style={{ gap: 12 }}>
                           {courseHighlights.map((item) => (
                             <View
                               key={item}
-                              style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "flex-start",
+                                gap: 10,
+                              }}
                             >
                               <View
                                 style={{
@@ -1376,7 +1581,14 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                   backgroundColor: c.accent,
                                 }}
                               />
-                              <Text style={{ flex: 1, color: c.textMuted, fontSize: 15, lineHeight: 24 }}>
+                              <Text
+                                style={{
+                                  flex: 1,
+                                  color: c.textMuted,
+                                  fontSize: 15,
+                                  lineHeight: 24,
+                                }}
+                              >
                                 {item}
                               </Text>
                             </View>
@@ -1396,11 +1608,23 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                         gap: 14,
                       }}
                     >
-                      <Text style={{ color: c.text, fontSize: 20, fontWeight: "800" }}>
+                      <Text
+                        style={{
+                          color: c.text,
+                          fontSize: 20,
+                          fontWeight: "800",
+                        }}
+                      >
                         Instructor
                       </Text>
 
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 14,
+                        }}
+                      >
                         <View
                           style={{
                             width: 54,
@@ -1422,17 +1646,35 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                               resizeMode="cover"
                             />
                           ) : (
-                            <Text style={{ color: c.text, fontSize: 20, fontWeight: "800" }}>
+                            <Text
+                              style={{
+                                color: c.text,
+                                fontSize: 20,
+                                fontWeight: "800",
+                              }}
+                            >
                               {leadInstructor.charAt(0).toUpperCase()}
                             </Text>
                           )}
                         </View>
 
                         <View style={{ flex: 1, gap: 4 }}>
-                          <Text style={{ color: c.text, fontSize: 17, fontWeight: "800" }}>
+                          <Text
+                            style={{
+                              color: c.text,
+                              fontSize: 17,
+                              fontWeight: "800",
+                            }}
+                          >
                             {leadInstructor}
                           </Text>
-                          <Text style={{ color: c.textMuted, fontSize: 14, lineHeight: 20 }}>
+                          <Text
+                            style={{
+                              color: c.textMuted,
+                              fontSize: 14,
+                              lineHeight: 20,
+                            }}
+                          >
                             {leadInstructorRole}
                           </Text>
                         </View>
@@ -1450,13 +1692,25 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                         gap: 14,
                       }}
                     >
-                      <Text style={{ color: c.text, fontSize: 20, fontWeight: "800" }}>
+                      <Text
+                        style={{
+                          color: c.text,
+                          fontSize: 20,
+                          fontWeight: "800",
+                        }}
+                      >
                         Course details
                       </Text>
                       {[
                         { label: "Level", value: categoryLabel },
-                        { label: "Language", value: course.language?.trim() || "English" },
-                        { label: "Duration", value: course.duration?.trim() || "Self-paced" },
+                        {
+                          label: "Language",
+                          value: course.language?.trim() || "English",
+                        },
+                        {
+                          label: "Duration",
+                          value: course.duration?.trim() || "Self-paced",
+                        },
                         { label: "Weeks", value: `${moduleCountAcrossCourse}` },
                       ].map((item) => (
                         <View
@@ -1471,10 +1725,22 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                             borderBottomColor: c.border,
                           }}
                         >
-                          <Text style={{ color: c.textMuted, fontSize: 15, fontWeight: "600" }}>
+                          <Text
+                            style={{
+                              color: c.textMuted,
+                              fontSize: 15,
+                              fontWeight: "600",
+                            }}
+                          >
                             {item.label}
                           </Text>
-                          <Text style={{ color: c.text, fontSize: 15, fontWeight: "700" }}>
+                          <Text
+                            style={{
+                              color: c.text,
+                              fontSize: 15,
+                              fontWeight: "700",
+                            }}
+                          >
                             {item.value}
                           </Text>
                         </View>
@@ -1484,9 +1750,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                 ) : null}
               </Animated.View>
             </View>
-          </>
-        )}
-      </ScrollView>
+          </ScrollView>
+        </>
+      )}
     </View>
   );
 }

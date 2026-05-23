@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "serve-sim": {
+      "source": "EvanBacon/serve-sim",
+      "sourceType": "github",
+      "skillPath": "skills/serve-sim/SKILL.md",
+      "computedHash": "ffb030f94f716dd5f69cc614b40a67a798827e9dc523b5f70aaff1fc71c91310"
+    }
+  }
+}
