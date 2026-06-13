@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "android": "CMAKE_VERSION=3.31.6 expo run:android",
-    "ios": "expo run:ios",
-    "start": "expo start --dev-client",
+    "ios": "REACT_NATIVE_PACKAGER_HOSTNAME=localhost expo run:ios --no-bundler",
+    "start": "REACT_NATIVE_PACKAGER_HOSTNAME=localhost expo start --dev-client --localhost",
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
