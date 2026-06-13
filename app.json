@@ -33,6 +33,12 @@
       "expo-video",
       "expo-router",
       [
+        "expo-dev-client",
+        {
+          "launchMode": "launcher"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./src/assets/images/splash-icon-light.png",
