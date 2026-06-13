@@ -28,3 +28,4 @@ expo-env.d.ts
 /.cursor
 /.vscode
 .env.local
+/.pnpm-store

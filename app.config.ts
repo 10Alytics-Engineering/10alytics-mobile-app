@@ -130,6 +130,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         launchMode: 'launcher',
       },
     ],
+    './plugins/with-ios-dev-client-fixes',
     [
       'expo-notifications',
       {

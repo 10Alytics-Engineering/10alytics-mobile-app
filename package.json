@@ -9,10 +9,10 @@
   },
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start --dev-client",
+    "start": "expo start --dev-client --host lan --port 8081",
     "prebuild": "pnpm expo prebuild",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "android": "expo run:android --port 8081",
+    "ios": "expo run:ios --port 8081",
     "web": "expo start --web",
     "xcode": "xed -b ios",
     "doctor": "npx expo-doctor@latest",
