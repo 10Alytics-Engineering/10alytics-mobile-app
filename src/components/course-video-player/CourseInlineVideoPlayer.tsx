@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -30,6 +31,8 @@ export interface CourseInlineVideoPlayerProps {
   previewUrl?: string | null;
   showCloseButton?: boolean;
   rounded?: boolean;
+  /** Fired once when the lesson reaches the completion threshold (>= 80% watched). */
+  onComplete?: () => void;
 }
 
 /**
@@ -44,11 +47,24 @@ export function CourseInlineVideoPlayer({
   title,
   previewUrl,
   showCloseButton = true,
+  onComplete,
 }: CourseInlineVideoPlayerProps) {
   const { height: screenHeight } = useWindowDimensions();
   const playerHeight = Math.round(screenHeight * 0.35);
 
   const [hasStarted, setHasStarted] = useState(false);
+
+  // Guard so a lesson only fires onComplete once per URL.
+  const completedRef = useRef(false);
+  useEffect(() => {
+    completedRef.current = false;
+  }, [rawUrl]);
+
+  const handleComplete = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onComplete?.();
+  }, [onComplete]);
 
   const absoluteUrl = useMemo(() => {
     if (!rawUrl?.trim()) return null;
@@ -129,6 +145,7 @@ export function CourseInlineVideoPlayer({
               parsed={parsed}
               height={playerHeight}
               openInBrowser={openInBrowser}
+              onComplete={handleComplete}
             />
           )}
 

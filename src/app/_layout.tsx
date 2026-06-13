@@ -75,6 +75,14 @@ export default function RootLayout() {
                                         contentStyle: { backgroundColor: 'transparent' },
                                     }}
                                 />
+                                <Stack.Screen
+                                    name="forgot-password"
+                                    options={{ headerShown: false, presentation: 'card' }}
+                                />
+                                <Stack.Screen
+                                    name="reset-password"
+                                    options={{ headerShown: false, presentation: 'card' }}
+                                />
                                 <Stack.Protected guard={shouldCreateAccount}>
                                     <Stack.Screen
                                         name="create-account"

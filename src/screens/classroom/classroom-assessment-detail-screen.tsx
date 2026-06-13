@@ -1,18 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HtmlContentView } from "@/components/html-content-view";
+import useThemeColors from "@/contexts/ThemeColors";
+import { useSubmitAssignment } from "@/hooks/use-assignment-submission";
 import {
   formatClassroomDate,
   getAssignmentStatus,
@@ -54,6 +58,150 @@ function AttachmentRow({ attachment }: { attachment: ClassroomAttachment }) {
       </View>
       {url ? <Ionicons name="open-outline" size={20} color={ACCENT} /> : null}
     </Pressable>
+  );
+}
+
+function SubmissionComposer({
+  courseEnrollmentId,
+  assignmentId,
+  kind,
+  submissionId,
+  initialText,
+  initialLink,
+  status,
+}: {
+  courseEnrollmentId: string;
+  assignmentId: string;
+  kind: "assignment" | "capstone";
+  submissionId?: number | string | null;
+  initialText?: string | null;
+  initialLink?: string | null;
+  status: string | null;
+}) {
+  const colors = useThemeColors();
+  const { save, turnIn } = useSubmitAssignment(
+    courseEnrollmentId,
+    assignmentId,
+    kind,
+  );
+
+  const isGraded = status === "graded";
+  const isTurnedIn = status === "submitted" || status === "turned_in";
+  const locked = isGraded || isTurnedIn;
+
+  const [text, setText] = useState(initialText ?? "");
+  const [link, setLink] = useState(initialLink ?? "");
+
+  useEffect(() => {
+    setText(initialText ?? "");
+    setLink(initialLink ?? "");
+  }, [initialText, initialLink]);
+
+  if (locked) {
+    return (
+      <View className="mt-6 flex-row items-center gap-2 rounded-2xl border border-border bg-secondary/40 p-4">
+        <Ionicons
+          name={isGraded ? "checkmark-circle" : "time-outline"}
+          size={20}
+          color={ACCENT}
+        />
+        <Text className="flex-1 text-sm text-text opacity-80">
+          {isGraded
+            ? "This assignment has been graded."
+            : "Your work has been turned in and is awaiting grading."}
+        </Text>
+      </View>
+    );
+  }
+
+  const handleSave = async (thenTurnIn: boolean) => {
+    if (!text.trim() && !link.trim()) {
+      Alert.alert("Nothing to submit", "Add some text or a link first.");
+      return;
+    }
+    try {
+      const saved = await save.mutateAsync({
+        submission_text: text.trim() || null,
+        submission_link: link.trim() || null,
+      });
+      if (thenTurnIn) {
+        const id = saved?.id ?? submissionId;
+        if (id == null) {
+          Alert.alert(
+            "Saved",
+            "Your work was saved. Reopen to turn it in for grading.",
+          );
+          return;
+        }
+        await turnIn.mutateAsync(id);
+        Alert.alert("Turned in", "Your work has been submitted for grading.");
+      } else {
+        Alert.alert("Saved", "Your draft has been saved.");
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Couldn't submit your work",
+      );
+    }
+  };
+
+  const busy = save.isPending || turnIn.isPending;
+
+  return (
+    <View className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4">
+      <Text className="font-outfit-bold text-base text-text">
+        {submissionId ? "Edit your submission" : "Submit your work"}
+      </Text>
+
+      <Text className="mb-2 mt-3 text-xs font-semibold text-text opacity-60">
+        Answer
+      </Text>
+      <TextInput
+        value={text}
+        onChangeText={setText}
+        placeholder="Type your answer…"
+        placeholderTextColor={colors.placeholder}
+        multiline
+        className="min-h-24 rounded-xl border border-border bg-background px-3 py-3 text-sm text-text"
+        style={{ textAlignVertical: "top" }}
+      />
+
+      <Text className="mb-2 mt-4 text-xs font-semibold text-text opacity-60">
+        Link (optional)
+      </Text>
+      <TextInput
+        value={link}
+        onChangeText={setLink}
+        placeholder="https://…"
+        placeholderTextColor={colors.placeholder}
+        autoCapitalize="none"
+        keyboardType="url"
+        className="rounded-xl border border-border bg-background px-3 py-3 text-sm text-text"
+      />
+
+      <View className="mt-4 flex-row gap-3">
+        <Pressable
+          onPress={() => handleSave(false)}
+          disabled={busy}
+          className={`flex-1 items-center rounded-xl border border-border bg-background py-3 ${busy ? "opacity-60" : "active:opacity-80"}`}
+        >
+          <Text className="text-sm font-semibold text-text">
+            {save.isPending ? "Saving…" : "Save draft"}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => handleSave(true)}
+          disabled={busy}
+          className={`flex-1 items-center rounded-xl py-3 ${busy ? "opacity-60" : "active:opacity-90"}`}
+          style={{ backgroundColor: ACCENT }}
+        >
+          <Text className="text-sm font-bold text-white">
+            {turnIn.isPending ? "Turning in…" : "Turn in"}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -216,6 +364,18 @@ export function ClassroomAssessmentDetailScreen({
                 textClassName="mt-2 text-sm leading-5 text-text opacity-80"
               />
             </View>
+          ) : null}
+
+          {courseEnrollmentId && assignmentId ? (
+            <SubmissionComposer
+              courseEnrollmentId={courseEnrollmentId}
+              assignmentId={assignmentId}
+              kind={kind}
+              submissionId={data.submission?.id ?? null}
+              initialText={data.submission_text}
+              initialLink={data.submission_link}
+              status={status}
+            />
           ) : null}
         </ScrollView>
       )}

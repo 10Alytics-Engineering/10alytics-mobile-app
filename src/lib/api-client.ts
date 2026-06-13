@@ -448,6 +448,158 @@ export function normalizeWeekLockedFlag(
   return Boolean(isLocked);
 }
 
+/** Generic `{ status, message, data }` envelope used by the mobile course endpoints. */
+export interface StatusEnvelope<T> {
+  status: string;
+  message: string;
+  data: T;
+}
+
+/** Generic `{ success, message, data }` envelope used by `HttpResponses`-trait endpoints. */
+export type ApiEnvelope<T> = ChatApiEnvelope<T>;
+
+// --- Gamification (leaderboard / streak / xp) ---
+
+export interface CourseLeaderboardEntry {
+  user_id: number;
+  name: string;
+  xp_points: number;
+}
+
+export interface CourseLeaderboardData {
+  course_id: number;
+  course_cohort_id: number;
+  user_rank: number | null;
+  user_xp: number;
+  leaderboard: CourseLeaderboardEntry[];
+}
+
+export interface WeeklyStreakStats {
+  course_id: number;
+  course_cohort_id: number;
+  current_streak: number;
+  weekly_completed_lessons: number;
+  total_completed_lessons: number;
+  total_lessons: number;
+  completion_rate: number;
+  completed_weeks: number;
+}
+
+export interface CourseXp {
+  course_id: number;
+  course_cohort_id: number;
+  xp_points: number;
+}
+
+/** Optional course/cohort scoping for gamification endpoints. Omit to use latest enrollment. */
+export interface GamificationScope {
+  course_id?: number;
+  cohort_id?: number;
+}
+
+// --- Billing (read-only) ---
+
+export interface BillingCardInfo {
+  cardType: string;
+  last4Digits: string;
+  expiryDate: string;
+}
+
+export interface BillingHistoryItem {
+  id: number;
+  invoiceNo: string;
+  amountPaid: number;
+  paymentDate: string | null;
+  amountDue: number;
+  paymentPlan: number | null;
+  currency: string | null;
+  course: string | null;
+  status: string;
+  stripe_invoice_id?: string | null;
+  stripe_payment_intent_id?: string | null;
+}
+
+export interface BillingInfo {
+  paymentHistory: BillingHistoryItem[];
+  upcomingBillId: number | null;
+  nextPaymentDate: string | null;
+  upcomingBillAmount: number;
+  isPaymentDatePastDue?: boolean;
+  billingInfo: BillingCardInfo;
+}
+
+// --- Notification preferences ---
+
+export interface NotificationPreferences {
+  push_chat: boolean;
+  push_classroom: boolean;
+  push_assignments: boolean;
+  email_updates: boolean;
+}
+
+// --- Profile ---
+
+/** Full current-user shape from `GET /api/v2/user` (UserResource). */
+export interface MobileUser {
+  id: string;
+  first_name: string;
+  other_names: string;
+  name?: string;
+  email: string;
+  phone?: string | null;
+  /** Class time (stored server-side as `saturday_schedule`). */
+  saturday_schedule?: string | null;
+  avatar?: string;
+  image?: string;
+}
+
+export interface UpdateProfilePayload {
+  first_name: string;
+  other_names: string;
+  phone: string;
+  /** Class time. */
+  saturday_schedule?: string | null;
+}
+
+// --- Password reset ---
+
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  password: string;
+  password_confirmation: string;
+}
+
+// --- Assignment submission ---
+
+/** A file picked on-device, ready for multipart upload. */
+export interface UploadFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+export interface SubmitAssignmentPayload {
+  courseEnrollmentId: number | string;
+  assignmentId: number | string;
+  submission_text?: string | null;
+  submission_link?: string | null;
+  files?: UploadFile[];
+}
+
+/** Submission row returned by the public submit / turn-in endpoints. */
+export interface ClassroomSubmissionResponse {
+  id: number | string;
+  classroom_assignment_id?: number | string;
+  status?: string | null;
+  submission_text?: string | null;
+  submission_link?: string | null;
+  score_earned?: number | null;
+  feedback?: string | null;
+  submitted_at?: string | null;
+  attachments?: ClassroomAttachment[];
+}
+
 class ApiClient {
   private baseURL: string;
   private tokenKey = "auth_token";
@@ -533,6 +685,14 @@ class ApiClient {
         !endpoint.includes("/auth/apple");
 
       const headers = await this.getHeaders(shouldIncludeAuth);
+
+      // Let fetch set the multipart boundary itself for FormData uploads.
+      if (
+        typeof FormData !== "undefined" &&
+        options.body instanceof FormData
+      ) {
+        delete (headers as Record<string, string>)["Content-Type"];
+      }
 
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
@@ -631,12 +791,110 @@ class ApiClient {
   }
 
   async getCurrentUser(): Promise<{
-    data?: LoginResponse["user"];
+    data?: MobileUser;
     error?: ApiError;
   }> {
-    return this.request<LoginResponse["user"]>("/api/v2/user", {
+    return this.request<MobileUser>("/api/v2/user", {
       method: "GET",
     });
+  }
+
+  /** Update the user's profile (first name, other names, phone). Returns 200 with no body. */
+  async updateProfile(payload: UpdateProfilePayload): Promise<{
+    data?: unknown;
+    error?: ApiError;
+  }> {
+    return this.request("/api/v2/user/update-profile", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  /** Request a password-reset OTP by email. Always succeeds (no account enumeration). */
+  async forgotPassword(email: string): Promise<{
+    data?: { message: string };
+    error?: ApiError;
+  }> {
+    return this.request<{ message: string }>("/api/v2/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  /** Reset the password using the emailed OTP. */
+  async resetPassword(payload: ResetPasswordPayload): Promise<{
+    data?: { message: string };
+    error?: ApiError;
+  }> {
+    return this.request<{ message: string }>("/api/v2/reset-password", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  /**
+   * Mark a lesson as completed. `enrollmentId` is the `CourseEnrolled.id`
+   * (i.e. `UserCourse.id`), not the catalog course id. Also bumps XP server-side.
+   */
+  async markLessonComplete(
+    enrollmentId: number,
+    lessonId: number,
+  ): Promise<{ data?: unknown; error?: ApiError }> {
+    return this.request("/api/courses/markCourseLessonAsComplete", {
+      method: "POST",
+      body: JSON.stringify({ course_id: enrollmentId, lesson_id: lessonId }),
+    });
+  }
+
+  /** Completed lesson ids for an enrollment. Returns a bare array of lesson ids. */
+  async getCompletedVideos(enrollmentId: number): Promise<{
+    data?: number[];
+    error?: ApiError;
+  }> {
+    return this.request<number[]>(
+      `/api/course/${enrollmentId}/getCompletedVideos`,
+      { method: "GET" },
+    );
+  }
+
+  /** Submit (save) work for a classroom assignment. Supports text, link, and file uploads. */
+  async submitAssignment(payload: SubmitAssignmentPayload): Promise<{
+    data?: ChatApiEnvelope<ClassroomSubmissionResponse>;
+    error?: ApiError;
+  }> {
+    const form = new FormData();
+    if (payload.submission_text != null) {
+      form.append("submission_text", payload.submission_text);
+    }
+    if (payload.submission_link != null) {
+      form.append("submission_link", payload.submission_link);
+    }
+    for (const file of payload.files ?? []) {
+      form.append("files[]", {
+        uri: file.uri,
+        name: file.name,
+        type: file.type,
+      } as unknown as Blob);
+    }
+
+    return this.request<ChatApiEnvelope<ClassroomSubmissionResponse>>(
+      `/api/v2/class-room/classrooms/${payload.courseEnrollmentId}/public/assignments/${payload.assignmentId}/submissions`,
+      { method: "POST", body: form },
+    );
+  }
+
+  /** Finalise (turn in) a saved submission for grading. */
+  async turnInSubmission(
+    courseEnrollmentId: number | string,
+    submissionId: number | string,
+  ): Promise<{
+    data?: ChatApiEnvelope<ClassroomSubmissionResponse>;
+    error?: ApiError;
+  }> {
+    return this.request<ChatApiEnvelope<ClassroomSubmissionResponse>>(
+      `/api/v2/class-room/classrooms/${courseEnrollmentId}/public/submissions/${submissionId}/turn-in`,
+      { method: "POST" },
+    );
   }
 
   async getUserCourses(): Promise<{
@@ -680,6 +938,92 @@ class ApiClient {
     );
     if (result.error) return { error: result.error };
     return { data: parseLockedWeeksResponse(result.data) };
+  }
+
+  private buildScopeQuery(scope?: GamificationScope): string {
+    if (!scope) return "";
+    const params = new URLSearchParams();
+    if (scope.course_id != null) params.set("course_id", String(scope.course_id));
+    if (scope.cohort_id != null) params.set("cohort_id", String(scope.cohort_id));
+    const query = params.toString();
+    return query ? `?${query}` : "";
+  }
+
+  /** Course leaderboard + current user's rank/xp. Server-cached ~60s. */
+  async getCourseLeaderboard(scope?: GamificationScope): Promise<{
+    data?: StatusEnvelope<CourseLeaderboardData>;
+    error?: ApiError;
+  }> {
+    return this.request<StatusEnvelope<CourseLeaderboardData>>(
+      `/api/v2/user/courses/leaderboard${this.buildScopeQuery(scope)}`,
+      { method: "GET" },
+    );
+  }
+
+  /** Weekly streak + lesson-completion stats for the dashboard. */
+  async getWeeklyStreakStats(scope?: GamificationScope): Promise<{
+    data?: StatusEnvelope<WeeklyStreakStats>;
+    error?: ApiError;
+  }> {
+    return this.request<StatusEnvelope<WeeklyStreakStats>>(
+      `/api/v2/user/courses/weekly-stats${this.buildScopeQuery(scope)}`,
+      { method: "GET" },
+    );
+  }
+
+  /** Current user's XP for a course/cohort. */
+  async getCourseXp(scope?: GamificationScope): Promise<{
+    data?: StatusEnvelope<CourseXp>;
+    error?: ApiError;
+  }> {
+    return this.request<StatusEnvelope<CourseXp>>(
+      `/api/v2/user/courses/xp${this.buildScopeQuery(scope)}`,
+      { method: "GET" },
+    );
+  }
+
+  /** Read-only billing summary: next payment, saved card, payment history. */
+  async getBillingInfo(): Promise<{
+    data?: ApiEnvelope<BillingInfo>;
+    error?: ApiError;
+  }> {
+    return this.request<ApiEnvelope<BillingInfo>>("/api/v2/user/billing-info", {
+      method: "GET",
+    });
+  }
+
+  /** Read-only list of the user's invoices / payment plans. */
+  async getUserPaymentPlans(): Promise<{
+    data?: ApiEnvelope<unknown[]>;
+    error?: ApiError;
+  }> {
+    return this.request<ApiEnvelope<unknown[]>>("/api/v2/user/payment-plans", {
+      method: "GET",
+    });
+  }
+
+  /** Current user's notification preferences (merged over server defaults). */
+  async getNotificationPreferences(): Promise<{
+    data?: ApiEnvelope<NotificationPreferences>;
+    error?: ApiError;
+  }> {
+    return this.request<ApiEnvelope<NotificationPreferences>>(
+      "/api/v2/user/notification-preferences",
+      { method: "GET" },
+    );
+  }
+
+  /** Update one or more notification preference toggles. */
+  async updateNotificationPreferences(
+    payload: Partial<NotificationPreferences>,
+  ): Promise<{
+    data?: ApiEnvelope<NotificationPreferences>;
+    error?: ApiError;
+  }> {
+    return this.request<ApiEnvelope<NotificationPreferences>>(
+      "/api/v2/user/notification-preferences",
+      { method: "PUT", body: JSON.stringify(payload) },
+    );
   }
 
   async getChatConversations(perPage = 25): Promise<{

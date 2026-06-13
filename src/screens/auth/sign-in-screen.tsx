@@ -233,6 +233,17 @@ export function SignInScreen() {
 
             <Pressable
               accessibilityRole="button"
+              onPress={() => router.push("/forgot-password")}
+              style={{ alignSelf: "flex-end", paddingVertical: 4 }}
+              hitSlop={8}
+            >
+              <Text style={[styles.footerLink, { color: palette.text }]}>
+                Forgot password?
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
               android_ripple={{ color: isDark ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.16)" }}
               onPress={handleEmailSignIn}
               pointerEvents={loading ? "none" : "auto"}

@@ -12,6 +12,8 @@ export interface EmbedWebPlayerProps {
   openUrl: string;
   /** Re-attach the WebView if iOS kills the web-content process (needed for Vimeo). */
   reloadOnCrash?: boolean;
+  /** Fired once the embedded player reports >= the completion threshold watched. */
+  onComplete?: () => void;
 }
 
 /**
@@ -24,6 +26,7 @@ export function EmbedWebPlayer({
   height,
   openUrl,
   reloadOnCrash = false,
+  onComplete,
 }: EmbedWebPlayerProps) {
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -77,11 +80,13 @@ export function EmbedWebPlayer({
           setFailed(true);
         }}
         onMessage={(event) => {
-          if (event.nativeEvent.data === "iframe-loaded") setLoading(false);
-          if (event.nativeEvent.data === "iframe-error") {
+          const data = event.nativeEvent.data;
+          if (data === "iframe-loaded") setLoading(false);
+          if (data === "iframe-error") {
             setLoading(false);
             setFailed(true);
           }
+          if (data === "video-complete") onComplete?.();
         }}
       />
       {loading ? <VideoLoadingOverlay height={height} /> : null}

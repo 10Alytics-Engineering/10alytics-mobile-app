@@ -27,6 +27,10 @@ import {
     useClassroomLatest,
     useClassroomSession,
 } from "@/hooks/use-classroom";
+import {
+    useCourseLeaderboard,
+    useWeeklyStreakStats,
+} from "@/hooks/use-gamification";
 import { useUserCourses } from "@/hooks/use-user-courses";
 import type { ClassroomCalendarEvent, ClassroomPost, UserCourse } from "@/lib/api-client";
 import { useAuthStore } from "@/utils/auth-store";
@@ -65,6 +69,13 @@ export default function Home() {
     );
     const isClassroomFetching = useIsFetching({ queryKey: ["classroom"] }) > 0;
     const courses: UserCourse[] = data?.data ?? [];
+
+    const { data: weeklyStats } = useWeeklyStreakStats();
+    const { data: leaderboard } = useCourseLeaderboard();
+
+    const currentStreak = weeklyStats?.current_streak ?? 0;
+    const userRank = leaderboard?.user_rank ?? null;
+    const leaderboardTotal = leaderboard?.leaderboard.length;
 
     const nextClassroomEvent = useMemo(() => {
         const upcoming = [
@@ -218,14 +229,18 @@ export default function Home() {
                             decelerationRate="fast"
                         >
                             <View style={{ width: cardWidth }}>
-                                <CardFlipFire days={10} title="Current Streak" price="10 days" />
+                                <CardFlipFire
+                                    days={currentStreak}
+                                    title="Current Streak"
+                                    price={`${currentStreak} ${currentStreak === 1 ? "day" : "days"}`}
+                                />
                             </View>
                             <View style={{ width: cardWidth }}>
                                 <CardFlipRank
                                     title="Your Rank"
-                                    rank={7}
-                                    subtitle="Leaderboard rank"
-                                    total={120}
+                                    rank={userRank ?? 0}
+                                    subtitle={userRank ? "Leaderboard rank" : "Not ranked yet"}
+                                    total={leaderboardTotal}
                                 />
                             </View>
                         </ScrollView>

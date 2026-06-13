@@ -18,10 +18,12 @@ export function VideoPlayerContent({
   parsed,
   height,
   openInBrowser,
+  onComplete,
 }: {
   parsed: ReturnType<typeof parseVideoUrl> | null;
   height: number;
   openInBrowser: () => void;
+  onComplete?: () => void;
 }) {
   if (parsed?.provider === "youtube" && parsed.videoId) {
     return (
@@ -29,6 +31,7 @@ export function VideoPlayerContent({
         height={height}
         openUrl={parsed.openUrl}
         videoId={parsed.videoId}
+        onComplete={onComplete}
       />
     );
   }
@@ -39,6 +42,7 @@ export function VideoPlayerContent({
         embedUrl={parsed.embedUrl}
         height={height}
         openUrl={parsed.openUrl}
+        onComplete={onComplete}
       />
     );
   }
@@ -47,7 +51,13 @@ export function VideoPlayerContent({
     parsed?.provider === "unknown" &&
     isLikelyDirectVideoUrl(parsed.openUrl)
   ) {
-    return <DirectExpoPlayer height={height} url={parsed.openUrl} />;
+    return (
+      <DirectExpoPlayer
+        height={height}
+        url={parsed.openUrl}
+        onComplete={onComplete}
+      />
+    );
   }
 
   return (

@@ -37,16 +37,33 @@ export function ProfileSettingsScreen() {
     {
       title: "Account",
       items: [
-        { icon: "person", label: "Account Information" },
+        {
+          icon: "person",
+          label: "Account Information",
+          onPress: () => router.push("/edit-profile"),
+        },
         { icon: "envelope", label: "Email & Password" },
-        { icon: "bell", label: "Notification Preference", hasBadge: true },
+        {
+          icon: "bell",
+          label: "Notification Preference",
+          hasBadge: true,
+          onPress: () => router.push("/notification-preferences"),
+        },
       ],
     },
     {
       title: "Billing",
       items: [
-        { icon: "doc.text", label: "Billing History" },
-        { icon: "creditcard", label: "Payment Methods" },
+        {
+          icon: "doc.text",
+          label: "Billing History",
+          onPress: () => router.push("/billing"),
+        },
+        {
+          icon: "creditcard",
+          label: "Payment Methods",
+          onPress: () => router.push("/billing"),
+        },
       ],
     },
     {

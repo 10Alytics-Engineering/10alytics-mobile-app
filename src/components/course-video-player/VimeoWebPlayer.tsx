@@ -12,10 +12,12 @@ export function VimeoWebPlayer({
   embedUrl,
   openUrl,
   height,
+  onComplete,
 }: {
   embedUrl: string;
   openUrl: string;
   height: number;
+  onComplete?: () => void;
 }) {
   const pageOrigin = useMemo(() => getVimeoEmbedPageOrigin(), []);
   const html = useMemo(
@@ -30,6 +32,7 @@ export function VimeoWebPlayer({
       height={height}
       openUrl={openUrl}
       reloadOnCrash
+      onComplete={onComplete}
     />
   );
 }

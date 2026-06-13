@@ -28,6 +28,10 @@ import { CourseInlineVideoPlayer } from "@/components/course-in-app-video-modal"
 import { LuminaCourseDetailSkeleton } from "@/components/ui/course-loading-skeletons";
 import { Colors } from "@/constants/theme";
 import { useTheme } from "@/contexts/ThemeContext";
+import {
+  useCompletedLessons,
+  useMarkLessonComplete,
+} from "@/hooks/use-course-completion";
 import { useUserCourseDetail } from "@/hooks/use-user-course-detail";
 import {
   type UserCourseDetailCourse,
@@ -101,6 +105,7 @@ interface ActiveVideoState {
   eyebrow: string;
   description?: string | null;
   previewUrl?: string | null;
+  lessonId?: number | null;
 }
 
 type DetailTab = "lectures" | "downloads" | "more";
@@ -279,6 +284,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     error,
     refetch,
   } = useUserCourseDetail(enrollmentId);
+
+  const { data: completedLessonIds } = useCompletedLessons(enrollmentId);
+  const markLessonComplete = useMarkLessonComplete(enrollmentId);
 
   const bundle = useMemo(
     () => parseUserCourseDetailBundle(apiResponse),
@@ -462,6 +470,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
             : "Continue learning",
         description: normalizeHtmlToPlainText(resumeLesson.description),
         previewUrl: resumeLesson.video_preview,
+        lessonId: resumeLesson.id,
       };
     }
 
@@ -545,6 +554,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
           : "Course lesson",
       description: normalizeHtmlToPlainText(lesson.description),
       previewUrl: lesson.video_preview,
+      lessonId: lesson.id,
     });
     setSelectedTab("lectures");
   }
@@ -729,6 +739,12 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                 rounded={false}
                 showCloseButton={false}
                 title={pinnedVideo.title}
+                onComplete={() => {
+                  const lid = pinnedVideo.lessonId;
+                  if (lid != null && !completedLessonIds?.has(lid)) {
+                    markLessonComplete.mutate(lid);
+                  }
+                }}
               />
             ) : (
               <View
@@ -819,6 +835,39 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                     ? `Now playing: ${pinnedLessonTitle}`
                     : (pinnedVideo?.eyebrow ?? leadInstructorRole)}
                 </Text>
+
+                {pinnedVideo?.lessonId != null &&
+                completedLessonIds?.has(pinnedVideo.lessonId) ? (
+                  <View
+                    style={{
+                      alignSelf: "flex-start",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 12,
+                      paddingHorizontal: 14,
+                      paddingVertical: 9,
+                      borderRadius: 999,
+                      borderCurve: "continuous",
+                      backgroundColor: c.accentSoft,
+                    }}
+                  >
+                    <CircleCheckBig
+                      color={c.accentStrong}
+                      size={16}
+                      strokeWidth={2.4}
+                    />
+                    <Text
+                      style={{
+                        color: c.accentStrong,
+                        fontSize: 13,
+                        fontWeight: "700",
+                      }}
+                    >
+                      Completed
+                    </Text>
+                  </View>
+                ) : null}
 
                 <View
                   style={{
@@ -1176,6 +1225,8 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                   const isWatching =
                                     activeVideo?.rawUrl === rawUrl &&
                                     activeVideo?.title === lesson.title;
+                                  const isCompleted =
+                                    completedLessonIds?.has(lesson.id) ?? false;
 
                                   const lessonMeta = isWatching
                                     ? "Now playing"
@@ -1227,15 +1278,17 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
                                           alignItems: "center",
                                           justifyContent: "center",
                                           backgroundColor:
-                                            isWatching || isCurrent
+                                            isCompleted || isWatching || isCurrent
                                               ? c.accent
                                               : c.accentSoft,
                                           borderWidth:
-                                            isWatching || isCurrent ? 0 : 1,
+                                            isCompleted || isWatching || isCurrent
+                                              ? 0
+                                              : 1,
                                           borderColor: c.accentBorder,
                                         }}
                                       >
-                                        {isWatching || isCurrent ? (
+                                        {isCompleted || isWatching || isCurrent ? (
                                           <CircleCheckBig
                                             color="#FFFFFF"
                                             size={14}

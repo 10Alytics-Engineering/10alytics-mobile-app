@@ -12,6 +12,9 @@ export default function ScreensLayout() {
             <Stack.Screen name="classroom/assignment/[assignmentId]" />
             <Stack.Screen name="classroom/capstone/[assignmentId]" />
             <Stack.Screen name="classroom/resource/[resourceId]" />
+            <Stack.Screen name="billing" />
+            <Stack.Screen name="notification-preferences" />
+            <Stack.Screen name="edit-profile" />
         </Stack>
     );
 }
