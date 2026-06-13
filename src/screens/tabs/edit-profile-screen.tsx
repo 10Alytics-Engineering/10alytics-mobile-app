@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import { apiClient } from "@/lib/api-client";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 import { useAuthStore } from "@/utils/auth-store";

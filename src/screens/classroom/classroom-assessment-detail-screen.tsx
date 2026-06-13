@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HtmlContentView } from "@/components/html-content-view";
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import { useSubmitAssignment } from "@/hooks/use-assignment-submission";
 import {
   formatClassroomDate,

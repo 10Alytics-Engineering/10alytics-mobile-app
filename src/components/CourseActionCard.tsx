@@ -1,4 +1,4 @@
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import Feather from "@expo/vector-icons/Feather";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { type ReactNode } from "react";

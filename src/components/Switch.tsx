@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Animated, TouchableOpacity, StyleProp, ViewStyle, Text } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import useThemeColors from '@/contexts/ThemeColors';
+import useThemeColors from '@/contexts/theme-colors';
 
 interface SwitchProps {
   value?: boolean;

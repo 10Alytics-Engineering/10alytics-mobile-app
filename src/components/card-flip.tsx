@@ -1,4 +1,4 @@
-import useThemeColors from '@/contexts/ThemeColors';
+import useThemeColors from '@/contexts/theme-colors';
 import { shadowPresets } from "@/utils/useShadow";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';

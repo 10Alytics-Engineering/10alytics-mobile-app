@@ -1,31 +1,23 @@
-import { cssInterop } from "nativewind";
-import React from "react";
+import React from 'react';
 import {
   ScrollView as RNScrollView,
   Text as RNText,
   View as RNView,
-} from "react-native";
-import RNAnimated from "react-native-reanimated";
-import { PressableScale } from "./index";
+} from 'react-native';
+import RNAnimated from 'react-native-reanimated';
+import { withUniwind } from 'uniwind';
 
-const AnimatedView = cssInterop(RNAnimated.createAnimatedComponent(RNView), {
-  className: "style",
-});
-const AnimatedScrollView = cssInterop(
+import { PressableScale } from './index';
+
+const AnimatedView = withUniwind(RNAnimated.createAnimatedComponent(RNView));
+const AnimatedScrollView = withUniwind(
   RNAnimated.createAnimatedComponent(RNScrollView),
-  {
-    className: "style",
-    contentContainerClassName: "contentContainerStyle",
-  },
 );
-const AnimatedText = cssInterop(RNAnimated.createAnimatedComponent(RNText), {
-  className: "style",
-});
-const AnimatedPressableScale = cssInterop(
+const AnimatedText = withUniwind(RNAnimated.createAnimatedComponent(RNText));
+const AnimatedPressableScale = withUniwind(
   RNAnimated.createAnimatedComponent(
     PressableScale as React.ComponentType<any>,
   ),
-  { className: "style" },
 );
 
 export const Animated = {

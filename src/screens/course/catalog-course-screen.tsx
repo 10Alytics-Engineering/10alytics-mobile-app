@@ -11,12 +11,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import { useCourses } from "@/hooks/use-courses";
 import type { Course } from "@/lib/api-client";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
 
 function formatPrice(course: Course): string | null {
   const amount = course.usd_amount ?? course.price;

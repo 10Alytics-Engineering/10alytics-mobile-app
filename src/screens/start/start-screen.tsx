@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/theme";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme } from "@/contexts/theme-context";
 import { useAuthStore } from "@/utils/auth-store";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";

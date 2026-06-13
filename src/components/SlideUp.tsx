@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { View, Image, Pressable, Text, Animated, Easing, ImageSourcePropType } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import { shadowPresets } from "@/utils/useShadow";
 interface SlideUpProps {
     visible?: boolean;

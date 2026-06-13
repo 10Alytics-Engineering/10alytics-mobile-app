@@ -16,7 +16,7 @@ import CourseActionCard from "@/components/CourseActionCard";
 import Header from "@/components/Header";
 import { CardFlipFire, CardFlipRank } from "@/components/card-flip";
 import { HomeCoursesCarouselSkeleton } from "@/components/ui/course-loading-skeletons";
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import {
     flattenClassworkPosts,
     formatClassroomDate,
@@ -36,7 +36,6 @@ import type { ClassroomCalendarEvent, ClassroomPost, UserCourse } from "@/lib/ap
 import { useAuthStore } from "@/utils/auth-store";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
 
 function formatSlugLabel(slug: string): string {
     if (!slug) return "Course";

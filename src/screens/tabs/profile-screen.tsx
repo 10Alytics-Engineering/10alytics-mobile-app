@@ -7,7 +7,7 @@ import { FadeInDown, FadeInRight, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GlassStyles } from "@/constants/theme";
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import { PressableScale, ScrollView, Text, View } from "@/tw";
 import { Animated } from "@/tw/animated";
 import { useAuthStore } from "@/utils/auth-store";

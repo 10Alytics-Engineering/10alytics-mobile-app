@@ -1,0 +1,36 @@
+import { NavigationBar } from "expo-navigation-bar";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
+import { Platform } from "react-native";
+
+import useThemeColors from "@/contexts/theme-colors";
+import { useTheme } from "@/contexts/theme-context";
+
+export default function useThemedNavigation() {
+  const { theme } = useTheme();
+  const colors = useThemeColors();
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setStyle(theme === "dark" ? "dark" : "light");
+    }
+  }, [theme, colors.bg]);
+  const ThemedStatusBar = () => (
+    <StatusBar style={theme === "dark" ? "light" : "dark"} />
+  );
+
+  const screenOptions = {
+    headerShown: false,
+    backgroundColor: colors.bg,
+    contentStyle: {
+      backgroundColor: colors.bg,
+    },
+  };
+
+  return {
+    ThemedStatusBar,
+    screenOptions,
+    colors,
+    isDark: theme === "dark",
+  };
+}

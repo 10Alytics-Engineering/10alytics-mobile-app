@@ -2,7 +2,7 @@ import { View, Text, Pressable, Animated, Easing } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { Feather as FeatherIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import useThemeColors from '@/contexts/ThemeColors';
+import useThemeColors from '@/contexts/theme-colors';
 import { useState, useRef } from 'react';
 import React from 'react';
 import { shadowPresets } from "@/utils/useShadow";

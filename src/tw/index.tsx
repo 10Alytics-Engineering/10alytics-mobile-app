@@ -1,24 +1,27 @@
-import { Link as RouterLink } from "expo-router";
-import { cssInterop } from "nativewind";
-import { PressableScale as PresstoPressableScale } from "pressto";
-import React from "react";
+import { Link as RouterLink } from 'expo-router';
+import { PressableScale as PresstoPressableScale } from 'pressto';
+import React from 'react';
+// uniwind augments these RN components with a `className` prop globally
+// (runtime via its metro transform, types via `uniwind/types`).
 import {
+  KeyboardAvoidingView as UWKeyboardAvoidingView,
   Platform,
-  KeyboardAvoidingView as RNKeyboardAvoidingView,
-  Pressable as RNPressable,
-  ScrollView as RNScrollView,
-  Text as RNText,
-  TextInput as RNTextInput,
-  TouchableHighlight as RNTouchableHighlight,
-  TouchableOpacity as RNTouchableOpacity,
-  View as RNView,
-} from "react-native";
-import Animated from "react-native-reanimated";
+  Pressable as UWPressable,
+  ScrollView as UWScrollView,
+  Text as UWText,
+  TextInput as UWTextInput,
+  TouchableHighlight as UWTouchableHighlight,
+  TouchableOpacity as UWTouchableOpacity,
+  View as UWView,
+} from 'react-native';
+import Animated from 'react-native-reanimated';
+import { withUniwind } from 'uniwind';
+
 import {
+  type HapticType,
   pressableConfig,
   triggerHaptic,
-  type HapticType,
-} from "./pressable-config";
+} from './pressable-config';
 
 type WithClassName<T> = T & {
   className?: string;
@@ -26,9 +29,7 @@ type WithClassName<T> = T & {
   contentClassName?: string;
 };
 
-const StyledPresstoPressableScale = cssInterop(PresstoPressableScale, {
-  className: "style",
-});
+const StyledPresstoPressableScale = withUniwind(PresstoPressableScale as React.ComponentType<any>);
 
 // Re-export Link from expo-router (no className support)
 export const Link = (props: React.ComponentProps<typeof RouterLink>) => {
@@ -43,52 +44,39 @@ Link.MenuAction = RouterLink.MenuAction;
 Link.Preview = RouterLink.Preview;
 
 // Placeholder for any useCSSVariable usages (e.g. web)
-export const useCSSVariable =
-  process.env.EXPO_OS !== "web"
+export const useCSSVariable
+  = process.env.EXPO_OS !== 'web'
     ? (_variable: string) => undefined
     : (variable: string) => `var(${variable})`;
 
-// View – pass style, ignore className
-export type ViewProps = WithClassName<React.ComponentProps<typeof RNView>>;
-export const View = (props: ViewProps) => {
-  return <RNView {...props} />;
-};
-View.displayName = "View";
+export type ViewProps = WithClassName<React.ComponentProps<typeof UWView>>;
+export const View = (props: ViewProps) => <UWView {...props} />;
+View.displayName = 'View';
 
-// Text
-export type TextProps = WithClassName<React.ComponentProps<typeof RNText>>;
-export const Text = (props: TextProps) => {
-  return <RNText {...props} />;
-};
-Text.displayName = "Text";
+export type TextProps = WithClassName<React.ComponentProps<typeof UWText>>;
+export const Text = (props: TextProps) => <UWText {...props} />;
+Text.displayName = 'Text';
 
-// ScrollView – pass style and contentContainerStyle, ignore className
 export type ScrollViewProps = WithClassName<
-  React.ComponentProps<typeof RNScrollView>
+  React.ComponentProps<typeof UWScrollView>
 >;
 export const ScrollView = (props: ScrollViewProps) => {
   const { contentClassName: _contentCn, ...rest } = props;
-  return <RNScrollView {...rest} />;
+  return <UWScrollView {...rest} />;
 };
-ScrollView.displayName = "ScrollView";
+ScrollView.displayName = 'ScrollView';
 
-// Pressable
 export type PressableProps = WithClassName<
-  React.ComponentProps<typeof RNPressable>
+  React.ComponentProps<typeof UWPressable>
 >;
-export const Pressable = (props: PressableProps) => {
-  return <RNPressable {...props} />;
-};
-Pressable.displayName = "Pressable";
+export const Pressable = (props: PressableProps) => <UWPressable {...props} />;
+Pressable.displayName = 'Pressable';
 
-// TextInput
 export type TextInputProps = WithClassName<
-  React.ComponentProps<typeof RNTextInput>
+  React.ComponentProps<typeof UWTextInput>
 >;
-export const TextInput = (props: TextInputProps) => {
-  return <RNTextInput {...props} />;
-};
-TextInput.displayName = "TextInput";
+export const TextInput = (props: TextInputProps) => <UWTextInput {...props} />;
+TextInput.displayName = 'TextInput';
 
 // AnimatedScrollView with native iOS defaults
 export type AnimatedScrollViewProps = WithClassName<
@@ -100,23 +88,20 @@ export const AnimatedScrollView = (props: AnimatedScrollViewProps) => {
     contentInsetAdjustmentBehavior,
     ...rest
   } = props;
-  const behavior =
-    Platform.OS === "ios" && contentInsetAdjustmentBehavior === undefined
-      ? "automatic"
+  const behavior
+    = Platform.OS === 'ios' && contentInsetAdjustmentBehavior === undefined
+      ? 'automatic'
       : contentInsetAdjustmentBehavior;
   return (
     <Animated.ScrollView contentInsetAdjustmentBehavior={behavior} {...rest} />
   );
 };
-AnimatedScrollView.displayName = "AnimatedScrollView";
+AnimatedScrollView.displayName = 'AnimatedScrollView';
 
-// TouchableHighlight
 export const TouchableHighlight = (
-  props: React.ComponentProps<typeof RNTouchableHighlight>,
-) => {
-  return <RNTouchableHighlight {...props} />;
-};
-TouchableHighlight.displayName = "TouchableHighlight";
+  props: React.ComponentProps<typeof UWTouchableHighlight>,
+) => <UWTouchableHighlight {...props} />;
+TouchableHighlight.displayName = 'TouchableHighlight';
 
 // PressableScale from pressto with haptics
 export type PressableScaleProps = React.ComponentProps<
@@ -134,34 +119,29 @@ export const PressableScale = ({
   ...props
 }: PressableScaleProps) => {
   const handlePress = (event: any) => {
-    if (enableHaptics) {
+    if (enableHaptics)
       triggerHaptic(hapticType);
-    }
     onPress?.(event);
   };
   return <StyledPresstoPressableScale {...props} onPress={handlePress} />;
 };
-PressableScale.displayName = "PressableScale";
+PressableScale.displayName = 'PressableScale';
 
-// TouchableOpacity
 export const TouchableOpacity = (
-  props: WithClassName<React.ComponentProps<typeof RNTouchableOpacity>>,
-) => {
-  return <RNTouchableOpacity {...props} />;
-};
-TouchableOpacity.displayName = "TouchableOpacity";
+  props: WithClassName<React.ComponentProps<typeof UWTouchableOpacity>>,
+) => <UWTouchableOpacity {...props} />;
+TouchableOpacity.displayName = 'TouchableOpacity';
 
-// KeyboardAvoidingView
 export type KeyboardAvoidingViewProps = WithClassName<
-  React.ComponentProps<typeof RNKeyboardAvoidingView>
+  React.ComponentProps<typeof UWKeyboardAvoidingView>
 >;
-export const KeyboardAvoidingView = (props: KeyboardAvoidingViewProps) => {
-  return <RNKeyboardAvoidingView {...props} />;
-};
-KeyboardAvoidingView.displayName = "KeyboardAvoidingView";
+export const KeyboardAvoidingView = (props: KeyboardAvoidingViewProps) => (
+  <UWKeyboardAvoidingView {...props} />
+);
+KeyboardAvoidingView.displayName = 'KeyboardAvoidingView';
 
 export {
+  type HapticType,
   pressableConfig,
   triggerHaptic,
-  type HapticType,
-} from "./pressable-config";
+} from './pressable-config';

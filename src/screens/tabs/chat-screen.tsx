@@ -12,7 +12,7 @@ import {
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import {
   formatChatPreview,
   getConversationTitle,

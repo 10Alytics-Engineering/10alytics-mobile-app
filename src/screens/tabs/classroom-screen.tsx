@@ -11,9 +11,8 @@ import { ClassroomRecordingsPanel } from "@/components/classroom/classroom-recor
 import { ClassroomResourcesPanel } from "@/components/classroom/classroom-resources-panel";
 import { ClassroomTimetablePanel } from "@/components/classroom/classroom-timetable-panel";
 import { useClassroomSession } from "@/hooks/use-classroom";
-import useThemedNavigation from "@/hooks/useThemedNavigation";
+import useThemedNavigation from "@/hooks/use-themed-navigation";
 
-import "../../../global.css";
 
 const ACCENT = "#DA6728";
 

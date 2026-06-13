@@ -5,7 +5,7 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Switch from "@/components/Switch";
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,

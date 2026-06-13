@@ -1,4 +1,4 @@
-import useThemeColors from '@/contexts/ThemeColors';
+import useThemeColors from '@/contexts/theme-colors';
 import { BottomTabBarButtonProps } from 'expo-router/js-tabs';
 import { PlatformPressable } from 'expo-router/react-navigation';
 import * as Haptics from 'expo-haptics';

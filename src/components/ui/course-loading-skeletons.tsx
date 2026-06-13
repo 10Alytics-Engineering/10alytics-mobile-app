@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView, View } from "react-native";
 
-import useThemeColors from "@/contexts/ThemeColors";
+import useThemeColors from "@/contexts/theme-colors";
 
 import { Skeleton } from "./skeleton";
 

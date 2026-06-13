@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import useThemeColors from '@/contexts/ThemeColors';
+import useThemeColors from '@/contexts/theme-colors';
 
 const formatCurrency = (value: number) => {
     return `$${value.toLocaleString()}.00`;
