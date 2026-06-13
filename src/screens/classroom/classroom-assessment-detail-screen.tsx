@@ -29,6 +29,7 @@ const ACCENT = "#DA6728";
 const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
 
 function AttachmentRow({ attachment }: { attachment: ClassroomAttachment }) {
+  const colors = useThemeColors();
   const name = attachment.name ?? "Attachment";
   const url = attachment.url ? resolveMediaUrl(attachment.url) : null;
 
@@ -38,20 +39,19 @@ function AttachmentRow({ attachment }: { attachment: ClassroomAttachment }) {
       onPress={() => {
         if (url) void WebBrowser.openBrowserAsync(url);
       }}
-      className="mt-2 flex-row items-center rounded-xl bg-background px-3 py-3"
+      style={{ marginTop: 8, flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 12 }}
     >
       <View
-        className="h-10 w-10 items-center justify-center rounded-lg"
-        style={{ backgroundColor: ACCENT_SOFT }}
+        style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: ACCENT_SOFT }}
       >
         <Ionicons name="document-attach-outline" size={20} color={ACCENT} />
       </View>
-      <View className="ml-3 flex-1">
-        <Text className="font-outfit-bold text-sm text-text" numberOfLines={2}>
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }} numberOfLines={2}>
           {name}
         </Text>
         {attachment.mime_type ? (
-          <Text className="mt-0.5 text-xs text-text opacity-60">
+          <Text style={{ marginTop: 2, fontSize: 12, color: colors.text, opacity: 0.6 }}>
             {attachment.mime_type}
           </Text>
         ) : null}
@@ -97,15 +97,34 @@ function SubmissionComposer({
     setLink(initialLink ?? "");
   }, [initialText, initialLink]);
 
+  const inputStyle = {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: colors.text,
+  } as const;
+
+  const labelStyle = {
+    marginBottom: 8,
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.text,
+    opacity: 0.6,
+  } as const;
+
   if (locked) {
     return (
-      <View className="mt-6 flex-row items-center gap-2 rounded-2xl border border-border bg-secondary/40 p-4">
+      <View style={{ marginTop: 24, flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}>
         <Ionicons
           name={isGraded ? "checkmark-circle" : "time-outline"}
           size={20}
           color={ACCENT}
         />
-        <Text className="flex-1 text-sm text-text opacity-80">
+        <Text style={{ flex: 1, fontSize: 14, color: colors.text, opacity: 0.8 }}>
           {isGraded
             ? "This assignment has been graded."
             : "Your work has been turned in and is awaiting grading."}
@@ -149,27 +168,22 @@ function SubmissionComposer({
   const busy = save.isPending || turnIn.isPending;
 
   return (
-    <View className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4">
-      <Text className="font-outfit-bold text-base text-text">
+    <View style={{ marginTop: 24, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}>
+      <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
         {submissionId ? "Edit your submission" : "Submit your work"}
       </Text>
 
-      <Text className="mb-2 mt-3 text-xs font-semibold text-text opacity-60">
-        Answer
-      </Text>
+      <Text style={[labelStyle, { marginTop: 12 }]}>Answer</Text>
       <TextInput
         value={text}
         onChangeText={setText}
         placeholder="Type your answer…"
         placeholderTextColor={colors.placeholder}
         multiline
-        className="min-h-24 rounded-xl border border-border bg-background px-3 py-3 text-sm text-text"
-        style={{ textAlignVertical: "top" }}
+        style={[inputStyle, { minHeight: 96, textAlignVertical: "top" }]}
       />
 
-      <Text className="mb-2 mt-4 text-xs font-semibold text-text opacity-60">
-        Link (optional)
-      </Text>
+      <Text style={[labelStyle, { marginTop: 16 }]}>Link (optional)</Text>
       <TextInput
         value={link}
         onChangeText={setLink}
@@ -177,26 +191,25 @@ function SubmissionComposer({
         placeholderTextColor={colors.placeholder}
         autoCapitalize="none"
         keyboardType="url"
-        className="rounded-xl border border-border bg-background px-3 py-3 text-sm text-text"
+        style={inputStyle}
       />
 
-      <View className="mt-4 flex-row gap-3">
+      <View style={{ marginTop: 16, flexDirection: "row", gap: 12 }}>
         <Pressable
           onPress={() => handleSave(false)}
           disabled={busy}
-          className={`flex-1 items-center rounded-xl border border-border bg-background py-3 ${busy ? "opacity-60" : "active:opacity-80"}`}
+          style={{ flex: 1, alignItems: "center", borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, paddingVertical: 12, opacity: busy ? 0.6 : 1 }}
         >
-          <Text className="text-sm font-semibold text-text">
+          <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
             {save.isPending ? "Saving…" : "Save draft"}
           </Text>
         </Pressable>
         <Pressable
           onPress={() => handleSave(true)}
           disabled={busy}
-          className={`flex-1 items-center rounded-xl py-3 ${busy ? "opacity-60" : "active:opacity-90"}`}
-          style={{ backgroundColor: ACCENT }}
+          style={{ flex: 1, alignItems: "center", borderRadius: 12, paddingVertical: 12, backgroundColor: ACCENT, opacity: busy ? 0.6 : 1 }}
         >
-          <Text className="text-sm font-bold text-white">
+          <Text style={{ fontSize: 14, fontWeight: "700", color: "#fff" }}>
             {turnIn.isPending ? "Turning in…" : "Turn in"}
           </Text>
         </Pressable>
@@ -210,6 +223,7 @@ export function ClassroomAssessmentDetailScreen({
 }: {
   forcedKind?: "assignment" | "capstone";
 } = {}) {
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     assignmentId?: string | string[];
@@ -243,69 +257,64 @@ export function ClassroomAssessmentDetailScreen({
   ];
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View
-        className="flex-row items-center border-b border-border/40 px-4 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 12, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ marginRight: 8, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
           <Ionicons name="chevron-back" size={24} color={ACCENT} />
         </Pressable>
-        <Text className="flex-1 font-outfit-bold text-lg text-text" numberOfLines={1}>
+        <Text style={{ flex: 1, fontWeight: "700", fontSize: 18, color: colors.text }} numberOfLines={1}>
           {title}
         </Text>
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={ACCENT} />
         </View>
       ) : isError || !data ? (
         <Pressable
           onPress={() => refetch()}
-          className="m-5 rounded-2xl border border-border bg-secondary/40 p-6"
+          style={{ margin: 20, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 24 }}
         >
-          <Text className="text-center font-semibold text-text">
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             Unable to load details. Tap to retry.
           </Text>
         </Pressable>
       ) : (
         <ScrollView
-          className="flex-1 px-5 pt-4"
+          style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }}
           contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
           showsVerticalScrollIndicator={false}
         >
-          <Text className="font-outfit-bold text-2xl leading-8 text-text">
+          <Text style={{ fontWeight: "700", fontSize: 24, lineHeight: 32, color: colors.text }}>
             {data.title}
           </Text>
 
           {status ? (
             <View
-              className="mt-3 self-start rounded-md px-3 py-1.5"
-              style={{ backgroundColor: ACCENT_SOFT }}
+              style={{ marginTop: 12, alignSelf: "flex-start", borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: ACCENT_SOFT }}
             >
-              <Text
-                className="text-xs font-outfit-bold uppercase"
-                style={{ color: ACCENT }}
-              >
+              <Text style={{ fontSize: 12, fontWeight: "700", textTransform: "uppercase", color: ACCENT }}>
                 {status.replace(/_/g, " ")}
               </Text>
             </View>
           ) : null}
 
           {data.due_at ? (
-            <Text className="mt-3 text-sm text-text opacity-70">
+            <Text style={{ marginTop: 12, fontSize: 14, color: colors.text, opacity: 0.7 }}>
               Due {formatClassroomDate(data.due_at)}
             </Text>
           ) : null}
 
           {data.points_possible != null ? (
-            <Text className="mt-1 text-sm font-semibold text-text">
+            <Text style={{ marginTop: 4, fontSize: 14, fontWeight: "600", color: colors.text }}>
               {data.points_possible} points
             </Text>
           ) : null}
@@ -313,14 +322,14 @@ export function ClassroomAssessmentDetailScreen({
           {description ? (
             <HtmlContentView
               html={description}
-              className="mt-4"
-              textClassName="mt-4 text-base leading-6 text-text opacity-80"
+              style={{ marginTop: 16 }}
+              textStyle={{ marginTop: 16, fontSize: 16, lineHeight: 24, color: colors.text, opacity: 0.8 }}
             />
           ) : null}
 
           {attachments.length > 0 ? (
-            <View className="mt-6">
-              <Text className="font-outfit-bold text-base text-text">
+            <View style={{ marginTop: 24 }}>
+              <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
                 Resources
               </Text>
               {attachments.map((item) => (
@@ -330,24 +339,24 @@ export function ClassroomAssessmentDetailScreen({
           ) : null}
 
           {data.submission_text || data.submission_link ? (
-            <View className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4">
-              <Text className="font-outfit-bold text-base text-text">
+            <View style={{ marginTop: 24, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}>
+              <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
                 Your submission
               </Text>
               {data.submission_text ? (
                 <HtmlContentView
                   html={data.submission_text}
-                  className="mt-2"
-                  textClassName="mt-2 text-sm leading-5 text-text opacity-80"
+                  style={{ marginTop: 8 }}
+                  textStyle={{ marginTop: 8, fontSize: 14, lineHeight: 20, color: colors.text, opacity: 0.8 }}
                 />
               ) : null}
               {data.submission_link ? (
                 <Pressable
                   onPress={() => void Linking.openURL(data.submission_link!)}
-                  className="mt-3 flex-row items-center gap-2"
+                  style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 8 }}
                 >
                   <Ionicons name="link-outline" size={18} color={ACCENT} />
-                  <Text className="text-sm font-semibold" style={{ color: ACCENT }}>
+                  <Text style={{ fontSize: 14, fontWeight: "600", color: ACCENT }}>
                     Open submission link
                   </Text>
                 </Pressable>
@@ -356,12 +365,12 @@ export function ClassroomAssessmentDetailScreen({
           ) : null}
 
           {data.feedback ? (
-            <View className="mt-6 rounded-2xl border border-border bg-secondary/40 p-4">
-              <Text className="font-outfit-bold text-base text-text">Feedback</Text>
+            <View style={{ marginTop: 24, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}>
+              <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>Feedback</Text>
               <HtmlContentView
                 html={data.feedback}
-                className="mt-2"
-                textClassName="mt-2 text-sm leading-5 text-text opacity-80"
+                style={{ marginTop: 8 }}
+                textStyle={{ marginTop: 8, fontSize: 14, lineHeight: 20, color: colors.text, opacity: 0.8 }}
               />
             </View>
           ) : null}

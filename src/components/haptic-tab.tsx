@@ -27,8 +27,12 @@ export function HapticTab({
       }}
     >
       <View
-        className="items-center justify-center rounded-full px-3 py-1.5"
         style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 9999,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
           backgroundColor: focused ? colors.tabPillActive : 'transparent',
         }}
       >

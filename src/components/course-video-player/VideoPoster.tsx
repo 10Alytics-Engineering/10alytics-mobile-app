@@ -20,9 +20,8 @@ export function VideoPoster({
     <Pressable
       accessibilityLabel={a11yLabel}
       accessibilityRole="button"
-      className="relative w-full items-center justify-center overflow-hidden bg-black active:opacity-95"
       onPress={onPlay}
-      style={{ minHeight: height }}
+      style={{ position: "relative", width: "100%", alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: "#000", minHeight: height }}
     >
       {posterUrl ? (
         <Image
@@ -38,17 +37,17 @@ export function VideoPoster({
           }}
         />
       ) : (
-        <View className="absolute inset-0 bg-neutral-950" />
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "#0A0A0A" }} />
       )}
 
-      <View className="absolute inset-0 bg-black/35" />
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.35)" }} />
 
-      <View className="h-20 w-20 items-center justify-center rounded-full bg-white/95">
+      <View style={{ height: 80, width: 80, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.95)" }}>
         <Play color="#111318" fill="#111318" size={34} strokeWidth={2.4} />
       </View>
 
       <Text
-        className="mt-4 px-8 text-center text-base font-semibold text-white"
+        style={{ marginTop: 16, paddingHorizontal: 32, textAlign: "center", fontSize: 16, fontWeight: "600", color: "#fff" }}
         selectable
       >
         {title || "Play lesson"}

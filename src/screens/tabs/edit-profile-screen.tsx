@@ -7,12 +7,16 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import useThemeColors from "@/contexts/ThemeColors";
 import { apiClient } from "@/lib/api-client";
-import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 import { useAuthStore } from "@/utils/auth-store";
 
 const ACCENT = "#DA6728";
@@ -32,9 +36,10 @@ function ProfileField({
   placeholderColor: string;
   keyboardType?: "default" | "phone-pad";
 }) {
+  const colors = useThemeColors();
   return (
-    <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-text opacity-70">
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ marginBottom: 8, fontSize: 14, fontWeight: "600", color: colors.text, opacity: 0.7 }}>
         {label}
       </Text>
       <TextInput
@@ -43,7 +48,7 @@ function ProfileField({
         placeholder={placeholder}
         placeholderTextColor={placeholderColor}
         keyboardType={keyboardType ?? "default"}
-        className="rounded-2xl border border-border bg-secondary/40 px-4 py-4 text-base text-text"
+        style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, paddingHorizontal: 16, paddingVertical: 16, fontSize: 16, color: colors.text }}
       />
     </View>
   );
@@ -124,29 +129,28 @@ export function EditProfileScreen() {
       style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <View
-        className="flex-row items-center border-b border-border/40 px-4 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 12, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ marginRight: 8, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
           <Ionicons name="chevron-back" size={24} color={ACCENT} />
         </Pressable>
-        <Text className="flex-1 font-outfit-bold text-lg text-text">
+        <Text style={{ flex: 1, fontWeight: "700", fontSize: 18, color: colors.text }}>
           Edit Profile
         </Text>
       </View>
 
       {isPending ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={ACCENT} />
         </View>
       ) : (
         <ScrollView
-          contentContainerClassName="px-5 pt-6"
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -180,16 +184,16 @@ export function EditProfileScreen() {
             placeholderColor={colors.placeholder}
           />
 
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-text opacity-70">
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ marginBottom: 8, fontSize: 14, fontWeight: "600", color: colors.text, opacity: 0.7 }}>
               Email
             </Text>
-            <View className="rounded-2xl border border-border bg-secondary/20 px-4 py-4">
-              <Text className="text-base text-text opacity-60">
+            <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, paddingHorizontal: 16, paddingVertical: 16 }}>
+              <Text style={{ fontSize: 16, color: colors.text, opacity: 0.6 }}>
                 {user?.email ?? "—"}
               </Text>
             </View>
-            <Text className="mt-1 text-xs text-text opacity-50">
+            <Text style={{ marginTop: 4, fontSize: 12, color: colors.text, opacity: 0.5 }}>
               Email can&apos;t be changed here.
             </Text>
           </View>
@@ -197,9 +201,9 @@ export function EditProfileScreen() {
           <Pressable
             onPress={handleSave}
             disabled={saving}
-            className={`mt-2 items-center rounded-2xl bg-text py-4 ${saving ? "opacity-70" : "active:opacity-90"}`}
+            style={{ marginTop: 8, alignItems: "center", borderRadius: 16, backgroundColor: colors.text, paddingVertical: 16, opacity: saving ? 0.7 : 1 }}
           >
-            <Text className="text-base font-bold text-invert">
+            <Text style={{ fontSize: 16, fontWeight: "700", color: colors.invert }}>
               {saving ? "Saving..." : "Save changes"}
             </Text>
           </Pressable>

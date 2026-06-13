@@ -96,8 +96,8 @@ export function ProfileSettingsScreen() {
         justifyContent: "space-between",
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <View className="relative">
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ position: "relative" }}>
           <SymbolView
             name={item.icon as any}
             size={22}
@@ -106,18 +106,17 @@ export function ProfileSettingsScreen() {
           />
           {item.hasBadge && (
             <View
-              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full"
-              style={{ backgroundColor: logoutColor }}
+              style={{ position: "absolute", right: -2, top: -2, height: 8, width: 8, borderRadius: 9999, backgroundColor: logoutColor }}
             />
           )}
         </View>
-        <Text className="text-base font-medium" style={{ color: colors.text }}>
+        <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text }}>
           {item.label}
         </Text>
       </View>
-      <View className="flex-row items-center gap-2">
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         {item.value && (
-          <Text className="text-base" style={{ color: mutedText }}>
+          <Text style={{ fontSize: 16, color: mutedText }}>
             {item.value}
           </Text>
         )}
@@ -127,15 +126,13 @@ export function ProfileSettingsScreen() {
   );
 
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.bg, paddingBottom: insets.bottom }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingBottom: insets.bottom }}>
       <View
-        className="px-4 pb-2"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ paddingHorizontal: 16, paddingBottom: 8, paddingTop: insets.top + 8 }}
       >
-        <View className="flex-row items-center justify-center">
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
           <Text
-            className="text-2xl font-extrabold"
-            style={{ color: colors.text }}
+            style={{ fontSize: 24, fontWeight: "800", color: colors.text }}
           >
             Settings
           </Text>
@@ -150,15 +147,14 @@ export function ProfileSettingsScreen() {
           <Animated.View
             key={`${section.title}-${sectionIndex}`}
             entering={FadeInDown.delay(100 + sectionIndex * 80).springify()}
-            className="mb-6"
+            style={{ marginBottom: 24 }}
           >
             <Text
-              className="mb-3 text-lg font-bold"
-              style={{ color: colors.text }}
+              style={{ marginBottom: 12, fontSize: 18, fontWeight: "700", color: colors.text }}
             >
               {section.title}
             </Text>
-            <View className="gap-3">
+            <View style={{ gap: 12 }}>
               {section.items.map((item) => (
                 <Row key={item.label} item={item} />
               ))}
@@ -181,7 +177,7 @@ export function ProfileSettingsScreen() {
               justifyContent: "space-between",
             }}
           >
-            <View className="flex-row items-center gap-3">
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <SymbolView
                 name="rectangle.portrait.and.arrow.right"
                 size={22}
@@ -189,8 +185,7 @@ export function ProfileSettingsScreen() {
                 type="hierarchical"
               />
               <Text
-                className="text-base font-semibold"
-                style={{ color: logoutColor }}
+                style={{ fontSize: 16, fontWeight: "600", color: logoutColor }}
               >
                 Log Out
               </Text>

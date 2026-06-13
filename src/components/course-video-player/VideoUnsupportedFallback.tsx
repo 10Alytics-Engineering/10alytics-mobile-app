@@ -10,18 +10,17 @@ export function VideoUnsupportedFallback({
 }) {
   return (
     <View
-      className="items-center justify-center gap-4 px-6 py-8"
-      style={{ minHeight: height, width: "100%" }}
+      style={{ alignItems: "center", justifyContent: "center", gap: 16, paddingHorizontal: 24, paddingVertical: 32, minHeight: height, width: "100%" }}
     >
-      <Text className="text-center text-base text-neutral-200" selectable>
+      <Text style={{ textAlign: "center", fontSize: 16, color: "#E5E5E5" }} selectable>
         Open this link in your browser to watch.
       </Text>
       <Pressable
         accessibilityRole="button"
-        className="rounded-xl bg-white/15 px-5 py-3 active:opacity-80"
+        style={{ borderRadius: 12, backgroundColor: "rgba(255,255,255,0.15)", paddingHorizontal: 20, paddingVertical: 12 }}
         onPress={onOpenBrowser}
       >
-        <Text className="text-center font-medium text-white">
+        <Text style={{ textAlign: "center", fontWeight: "500", color: "#fff" }}>
           Open in browser
         </Text>
       </Pressable>

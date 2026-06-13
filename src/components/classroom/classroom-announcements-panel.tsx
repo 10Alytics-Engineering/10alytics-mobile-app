@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
+import useThemeColors from "@/contexts/ThemeColors";
 import {
   flattenClassworkPosts,
   formatClassroomDate,
@@ -40,8 +41,7 @@ function ActivityIcon({ kind }: { kind: ActivityKind }) {
           : "document-attach-outline";
   return (
     <View
-      className="h-11 w-11 items-center justify-center rounded-full"
-      style={{ backgroundColor: "rgba(143, 96, 226, 0.14)" }}
+      style={{ height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "rgba(143, 96, 226, 0.14)" }}
     >
       <Ionicons name={name} size={20} color="#7C57D4" />
     </View>
@@ -53,6 +53,7 @@ export function ClassroomAnnouncementsPanel({
 }: {
   session?: ClassroomSession | null;
 }) {
+  const colors = useThemeColors();
   const { data: latest, refetch } = useClassroomLatest(
     session?.courseEnrollmentId,
   );
@@ -72,8 +73,16 @@ export function ClassroomAnnouncementsPanel({
   })[0];
   const activities = buildActivities(flattenClassworkPosts(classwork));
 
+  const cardStyle = {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.secondary,
+    padding: 16,
+  } as const;
+
   return (
-    <View className="gap-4">
+    <View style={{ gap: 16 }}>
       <LinearGradient
         colors={["#E07B3A", "#7A4A2A"]}
         start={{ x: 0, y: 0 }}
@@ -85,12 +94,12 @@ export function ClassroomAnnouncementsPanel({
           overflow: "hidden",
         }}
       >
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1 pr-4">
-            <Text className="font-outfit-bold text-base text-white">
+        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <View style={{ flex: 1, paddingRight: 16 }}>
+            <Text style={{ fontWeight: "700", fontSize: 16, color: "#fff" }}>
               {session?.title ?? "Classroom"}
             </Text>
-            <Text className="mt-1 text-sm text-white opacity-90">
+            <Text style={{ marginTop: 4, fontSize: 14, color: "#fff", opacity: 0.9 }}>
               {session?.shift || "Latest classroom activity"}
             </Text>
           </View>
@@ -98,61 +107,49 @@ export function ClassroomAnnouncementsPanel({
         </View>
       </LinearGradient>
 
-      <View className="rounded-2xl border border-border bg-secondary/40 p-4">
-        <View className="flex-row items-center gap-2">
+      <View style={cardStyle}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Ionicons name="calendar-outline" size={18} color={ACCENT} />
-          <Text className="font-outfit-bold text-base text-text">
+          <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
             Upcoming Sessions & Deadlines
           </Text>
         </View>
 
         {nextEvent ? (
           <View
-            className="mt-3 flex-row items-center rounded-xl px-4 py-3"
-            style={{ backgroundColor: "rgba(47, 111, 237, 0.08)" }}
+            style={{ marginTop: 12, flexDirection: "row", alignItems: "center", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: "rgba(47, 111, 237, 0.08)" }}
           >
-            <View className="w-12 items-center">
-              <Text
-                className="font-outfit-bold text-xs"
-                style={{ color: BLUE, letterSpacing: 1 }}
-              >
+            <View style={{ width: 48, alignItems: "center" }}>
+              <Text style={{ fontWeight: "700", fontSize: 12, color: BLUE, letterSpacing: 1 }}>
                 {formatEventMonth(getCalendarEventTime(nextEvent))}
               </Text>
-              <Text
-                className="font-outfit-bold"
-                style={{ color: BLUE, fontSize: 18 }}
-              >
+              <Text style={{ fontWeight: "700", color: BLUE, fontSize: 18 }}>
                 {formatEventDay(getCalendarEventTime(nextEvent))}
               </Text>
             </View>
-            <View className="ml-3 flex-1">
-              <Text className="font-outfit-bold text-base text-text">
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
                 {nextEvent.title ?? "Upcoming event"}
               </Text>
-              <Text
-                className="mt-0.5 text-sm text-text opacity-70"
-                style={{ textDecorationLine: "underline" }}
-              >
+              <Text style={{ marginTop: 2, fontSize: 14, color: colors.text, opacity: 0.7, textDecorationLine: "underline" }}>
                 {formatClassroomTime(getCalendarEventTime(nextEvent))}
               </Text>
             </View>
           </View>
         ) : (
           <View
-            className="mt-3 flex-row items-center rounded-xl px-4 py-4"
-            style={{ backgroundColor: "rgba(47, 111, 237, 0.08)" }}
+            style={{ marginTop: 12, flexDirection: "row", alignItems: "center", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: "rgba(47, 111, 237, 0.08)" }}
           >
             <View
-              className="h-11 w-11 items-center justify-center rounded-full"
-              style={{ backgroundColor: "rgba(47, 111, 237, 0.12)" }}
+              style={{ height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "rgba(47, 111, 237, 0.12)" }}
             >
               <Ionicons name="calendar-clear-outline" size={20} color={BLUE} />
             </View>
-            <View className="ml-3 flex-1">
-              <Text className="font-outfit-bold text-base text-text">
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
                 No live class scheduled
               </Text>
-              <Text className="mt-0.5 text-sm text-text opacity-70">
+              <Text style={{ marginTop: 2, fontSize: 14, color: colors.text, opacity: 0.7 }}>
                 New sessions and deadlines will appear here when instructors publish them.
               </Text>
             </View>
@@ -166,45 +163,39 @@ export function ClassroomAnnouncementsPanel({
             refetch();
             refetchClasswork();
           }}
-          className="rounded-2xl border border-border bg-secondary/40 p-4"
+          style={cardStyle}
         >
-          <Text className="text-center font-semibold text-text">
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             {isClassworkLoading ? "Loading activity..." : "Unable to load activity. Tap to retry."}
           </Text>
         </Pressable>
       ) : null}
 
       {!isClassworkLoading && !isClassworkError && activities.length === 0 ? (
-        <View className="rounded-2xl border border-border bg-secondary/40 p-4">
-          <Text className="text-center font-semibold text-text">No activity yet.</Text>
+        <View style={cardStyle}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>No activity yet.</Text>
         </View>
       ) : null}
 
       {activities.map((activity) => (
-        <View
-          key={activity.id}
-          className="rounded-2xl border border-border bg-secondary/40 p-4"
-        >
-          <View className="flex-row items-start gap-3">
+        <View key={activity.id} style={cardStyle}>
+          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
             <ActivityIcon kind={activity.kind} />
-            <View className="flex-1">
-              <Text className="text-base leading-6 text-text">
-                <Text className="text-text">{activity.actor} </Text>
-                <Text className="font-outfit-bold text-text">
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, lineHeight: 24, color: colors.text }}>
+                <Text style={{ color: colors.text }}>{activity.actor} </Text>
+                <Text style={{ fontWeight: "700", color: colors.text }}>
                   {activity.action}:
                 </Text>{" "}
-                <Text className="font-outfit-bold text-text">
+                <Text style={{ fontWeight: "700", color: colors.text }}>
                   {activity.title}
                 </Text>
               </Text>
-              <Text
-                className="mt-3 text-sm font-semibold"
-                style={{ color: ACCENT }}
-              >
+              <Text style={{ marginTop: 12, fontSize: 14, fontWeight: "600", color: ACCENT }}>
                 {activity.ago}
               </Text>
-              <View className="mt-3 self-start rounded-full border border-border bg-background px-3 py-1.5">
-                <Text className="text-xs font-semibold text-text">
+              <View style={{ marginTop: 12, alignSelf: "flex-start", borderRadius: 9999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 6 }}>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
                   {activity.date}
                 </Text>
               </View>

@@ -63,25 +63,44 @@ export default function SlideUp({ visible = true, onClose, avatarSource, name }:
     return (
         <>
             <Animated.View
-                className="absolute right-0 bottom-0 p-4 z-50 w-full"
                 style={{
+                    position: "absolute",
+                    right: 0,
+                    bottom: 0,
+                    padding: 16,
+                    zIndex: 50,
+                    width: "100%",
                     paddingBottom: insets.bottom,
                     transform: [{ translateY: slideAnim }],
-                    opacity: opacityAnim
+                    opacity: opacityAnim,
                 }}
             >
                 <View
-                    style={shadowPresets.large}
-                    className="bg-text w-full rounded-3xl p-6 border border-border">
-                    <View className="flex-col items-center justify-start p-6">
-                        <Image source={typeof avatarSource === 'string' ? { uri: avatarSource } : avatarSource} className='w-16 h-16 rounded-full mb-2' />
-                        <View className="flex-1 items-center">
-                            <Text className="text-sm text-invert opacity-50">{name}</Text>
+                    style={[
+                        shadowPresets.large,
+                        {
+                            backgroundColor: colors.text,
+                            width: "100%",
+                            borderRadius: 24,
+                            padding: 24,
+                            borderWidth: 1,
+                            borderColor: colors.border,
+                        },
+                    ]}>
+                    <View style={{ flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: 24 }}>
+                        <Image
+                            source={typeof avatarSource === "string" ? { uri: avatarSource } : avatarSource}
+                            style={{ width: 64, height: 64, borderRadius: 9999, marginBottom: 8 }}
+                        />
+                        <View style={{ flex: 1, alignItems: "center" }}>
+                            <Text style={{ fontSize: 14, color: colors.invert, opacity: 0.5 }}>{name}</Text>
                         </View>
 
                     </View>
-                    <Pressable className="w-full mt-4 items-center py-4 rounded-xl bg-invert" onPress={handleClose}>
-                        <Text className="text-text font-bold">Close me</Text>
+                    <Pressable
+                        style={{ width: "100%", marginTop: 16, alignItems: "center", paddingVertical: 16, borderRadius: 12, backgroundColor: colors.invert }}
+                        onPress={handleClose}>
+                        <Text style={{ color: colors.text, fontWeight: "700" }}>Close me</Text>
                     </Pressable>
 
                 </View>

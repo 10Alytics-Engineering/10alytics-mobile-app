@@ -25,12 +25,21 @@ export default function Header({ showBackButton = false, title = '', hasAvatar =
     const name = user?.first_name ? `${user.first_name} ${user.other_names}` : 'User';
     return (
         <>
-            <View className=' px-5 py-6 flex-row bg-background items-center justify-between ' style={{ paddingTop: insets.top + 10 }}>
-                <View className="flex-row items-center">
+            <View
+                style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 24,
+                    flexDirection: "row",
+                    backgroundColor: colors.bg,
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingTop: insets.top + 10,
+                }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
                     {showBackButton && (
                         <Pressable
                             onPress={() => router.back()}
-                            className="mr-3 p-1"
+                            style={{ marginRight: 12, padding: 4 }}
                             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         >
                             <Feather name="arrow-left" color={colors.icon} size={24} />
@@ -38,11 +47,11 @@ export default function Header({ showBackButton = false, title = '', hasAvatar =
                     )}
                     {hasAvatar && (
                         <Pressable onPress={() => setShowSlideUp(true)}>
-                            <Image source={avatarSource} className='w-8 h-8 rounded-full' />
+                            <Image source={avatarSource} style={{ width: 32, height: 32, borderRadius: 9999 }} />
                         </Pressable>
                     )}
                     {title && (
-                        <Text className="text-text text-2xl font-bold">{title}</Text>
+                        <Text style={{ color: colors.text, fontSize: 24, fontWeight: "700" }}>{title}</Text>
                     )}
                 </View>
                 <ThemeToggle />

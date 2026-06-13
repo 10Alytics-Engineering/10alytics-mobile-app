@@ -1,21 +1,22 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { apiClient } from "@/lib/api-client";
 import {
+  Alert,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
-} from "@/tw";
-import { Image } from "@/tw/image";
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/utils/auth-store";
 
 function splitFullName(value: string): {
@@ -84,9 +85,13 @@ function AuthInput({
 }) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const isDark = (colorScheme ?? "light") === "dark";
+  const secondary = isDark ? "#262626" : "#ffffff";
+  const border = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)";
+  const textColor = isDark ? "#ffffff" : "#000000";
 
   return (
-    <View className="min-h-16 flex-row items-center rounded-[20px] border border-border bg-secondary px-[18px]">
+    <View style={{ minHeight: 64, flexDirection: "row", alignItems: "center", borderRadius: 20, borderWidth: 1, borderColor: border, backgroundColor: secondary, paddingHorizontal: 18 }}>
       <AntDesign color={colors.icon} name={icon} size={20} />
       <TextInput
         autoCapitalize={autoCapitalize}
@@ -96,7 +101,7 @@ function AuthInput({
         placeholder={placeholder}
         placeholderTextColor={colors.icon}
         secureTextEntry={secureTextEntry}
-        className="min-h-16 flex-1 px-3 text-[17px] text-text"
+        style={{ minHeight: 64, flex: 1, paddingHorizontal: 12, fontSize: 17, color: textColor }}
         value={value}
       />
       {trailing}
@@ -121,6 +126,10 @@ export function CreateAccountScreen() {
   const muted = isDark ? "#A1A1AA" : "#6B7280";
   const primaryFill = isDark ? "#FFFFFF" : "#0A0A0A";
   const primaryText = isDark ? "#0A0A0A" : "#FFFFFF";
+  const bg = isDark ? "#0A0A0A" : "#F4F4F5";
+  const textColor = isDark ? "#ffffff" : "#000000";
+  const secondary = isDark ? "#262626" : "#ffffff";
+  const border = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)";
 
   const handleSignUp = async () => {
     const validationMessage = getValidationMessage({
@@ -204,33 +213,34 @@ export function CreateAccountScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-background"
+      style={{ flex: 1, backgroundColor: bg }}
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerClassName="flex-grow justify-center px-6"
         contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          paddingHorizontal: 24,
           paddingTop: Math.max(insets.top + 20, 40),
           paddingBottom: Math.max(insets.bottom + 28, 40),
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full self-center" style={{ maxWidth: 440 }}>
-          <View className="items-center gap-7">
+        <View style={{ width: "100%", alignSelf: "center", maxWidth: 440 }}>
+          <View style={{ alignItems: "center", gap: 28 }}>
             <Image
               source={require("@/assets/images/splash-icon-light.png")}
-              className="h-24 w-32"
+              style={{ height: 96, width: 128 }}
               contentFit="contain"
             />
 
-            <View className="items-center gap-2.5">
-              <Text className="text-center text-[32px] font-bold leading-[38px] text-text">
+            <View style={{ alignItems: "center", gap: 10 }}>
+              <Text style={{ textAlign: "center", fontSize: 32, fontWeight: "700", lineHeight: 38, color: textColor }}>
                 Create your 10Alytics account
               </Text>
               <Text
-                className="text-center text-[15px] leading-[22px]"
-                style={{ color: muted }}
+                style={{ textAlign: "center", fontSize: 15, lineHeight: 22, color: muted }}
               >
                 Join your classroom, track progress, and keep your learning in
                 one place.
@@ -238,7 +248,7 @@ export function CreateAccountScreen() {
             </View>
           </View>
 
-          <View className="mt-9 gap-3.5">
+          <View style={{ marginTop: 36, gap: 14 }}>
             <AuthInput
               autoCapitalize="words"
               icon="user"
@@ -274,7 +284,7 @@ export function CreateAccountScreen() {
                     showPassword ? "Hide password" : "Show password"
                   }
                   accessibilityRole="button"
-                  className="h-9 w-9 items-center justify-center"
+                  style={{ height: 36, width: 36, alignItems: "center", justifyContent: "center" }}
                   hitSlop={8}
                   onPress={() => setShowPassword((value) => !value)}
                 >
@@ -290,49 +300,52 @@ export function CreateAccountScreen() {
 
             <Pressable
               accessibilityRole="button"
-              className="mt-2 min-h-16 w-full items-center justify-center rounded-[20px]"
               disabled={loading}
               onPress={handleSignUp}
               style={{
+                marginTop: 8,
+                minHeight: 64,
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 20,
                 backgroundColor: primaryFill,
                 opacity: loading ? 0.7 : 1,
               }}
             >
               <Text
-                className="text-lg font-bold"
-                style={{ color: primaryText }}
+                style={{ fontSize: 18, fontWeight: "700", color: primaryText }}
               >
                 {loading ? "Creating account..." : "Create account"}
               </Text>
             </Pressable>
 
-            <Text className="mt-2 text-center text-lg" style={{ color: muted }}>
+            <Text style={{ marginTop: 8, textAlign: "center", fontSize: 18, color: muted }}>
               or
             </Text>
 
             <Pressable
               accessibilityRole="button"
-              className="min-h-16 w-full flex-row items-center justify-center gap-3.5 rounded-[20px] border border-border bg-secondary px-5"
               disabled={loading}
               onPress={handleGoogleSignUp}
-              style={{ opacity: loading ? 0.7 : 1 }}
+              style={{ minHeight: 64, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 14, borderRadius: 20, borderWidth: 1, borderColor: border, backgroundColor: secondary, paddingHorizontal: 20, opacity: loading ? 0.7 : 1 }}
             >
               <Image
                 source={require("@/assets/images/onboarding/google.png")}
-                className="h-[22px] w-[22px]"
+                style={{ height: 22, width: 22 }}
               />
-              <Text className="text-[17px] font-bold text-text">
+              <Text style={{ fontSize: 17, fontWeight: "700", color: textColor }}>
                 Continue with Google
               </Text>
             </Pressable>
           </View>
 
-          <View className="mt-7 flex-row flex-wrap items-center justify-center gap-1.5">
-            <Text className="text-sm" style={{ color: muted }}>
+          <View style={{ marginTop: 28, flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <Text style={{ fontSize: 14, color: muted }}>
               Already have an account?
             </Text>
             <Pressable onPress={() => router.push("/sign-in")}>
-              <Text className="text-sm font-bold text-text">Sign in</Text>
+              <Text style={{ fontSize: 14, fontWeight: "700", color: textColor }}>Sign in</Text>
             </Pressable>
           </View>
         </View>

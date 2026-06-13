@@ -40,21 +40,22 @@ export default function CourseActionCard({
     const accent = "#DA6728";
     const surface = isDark ? "#121212" : "#F9F6F2";
     const muted = isDark ? "rgba(255,255,255,0.7)" : "rgba(17,17,17,0.6)";
-    const accentGlow = isDark ? "rgba(218, 103, 40, 0.35)" : "rgba(218, 103, 40, 0.25)";
 
     return (
-        <View className="rounded-[30px] overflow-hidden" style={{ backgroundColor: surface }}>
+        <View style={{ borderRadius: 30, overflow: "hidden", backgroundColor: surface }}>
             <LinearGradient
                 colors={isDark ? ["#1B1410", "#0F0F0F"] : ["#FFF7EE", "#F1E7DC"]}
                 style={{ padding: 20 }}
             >
                 {/* Top row */}
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-3">
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                         {(thumbnail || icon) && (
                             <View
-                                className="items-center justify-center rounded-2xl"
                                 style={{
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    borderRadius: 16,
                                     width: 54,
                                     height: 54,
                                     backgroundColor: "#DA6728",
@@ -74,25 +75,25 @@ export default function CourseActionCard({
                             </View>
                         )}
                         <View>
-                            <Text style={{ color: colors.text }} className="text-xl font-bold">
+                            <Text style={{ color: colors.text, fontSize: 20, fontWeight: "700" }}>
                                 {title}
                             </Text>
-                            <Text style={{ color: muted }} className="text-xs uppercase tracking-wider mt-1">
+                            <Text style={{ color: muted, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 4 }}>
                                 {action === "continue" ? "In progress" : action === "start" ? "Not started" : "New course"}
                             </Text>
                         </View>
                     </View>
                 </View>
 
-                <View className="flex-row items-center justify-between gap-2">
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
 
                     {/* Subtitle */}
-                    <Text style={{ color: muted }} className="text-sm mt-4">
+                    <Text style={{ color: muted, fontSize: 14, marginTop: 16 }}>
                         {subtitle}
                     </Text>
 
                     {cohortName && (
-                        <Text style={{ color: muted }} className="text-sm mt-4">
+                        <Text style={{ color: muted, fontSize: 14, marginTop: 16 }}>
                             {cohortName}
                         </Text>
                     )}
@@ -100,10 +101,11 @@ export default function CourseActionCard({
 
                 {/* Progress */}
                 {typeof progress === "number" && (
-                    <View className="mt-4">
+                    <View style={{ marginTop: 16 }}>
                         <View
-                            className="rounded-full overflow-hidden"
                             style={{
+                                borderRadius: 9999,
+                                overflow: "hidden",
                                 height: 10,
                                 backgroundColor: isDark ? "#2A2A2A" : "#E6D9CC",
                             }}
@@ -118,11 +120,11 @@ export default function CourseActionCard({
                                 }}
                             />
                         </View>
-                        <View className="flex-row items-center justify-between mt-2">
-                            <Text style={{ color: muted }} className="text-xs">
+                        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+                            <Text style={{ color: muted, fontSize: 12 }}>
                                 {progress}% complete
                             </Text>
-                            <Text style={{ color: muted }} className="text-xs">
+                            <Text style={{ color: muted, fontSize: 12 }}>
                                 {actionLabels[action]}
                             </Text>
                         </View>
@@ -132,15 +134,22 @@ export default function CourseActionCard({
                 {/* CTA */}
                 <Pressable
                     onPress={onPress}
-                    className="mt-6 flex-row items-center justify-between rounded-2xl px-5 py-4"
-                    style={{ backgroundColor: accent }}
+                    style={{
+                        marginTop: 24,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        borderRadius: 16,
+                        paddingHorizontal: 20,
+                        paddingVertical: 16,
+                        backgroundColor: accent,
+                    }}
                 >
                     <View>
-                        <Text className="text-white font-bold text-base">{actionLabels[action]}</Text>
+                        <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>{actionLabels[action]}</Text>
                     </View>
                     <View
-                        className="items-center justify-center rounded-full"
-                        style={{ width: 34, height: 34, backgroundColor: "rgba(255,255,255,0.15)" }}
+                        style={{ alignItems: "center", justifyContent: "center", borderRadius: 9999, width: 34, height: 34, backgroundColor: "rgba(255,255,255,0.15)" }}
                     >
                         <Feather name="arrow-right" size={18} color="white" />
                     </View>

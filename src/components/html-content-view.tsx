@@ -1,6 +1,13 @@
 import * as WebBrowser from "expo-web-browser";
 import React, { useCallback, useMemo, useState } from "react";
-import { Text, useColorScheme, View } from "react-native";
+import {
+  Text,
+  useColorScheme,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from "react-native";
 import { WebView, type WebViewNavigation } from "react-native-webview";
 
 import {
@@ -13,8 +20,8 @@ const ACCENT = "#DA6728";
 
 type HtmlContentViewProps = {
   html: string;
-  className?: string;
-  textClassName?: string;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 };
 
 function buildHtmlDocument(
@@ -129,22 +136,22 @@ function AutoHeightHtmlWebView({ html }: { html: string }) {
 
 export function HtmlContentView({
   html,
-  className,
-  textClassName,
+  style,
+  textStyle,
 }: HtmlContentViewProps) {
   const trimmed = html.trim();
   if (!trimmed) return null;
 
   if (!containsHtmlMarkup(trimmed)) {
     return (
-      <Text className={textClassName ?? className}>
+      <Text style={textStyle ?? (style as StyleProp<TextStyle>)}>
         {normalizeHtmlToPlainText(trimmed)}
       </Text>
     );
   }
 
   return (
-    <View className={className}>
+    <View style={style}>
       <AutoHeightHtmlWebView html={trimmed} />
     </View>
   );

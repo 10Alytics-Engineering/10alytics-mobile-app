@@ -16,7 +16,6 @@ import { useCourses } from "@/hooks/use-courses";
 import type { Course } from "@/lib/api-client";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
 
 function formatPrice(course: Course): string | null {
   const amount = course.usd_amount ?? course.price;
@@ -33,13 +32,14 @@ function InfoRow({
   value: string | null;
   mutedColor: string;
 }) {
+  const colors = useThemeColors();
   if (!value) return null;
   return (
-    <View className="flex-row justify-between gap-4 py-2">
-      <Text className="text-sm" style={{ color: mutedColor }}>
+    <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 16, paddingVertical: 8 }}>
+      <Text style={{ fontSize: 14, color: mutedColor }}>
         {label}
       </Text>
-      <Text className="flex-1 text-right text-sm font-medium text-text">
+      <Text style={{ flex: 1, textAlign: "right", fontSize: 14, fontWeight: "500", color: colors.text }}>
         {value}
       </Text>
     </View>
@@ -64,91 +64,77 @@ export function CatalogCourseScreen({ courseId }: { courseId: string }) {
 
   return (
     <View
-      className="flex-1 bg-background"
-      style={{ paddingTop: insets.top }}
+      style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}
     >
-      <View className="flex-row items-center px-5 py-3">
+      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 12 }}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={10}
-          className="h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.secondary }}
+          style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
         >
           <Feather name="chevron-left" size={22} color={colors.text} />
         </Pressable>
-        <Text className="ml-3 text-lg font-semibold text-text">
+        <Text style={{ marginLeft: 12, fontSize: 18, fontWeight: "600", color: colors.text }}>
           Course details
         </Text>
       </View>
 
       {isPending && !data ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={colors.primary} />
         </View>
       ) : isError && !course ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-base font-semibold text-text">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <Text style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: colors.text }}>
             Couldn&apos;t load this course
           </Text>
           <Pressable
             onPress={() => refetch()}
-            className="mt-5 rounded-xl px-6 py-3 active:opacity-80"
-            style={{ backgroundColor: colors.primary }}
+            style={{ marginTop: 20, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary }}
           >
-            <Text className="font-semibold text-white">Try again</Text>
+            <Text style={{ fontWeight: "600", color: "#fff" }}>Try again</Text>
           </Pressable>
         </View>
       ) : !course ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-base font-semibold text-text">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <Text style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: colors.text }}>
             Course not found
           </Text>
-          <Text
-            className="mt-1 text-center text-sm"
-            style={{ color: colors.textMuted }}
-          >
+          <Text style={{ marginTop: 4, textAlign: "center", fontSize: 14, color: colors.textMuted }}>
             It may no longer be available.
           </Text>
         </View>
       ) : (
         <>
           <ScrollView
-            className="flex-1"
+            style={{ flex: 1 }}
             contentContainerStyle={{ padding: 20, paddingBottom: 152 }}
             showsVerticalScrollIndicator={false}
           >
             <View
-              className="items-center justify-center rounded-3xl py-8"
-              style={{ backgroundColor: "#DA6728" }}
+              style={{ alignItems: "center", justifyContent: "center", borderRadius: 24, paddingVertical: 32, backgroundColor: "#DA6728" }}
             >
               <CourseCoverForSlug slug={course.slug} size={120} />
             </View>
 
-            <Text className="mt-5 text-2xl font-bold text-text">
+            <Text style={{ marginTop: 20, fontSize: 24, fontWeight: "700", color: colors.text }}>
               {course.title}
             </Text>
             {course.level ? (
-              <Text
-                className="mt-1 text-xs font-semibold uppercase tracking-wider"
-                style={{ color: colors.primary }}
-              >
+              <Text style={{ marginTop: 4, fontSize: 12, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5, color: colors.primary }}>
                 {course.level}
               </Text>
             ) : null}
 
-            <Text className="mt-5 text-base font-bold text-text">
+            <Text style={{ marginTop: 20, fontSize: 16, fontWeight: "700", color: colors.text }}>
               About this course
             </Text>
-            <Text
-              className="mt-2 text-sm leading-6"
-              style={{ color: colors.textMuted }}
-            >
+            <Text style={{ marginTop: 8, fontSize: 14, lineHeight: 24, color: colors.textMuted }}>
               {course.tagline ?? "No description available for this course."}
             </Text>
 
             <View
-              className="mt-5 rounded-2xl px-4 py-1"
-              style={{ backgroundColor: colors.secondary }}
+              style={{ marginTop: 20, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 4, backgroundColor: colors.secondary }}
             >
               <InfoRow
                 label="Duration"
@@ -169,14 +155,14 @@ export function CatalogCourseScreen({ courseId }: { courseId: string }) {
 
             {course.course_benefits && course.course_benefits.length > 0 ? (
               <>
-                <Text className="mt-6 text-base font-bold text-text">
+                <Text style={{ marginTop: 24, fontSize: 16, fontWeight: "700", color: colors.text }}>
                   What you&apos;ll get
                 </Text>
-                <View className="mt-2 gap-2.5">
+                <View style={{ marginTop: 8, gap: 10 }}>
                   {course.course_benefits.map((benefit) => (
                     <View
                       key={benefit.id}
-                      className="flex-row items-start gap-2.5"
+                      style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}
                     >
                       <Feather
                         name="check-circle"
@@ -184,7 +170,7 @@ export function CatalogCourseScreen({ courseId }: { courseId: string }) {
                         color={colors.primary}
                         style={{ marginTop: 2 }}
                       />
-                      <Text className="flex-1 text-sm text-text">
+                      <Text style={{ flex: 1, fontSize: 14, color: colors.text }}>
                         {benefit.title}
                       </Text>
                     </View>
@@ -195,8 +181,17 @@ export function CatalogCourseScreen({ courseId }: { courseId: string }) {
           </ScrollView>
 
           <View
-            className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between border-t px-5 pt-4"
             style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderTopWidth: 1,
+              paddingHorizontal: 20,
+              paddingTop: 16,
               backgroundColor: colors.bg,
               borderTopColor: colors.border,
               paddingBottom: insets.bottom + 16,
@@ -205,26 +200,22 @@ export function CatalogCourseScreen({ courseId }: { courseId: string }) {
             <View>
               {price ? (
                 <>
-                  <Text
-                    className="text-xs"
-                    style={{ color: colors.textMuted }}
-                  >
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>
                     Price
                   </Text>
-                  <Text className="text-xl font-bold text-text">{price}</Text>
+                  <Text style={{ fontSize: 20, fontWeight: "700", color: colors.text }}>{price}</Text>
                 </>
               ) : (
-                <Text className="text-base font-semibold text-text">
+                <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text }}>
                   Enroll today
                 </Text>
               )}
             </View>
             <Pressable
               onPress={handleEnroll}
-              className="flex-row items-center rounded-xl px-6 py-3.5 active:opacity-90"
-              style={{ backgroundColor: colors.primary }}
+              style={{ flexDirection: "row", alignItems: "center", borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14, backgroundColor: colors.primary }}
             >
-              <Text className="font-bold text-white">Enroll now</Text>
+              <Text style={{ fontWeight: "700", color: "#fff" }}>Enroll now</Text>
               <Feather
                 name="external-link"
                 size={17}

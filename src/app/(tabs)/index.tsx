@@ -36,7 +36,6 @@ import type { ClassroomCalendarEvent, ClassroomPost, UserCourse } from "@/lib/ap
 import { useAuthStore } from "@/utils/auth-store";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
 
 function formatSlugLabel(slug: string): string {
     if (!slug) return "Course";
@@ -53,6 +52,7 @@ export default function Home() {
     const cardWidth = Math.round(width * 0.82);
     const courseCardWidth = Math.round(width * 0.88);
     const colors = useThemeColors();
+    const borderSubtle = colors.isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
     const queryClient = useQueryClient();
 
     const { data, isPending, isError, error, refetch, isFetching } = useUserCourses();
@@ -98,11 +98,10 @@ export default function Home() {
     );
 
     return (
-        <View className="flex-1 bg-background">
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
             <Header hasAvatar />
             <ScrollView
-                style={{ paddingTop: insets.top - 30 }}
-                className="px-6 mb-20 bg-background flex-1"
+                style={{ paddingTop: insets.top - 30, paddingHorizontal: 24, marginBottom: 80, backgroundColor: colors.bg, flex: 1 }}
                 refreshControl={
                     <RefreshControl
                         refreshing={
@@ -117,62 +116,60 @@ export default function Home() {
                     />
                 }
             >
-                <View className="mb-14 mt-0 px-4">
-                    <Text className="text-5xl font-bold text-text">
+                <View style={{ marginBottom: 56, marginTop: 0, paddingHorizontal: 16 }}>
+                    <Text style={{ fontSize: 48, fontWeight: "700", color: colors.text }}>
                         Hello, {user?.first_name}!
                     </Text>
-                    <Text className="text-text text-lg opacity-50">
+                    <Text style={{ color: colors.text, fontSize: 18, opacity: 0.5 }}>
                         Let's continue your learning journey
                     </Text>
                 </View>
 
-                <View className="mb-3 flex-row items-center justify-between pr-1">
-                    <Text className="text-text text-lg font-semibold">Your courses</Text>
+                <View style={{ marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingRight: 4 }}>
+                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: "600" }}>Your courses</Text>
                     <Link href="/(tabs)/courses" asChild>
                         <Pressable hitSlop={8}>
-                            <Text className="text-sm font-semibold text-text opacity-60">See all</Text>
+                            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, opacity: 0.6 }}>See all</Text>
                         </Pressable>
                     </Link>
                 </View>
                 {isPending && !data ? (
                     <HomeCoursesCarouselSkeleton cardWidth={courseCardWidth} />
                 ) : isError ? (
-                    <View className="mb-6 rounded-3xl border border-text/10 p-5">
-                        <Text className="text-text font-semibold">Couldn&apos;t load courses</Text>
-                        <Text className="text-text text-sm opacity-60 mt-1">
+                    <View style={{ marginBottom: 24, borderRadius: 24, borderWidth: 1, borderColor: borderSubtle, padding: 20 }}>
+                        <Text style={{ color: colors.text, fontWeight: "600" }}>Couldn&apos;t load courses</Text>
+                        <Text style={{ color: colors.text, fontSize: 14, opacity: 0.6, marginTop: 4 }}>
                             {error instanceof Error ? error.message : "Something went wrong"}
                         </Text>
                         <Pressable
                             onPress={() => {
                                 refetch();
                             }}
-                            className="mt-4 self-start rounded-xl bg-text px-4 py-2 active:opacity-80"
+                            style={{ marginTop: 16, alignSelf: "flex-start", borderRadius: 12, backgroundColor: colors.text, paddingHorizontal: 16, paddingVertical: 8 }}
                         >
-                            <Text className="font-semibold text-invert">Try again</Text>
+                            <Text style={{ fontWeight: "600", color: colors.invert }}>Try again</Text>
                         </Pressable>
                     </View>
                 ) : courses.length === 0 ? (
-                    <View className="mb-6 items-center rounded-3xl border border-text/10 bg-secondary px-6 py-8">
+                    <View style={{ marginBottom: 24, alignItems: "center", borderRadius: 24, borderWidth: 1, borderColor: borderSubtle, backgroundColor: colors.secondary, paddingHorizontal: 24, paddingVertical: 32 }}>
                         <View
-                            className="h-16 w-16 items-center justify-center rounded-full"
-                            style={{ backgroundColor: colors.tabPillActive }}
+                            style={{ height: 64, width: 64, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.tabPillActive }}
                         >
                             <Feather name="book-open" size={28} color={colors.primary} />
                         </View>
-                        <Text className="text-text mt-4 text-xl font-bold">
+                        <Text style={{ color: colors.text, marginTop: 16, fontSize: 20, fontWeight: "700" }}>
                             Start your learning journey
                         </Text>
-                        <Text className="text-text mt-2 text-center text-sm leading-5 opacity-60">
+                        <Text style={{ color: colors.text, marginTop: 8, textAlign: "center", fontSize: 14, lineHeight: 20, opacity: 0.6 }}>
                             You haven&apos;t enrolled in any courses yet. Browse the
                             catalog and pick one to get started.
                         </Text>
                         <Pressable
                             onPress={() => router.push("/(tabs)/courses")}
-                            className="mt-5 w-full flex-row items-center justify-center rounded-xl px-4 py-3 active:opacity-90"
-                            style={{ backgroundColor: colors.primary }}
+                            style={{ marginTop: 20, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.primary }}
                         >
                             <Feather name="compass" size={18} color="#ffffff" />
-                            <Text className="ml-2 font-semibold text-white">
+                            <Text style={{ marginLeft: 8, fontWeight: "600", color: "#fff" }}>
                                 Browse courses
                             </Text>
                         </Pressable>
@@ -181,7 +178,7 @@ export default function Home() {
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        className="mb-6"
+                        style={{ marginBottom: 24 }}
                         contentContainerStyle={{ gap: 16, paddingRight: 24 }}
                         snapToInterval={courseCardWidth + 16}
                         decelerationRate="fast"
@@ -214,16 +211,15 @@ export default function Home() {
                 )}
                 {courses.length > 0 ? (
                     <>
-                        <View className="mb-3">
-                            <Text className="text-text text-lg font-semibold">
+                        <View style={{ marginBottom: 12 }}>
+                            <Text style={{ color: colors.text, fontSize: 18, fontWeight: "600" }}>
                                 Streaks & Rank
                             </Text>
                         </View>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            className="mb-6"
-                            style={{ height: 280 }}
+                            style={{ marginBottom: 24, height: 280 }}
                             contentContainerStyle={{ gap: 16, paddingRight: 24 }}
                             snapToInterval={cardWidth + 16}
                             decelerationRate="fast"
@@ -246,19 +242,18 @@ export default function Home() {
                         </ScrollView>
                     </>
                 ) : null}
-                <View className="mb-3">
-                    <Text className="text-text text-lg font-semibold">Classroom</Text>
+                <View style={{ marginBottom: 12 }}>
+                    <Text style={{ color: colors.text, fontSize: 18, fontWeight: "600" }}>Classroom</Text>
                 </View>
                 <View
-                    className="rounded-[24px] p-5 mb-10"
-                    style={{ backgroundColor: colors.secondary }}
+                    style={{ borderRadius: 24, padding: 20, marginBottom: 40, backgroundColor: colors.secondary }}
                 >
-                    <View className="flex-row items-center justify-between">
-                        <View className="flex-1 pr-4">
-                            <Text className="text-text text-base font-semibold">
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                        <View style={{ flex: 1, paddingRight: 16 }}>
+                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: "600" }}>
                                 {classroomSession?.title ?? "Classroom stream"}
                             </Text>
-                            <Text className="text-text text-sm opacity-60 mt-1">
+                            <Text style={{ color: colors.text, fontSize: 14, opacity: 0.6, marginTop: 4 }}>
                                 {nextClassroomEvent
                                     ? getClassroomEventLabel(nextClassroomEvent)
                                     : "Live classes and deadlines will appear here"}
@@ -271,38 +266,36 @@ export default function Home() {
                         />
                     </View>
                     {isClassroomSessionLoading || isClassroomFetching ? (
-                        <Text className="text-text text-sm opacity-60 mt-4">
+                        <Text style={{ color: colors.text, fontSize: 14, opacity: 0.6, marginTop: 16 }}>
                             Refreshing classroom stream...
                         </Text>
                     ) : isClassroomSessionError || !classroomSession ? (
-                        <Text className="text-text text-sm opacity-60 mt-4">
+                        <Text style={{ color: colors.text, fontSize: 14, opacity: 0.6, marginTop: 16 }}>
                             Your classroom updates will appear here once available.
                         </Text>
                     ) : (
-                        <View className="mt-4 gap-3">
+                        <View style={{ marginTop: 16, gap: 12 }}>
                             {classroomStream.slice(0, 3).map((item) => (
                                 <View
                                     key={item.id}
-                                    className="rounded-2xl px-4 py-3"
-                                    style={{ backgroundColor: colors.bg }}
+                                    style={{ borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.bg }}
                                 >
-                                    <Text className="text-text text-sm font-semibold" numberOfLines={1}>
+                                    <Text style={{ color: colors.text, fontSize: 14, fontWeight: "600" }} numberOfLines={1}>
                                         {item.title}
                                     </Text>
-                                    <Text className="text-text text-xs opacity-60 mt-1" numberOfLines={1}>
+                                    <Text style={{ color: colors.text, fontSize: 12, opacity: 0.6, marginTop: 4 }} numberOfLines={1}>
                                         {item.label}
                                     </Text>
                                 </View>
                             ))}
                             {classroomStream.length === 0 ? (
                                 <View
-                                    className="rounded-2xl px-4 py-4"
-                                    style={{ backgroundColor: colors.bg }}
+                                    style={{ borderRadius: 16, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: colors.bg }}
                                 >
-                                    <Text className="text-text text-sm font-semibold">
+                                    <Text style={{ color: colors.text, fontSize: 14, fontWeight: "600" }}>
                                         No classroom activity yet
                                     </Text>
-                                    <Text className="text-text text-xs opacity-60 mt-1">
+                                    <Text style={{ color: colors.text, fontSize: 12, opacity: 0.6, marginTop: 4 }}>
                                         Announcements, resources, live sessions, assignments, and capstones will show up here.
                                     </Text>
                                 </View>
@@ -311,10 +304,9 @@ export default function Home() {
                     )}
                     <Pressable
                         onPress={() => router.push("/(tabs)/classroom")}
-                        className="mt-4 rounded-xl px-4 py-3 items-center justify-center"
-                        style={{ backgroundColor: colors.primary }}
+                        style={{ marginTop: 16, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, alignItems: "center", justifyContent: "center", backgroundColor: colors.primary }}
                     >
-                        <Text className="font-semibold text-white">
+                        <Text style={{ fontWeight: "600", color: "#fff" }}>
                             Open classroom
                         </Text>
                     </Pressable>

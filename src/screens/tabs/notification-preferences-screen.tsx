@@ -60,41 +60,40 @@ export function NotificationPreferencesScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View
-        className="flex-row items-center border-b border-border/40 px-4 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 12, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ marginRight: 8, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
           <Ionicons name="chevron-back" size={24} color={ACCENT} />
         </Pressable>
-        <Text className="flex-1 font-outfit-bold text-lg text-text" numberOfLines={1}>
+        <Text style={{ flex: 1, fontWeight: "700", fontSize: 18, color: colors.text }} numberOfLines={1}>
           Notification Preferences
         </Text>
       </View>
 
       {isPending ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={ACCENT} />
         </View>
       ) : isError || !data ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center font-outfit-bold text-base text-text">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <Text style={{ textAlign: "center", fontWeight: "700", fontSize: 16, color: colors.text }}>
             Couldn&apos;t load preferences
           </Text>
-          <Text className="mt-1 text-center text-sm text-text opacity-60">
+          <Text style={{ marginTop: 4, textAlign: "center", fontSize: 14, color: colors.text, opacity: 0.6 }}>
             {error instanceof Error ? error.message : "Something went wrong"}
           </Text>
           <Pressable
             onPress={() => refetch()}
-            className="mt-4 rounded-xl bg-text px-4 py-2 active:opacity-80"
+            style={{ marginTop: 16, borderRadius: 12, backgroundColor: colors.text, paddingHorizontal: 16, paddingVertical: 8 }}
           >
-            <Text className="font-semibold text-invert">Try again</Text>
+            <Text style={{ fontWeight: "600", color: colors.invert }}>Try again</Text>
           </Pressable>
         </View>
       ) : (
@@ -106,14 +105,14 @@ export function NotificationPreferencesScreen() {
           }}
           showsVerticalScrollIndicator={false}
         >
-          <Text className="mb-2 mt-2 text-sm text-text opacity-60">
+          <Text style={{ marginBottom: 8, marginTop: 8, fontSize: 14, color: colors.text, opacity: 0.6 }}>
             Choose what you want to be notified about. Changes save instantly.
           </Text>
-          <View className="mt-2 overflow-hidden rounded-2xl border border-border/60 bg-secondary/40">
+          <View style={{ marginTop: 8, overflow: "hidden", borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary }}>
             {TOGGLES.map((toggle, index) => (
               <View
                 key={toggle.key}
-                className={index > 0 ? "border-t border-border/40" : ""}
+                style={index > 0 ? { borderTopWidth: 1, borderTopColor: colors.border } : undefined}
               >
                 <Switch
                   value={data[toggle.key]}

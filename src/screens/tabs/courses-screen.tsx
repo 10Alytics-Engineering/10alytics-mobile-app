@@ -12,7 +12,6 @@ import { useUserCourses } from "@/hooks/use-user-courses";
 import type { Course, UserCourse } from "@/lib/api-client";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
 
 type TabKey = "my" | "all";
 
@@ -105,25 +104,22 @@ export function CoursesScreen() {
   );
 
   const renderError = (message: string, onRetry: () => void) => (
-    <View className="flex-1 items-center justify-center px-8 py-20">
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, paddingVertical: 80 }}>
       <Text
-        className="text-center text-base font-semibold"
-        style={{ color: colors.text }}
+        style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: colors.text }}
       >
         Couldn&apos;t load courses
       </Text>
       <Text
-        className="mt-2 text-center text-sm opacity-70"
-        style={{ color: colors.text }}
+        style={{ marginTop: 8, textAlign: "center", fontSize: 14, opacity: 0.7, color: colors.text }}
       >
         {message}
       </Text>
       <Pressable
         onPress={onRetry}
-        className="mt-6 rounded-xl px-6 py-3 active:opacity-80"
-        style={{ backgroundColor: colors.primary }}
+        style={{ marginTop: 24, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: colors.primary }}
       >
-        <Text className="font-semibold text-white">Try again</Text>
+        <Text style={{ fontWeight: "600", color: "#fff" }}>Try again</Text>
       </Pressable>
     </View>
   );
@@ -153,16 +149,14 @@ export function CoursesScreen() {
             myCourses.length === 0 && { flexGrow: 1 },
           ]}
           ListEmptyComponent={
-            <View className="flex-1 items-center justify-center px-8 py-20">
+            <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, paddingVertical: 80 }}>
               <Text
-                className="text-center text-base font-semibold"
-                style={{ color: colors.text }}
+                style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: colors.text }}
               >
                 No courses yet
               </Text>
               <Text
-                className="mt-1 text-center text-sm opacity-60"
-                style={{ color: colors.text }}
+                style={{ marginTop: 4, textAlign: "center", fontSize: 14, opacity: 0.6, color: colors.text }}
               >
                 Switch to the Courses tab to find one to enroll in.
               </Text>
@@ -204,16 +198,14 @@ export function CoursesScreen() {
             catalogCourses.length === 0 && { flexGrow: 1 },
           ]}
           ListEmptyComponent={
-            <View className="flex-1 items-center justify-center px-8 py-20">
+            <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, paddingVertical: 80 }}>
               <Text
-                className="text-center text-base font-semibold"
-                style={{ color: colors.text }}
+                style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: colors.text }}
               >
                 Nothing new to explore
               </Text>
               <Text
-                className="mt-1 text-center text-sm opacity-60"
-                style={{ color: colors.text }}
+                style={{ marginTop: 4, textAlign: "center", fontSize: 14, opacity: 0.6, color: colors.text }}
               >
                 You&apos;re already enrolled in every available course.
               </Text>
@@ -237,16 +229,18 @@ export function CoursesScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: screenBg }}>
-      <View className="px-4 pb-2 pt-3">
+      <View style={{ paddingHorizontal: 16, paddingBottom: 8, paddingTop: 12 }}>
         <Text
-          className="text-3xl font-extrabold"
-          style={{ color: colors.text }}
+          style={{ fontSize: 30, fontWeight: "800", color: colors.text }}
         >
           Learning
         </Text>
         <View
-          className="mt-4 flex-row rounded-full p-1"
           style={{
+            marginTop: 16,
+            flexDirection: "row",
+            borderRadius: 9999,
+            padding: 4,
             backgroundColor: isDark
               ? "rgba(255,255,255,0.07)"
               : "rgba(0,0,0,0.05)",
@@ -258,14 +252,17 @@ export function CoursesScreen() {
               <Pressable
                 key={item.key}
                 onPress={() => setTab(item.key)}
-                className="flex-1 items-center justify-center rounded-full py-2.5 active:opacity-90"
                 style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 9999,
+                  paddingVertical: 10,
                   backgroundColor: active ? colors.primary : "transparent",
                 }}
               >
                 <Text
-                  className="text-sm font-bold"
-                  style={{ color: active ? "#FFFFFF" : mutedColor }}
+                  style={{ fontSize: 14, fontWeight: "700", color: active ? "#FFFFFF" : mutedColor }}
                 >
                   {item.label}
                 </Text>

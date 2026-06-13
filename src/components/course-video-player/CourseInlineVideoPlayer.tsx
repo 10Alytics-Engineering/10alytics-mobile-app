@@ -120,14 +120,13 @@ export function CourseInlineVideoPlayer({
 
   return (
     <View>
-      <View className="bg-black">
+      <View style={{ backgroundColor: "#000" }}>
         <View
-          className="relative w-full items-center justify-center bg-black"
-          style={{ minHeight: playerHeight }}
+          style={{ position: "relative", width: "100%", alignItems: "center", justifyContent: "center", backgroundColor: "#000", minHeight: playerHeight }}
         >
           {!absoluteUrl ? (
             <Text
-              className="px-6 py-8 text-center text-neutral-300"
+              style={{ paddingHorizontal: 24, paddingVertical: 32, textAlign: "center", color: "#D4D4D4" }}
               selectable
             >
               Invalid video link.
@@ -153,7 +152,7 @@ export function CourseInlineVideoPlayer({
             <Pressable
               accessibilityLabel={closeA11yLabel}
               accessibilityRole="button"
-              className="absolute left-3 top-3 z-50 h-10 w-10 items-center justify-center rounded-full bg-black/50 active:opacity-80"
+              style={{ position: "absolute", left: 12, top: 12, zIndex: 50, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: "rgba(0,0,0,0.5)" }}
               hitSlop={10}
               onPress={handleClose}
             >

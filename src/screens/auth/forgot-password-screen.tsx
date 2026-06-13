@@ -2,19 +2,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import { Alert, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import useThemeColors from "@/contexts/ThemeColors";
-import { apiClient } from "@/lib/api-client";
 import {
+  Alert,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
-} from "@/tw";
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import useThemeColors from "@/contexts/ThemeColors";
+import { apiClient } from "@/lib/api-client";
 
 export function ForgotPasswordScreen() {
   const colors = useThemeColors();
@@ -49,16 +50,15 @@ export function ForgotPasswordScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-background"
+      style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <StatusBar style={colors.isDark ? "light" : "dark"} />
       <View
-        className="flex-row items-center px-4 pb-2"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 8, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
@@ -67,18 +67,18 @@ export function ForgotPasswordScreen() {
       </View>
 
       <ScrollView
-        contentContainerClassName="px-6 pt-6"
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-3xl font-bold text-text">Forgot password?</Text>
-        <Text className="mt-2 text-base text-text opacity-60">
+        <Text style={{ fontSize: 30, fontWeight: "700", color: colors.text }}>Forgot password?</Text>
+        <Text style={{ marginTop: 8, fontSize: 16, color: colors.text, opacity: 0.6 }}>
           Enter the email linked to your account and we&apos;ll send you a
           one-time code to reset your password.
         </Text>
 
-        <View className="mt-8">
-          <Text className="mb-2 text-sm font-semibold text-text opacity-70">
+        <View style={{ marginTop: 32 }}>
+          <Text style={{ marginBottom: 8, fontSize: 14, fontWeight: "600", color: colors.text, opacity: 0.7 }}>
             Email
           </Text>
           <TextInput
@@ -89,25 +89,25 @@ export function ForgotPasswordScreen() {
             placeholderTextColor={colors.placeholder}
             value={email}
             onChangeText={setEmail}
-            className="rounded-2xl border border-border bg-secondary/40 px-4 py-4 text-base text-text"
+            style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, paddingHorizontal: 16, paddingVertical: 16, fontSize: 16, color: colors.text }}
           />
         </View>
 
         <Pressable
           onPress={handleSubmit}
           disabled={loading}
-          className={`mt-6 items-center rounded-2xl bg-text py-4 ${loading ? "opacity-70" : "active:opacity-90"}`}
+          style={{ marginTop: 24, alignItems: "center", borderRadius: 16, backgroundColor: colors.text, paddingVertical: 16, opacity: loading ? 0.7 : 1 }}
         >
-          <Text className="text-base font-bold text-invert">
+          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.invert }}>
             {loading ? "Sending..." : "Send reset code"}
           </Text>
         </Pressable>
 
         <Pressable
           onPress={() => router.push("/reset-password")}
-          className="mt-4 items-center py-2"
+          style={{ marginTop: 16, alignItems: "center", paddingVertical: 8 }}
         >
-          <Text className="text-sm font-semibold text-text opacity-70">
+          <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text, opacity: 0.7 }}>
             I already have a code
           </Text>
         </Pressable>

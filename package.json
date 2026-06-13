@@ -21,7 +21,6 @@
     "axios": "^1.13.6",
     "buffer": "^6.0.3",
     "burnt": "^0.13.0",
-    "clsx": "^2.1.1",
     "expo": "~56.0.11",
     "expo-apple-authentication": "~56.0.4",
     "expo-asset": "~56.0.17",
@@ -48,13 +47,11 @@
     "laravel-echo": "^2.3.4",
     "lottie-react-native": "~7.3.1",
     "lucide-react-native": "^0.562.0",
-    "nwui-cli": "^0.4.14",
     "pressto": "^0.6.0",
     "pusher-js": "^8.5.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.85.3",
-    "react-native-css-interop": "^0.2.1",
     "react-native-gesture-handler": "~2.31.1",
     "react-native-reanimated": "4.3.1",
     "react-native-redash": "^18.1.5",
@@ -65,7 +62,6 @@
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1",
     "react-native-worklets": "0.8.3",
-    "tailwind-merge": "^3.0.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
@@ -75,11 +71,8 @@
     "@typescript-eslint/parser": "^7.7.0",
     "eslint": "^8.57.0",
     "eslint-config-universe": "^12.0.1",
-    "nativewind": "^4.2.1",
     "prettier": "^3.2.5",
-    "prettier-plugin-tailwindcss": "^0.5.11",
     "react-native-svg-transformer": "^1.5.3",
-    "tailwindcss": "^3.3.2",
     "typescript": "~6.0.3"
   },
   "eslintConfig": {

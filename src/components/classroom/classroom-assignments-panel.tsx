@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import useThemeColors from "@/contexts/ThemeColors";
 import {
   formatClassroomDate,
   getAssignmentStatus,
@@ -52,8 +53,7 @@ function AssignmentIcon({
   if (kind === "capstone") {
     return (
       <View
-        className="h-10 w-10 items-center justify-center rounded-full"
-        style={{ backgroundColor: ACCENT_SOFT }}
+        style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: ACCENT_SOFT }}
       >
         <Ionicons name="trophy-outline" size={20} color={ACCENT} />
       </View>
@@ -63,8 +63,7 @@ function AssignmentIcon({
   const bg = status === "graded" ? GREEN_SOFT : ACCENT_SOFT;
   return (
     <View
-      className="h-10 w-10 items-center justify-center rounded-full"
-      style={{ backgroundColor: bg }}
+      style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: bg }}
     >
       <Ionicons name="document-text-outline" size={20} color={tint} />
     </View>
@@ -74,22 +73,16 @@ function AssignmentIcon({
 function StatusPill({ status }: { status: AssignmentStatus }) {
   if (status === "graded") {
     return (
-      <View
-        className="rounded-md px-3 py-1.5"
-        style={{ backgroundColor: GREEN_SOFT }}
-      >
-        <Text className="text-xs font-outfit-bold" style={{ color: GREEN, letterSpacing: 0.5 }}>
+      <View style={{ borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: GREEN_SOFT }}>
+        <Text style={{ fontSize: 12, fontWeight: "700", color: GREEN, letterSpacing: 0.5 }}>
           GRADED
         </Text>
       </View>
     );
   }
   return (
-    <View
-      className="rounded-md px-3 py-1.5"
-      style={{ backgroundColor: RED_SOFT }}
-    >
-      <Text className="text-xs font-outfit-bold" style={{ color: RED, letterSpacing: 0.5 }}>
+    <View style={{ borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: RED_SOFT }}>
+      <Text style={{ fontSize: 12, fontWeight: "700", color: RED, letterSpacing: 0.5 }}>
         {status === "submitted" || status === "turned_in" ? "SUBMITTED" : "NOT DONE"}
       </Text>
     </View>
@@ -103,6 +96,7 @@ function AssignmentCard({
   assignment: Assignment;
   courseEnrollmentId?: number | string;
 }) {
+  const colors = useThemeColors();
   return (
     <Pressable
       disabled={!courseEnrollmentId}
@@ -114,70 +108,61 @@ function AssignmentCard({
           kind: assignment.kind,
         });
       }}
-      className="rounded-2xl border border-border bg-secondary/40 p-4"
+      style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}
     >
-      <View className="flex-row items-start gap-3">
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
         <AssignmentIcon kind={assignment.kind} status={assignment.status} />
-        <View className="flex-1">
-          <Text className="font-outfit-bold text-base leading-6 text-text">
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontWeight: "700", fontSize: 16, lineHeight: 24, color: colors.text }}>
             {assignment.title}
           </Text>
         </View>
       </View>
 
-      <Text className="mt-3 text-sm leading-5 text-text opacity-70">
+      <Text style={{ marginTop: 12, fontSize: 14, lineHeight: 20, color: colors.text, opacity: 0.7 }}>
         {assignment.description}
       </Text>
 
-      <View className="mt-3 flex-row items-center gap-2">
+      <View style={{ marginTop: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
         {assignment.dueLabel ? (
-          <View
-            className="rounded-md px-2.5 py-1.5"
-            style={{ backgroundColor: RED_SOFT }}
-          >
-            <Text className="text-xs font-semibold" style={{ color: RED }}>
+          <View style={{ borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: RED_SOFT }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: RED }}>
               {assignment.dueLabel}
             </Text>
           </View>
         ) : null}
         {assignment.submittedLabel ? (
-          <View
-            className="rounded-md px-2.5 py-1.5"
-            style={{ backgroundColor: ACCENT_SOFT }}
-          >
-            <Text className="text-xs font-semibold" style={{ color: ACCENT }}>
+          <View style={{ borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: ACCENT_SOFT }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: ACCENT }}>
               {assignment.submittedLabel}
             </Text>
           </View>
         ) : null}
-        <Text className="text-xs text-text opacity-50">
+        <Text style={{ fontSize: 12, color: colors.text, opacity: 0.5 }}>
           {assignment.postedLabel}
         </Text>
       </View>
 
-      <View className="mt-4 flex-row flex-wrap items-center gap-2">
+      <View style={{ marginTop: 16, flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
         {assignment.resourceCount > 0 ? (
-          <View className="flex-row items-center gap-1.5">
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Ionicons name="layers-outline" size={14} color="#9A9A9A" />
-            <Text className="text-xs text-text opacity-60">
+            <Text style={{ fontSize: 12, color: colors.text, opacity: 0.6 }}>
               {assignment.resourceCount} Resource
             </Text>
           </View>
         ) : null}
 
         {assignment.status === "graded" && assignment.score != null ? (
-          <View
-            className="flex-row items-center gap-1 rounded-md px-2.5 py-1.5"
-            style={{ backgroundColor: GREEN_SOFT }}
-          >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: GREEN_SOFT }}>
             <Ionicons name="checkmark-circle-outline" size={14} color={GREEN} />
-            <Text className="text-xs font-semibold" style={{ color: GREEN }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: GREEN }}>
               {assignment.score}/{assignment.points}
             </Text>
           </View>
         ) : (
-          <View className="rounded-md border border-border bg-background px-2.5 py-1.5">
-            <Text className="text-xs font-semibold text-text">
+          <View style={{ borderRadius: 6, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, paddingHorizontal: 10, paddingVertical: 6 }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
               {assignment.points} Points
             </Text>
           </View>
@@ -196,6 +181,7 @@ export function ClassroomAssignmentsPanel({
   courseEnrollmentId?: number | string;
   kind?: "assignment" | "capstone";
 }) {
+  const colors = useThemeColors();
   const [filter, setFilter] = useState<Filter>("all");
   const status = filter === "all" ? null : filter;
   const { data: rows = [], isLoading, isError, refetch } = useClassroomAssignments(
@@ -216,37 +202,29 @@ export function ClassroomAssignmentsPanel({
   }, [filter, kind, rows]);
 
   return (
-    <View className="gap-4">
-      <View className="flex-row items-center justify-between">
-        <Text className="font-outfit-bold text-xl text-text">
+    <View style={{ gap: 16 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ fontWeight: "700", fontSize: 20, color: colors.text }}>
           {kind === "capstone" ? "Capstone" : "Your Classwork"}
         </Text>
-        <Pressable
-          className="rounded-lg border px-4 py-2"
-          style={{ borderColor: ACCENT }}
-        >
-          <Text className="text-sm font-semibold" style={{ color: ACCENT }}>
+        <Pressable style={{ borderRadius: 8, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 8, borderColor: ACCENT }}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: ACCENT }}>
             View Grades
           </Text>
         </Pressable>
       </View>
 
-      <View className="flex-row items-center gap-4">
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
         {FILTERS.map((f) => {
           const active = filter === f.id;
           return (
             <Pressable
               key={f.id}
               onPress={() => setFilter(f.id)}
-              className="rounded-md px-3 py-2"
-              style={{ backgroundColor: active ? ACCENT_SOFT : "transparent" }}
+              style={{ borderRadius: 6, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? ACCENT_SOFT : "transparent" }}
             >
               <Text
-                className="text-sm font-semibold"
-                style={{
-                  color: active ? ACCENT : undefined,
-                  opacity: active ? 1 : 0.55,
-                }}
+                style={{ fontSize: 14, fontWeight: "600", color: active ? ACCENT : colors.text, opacity: active ? 1 : 0.55 }}
               >
                 {f.label}
               </Text>
@@ -258,17 +236,17 @@ export function ClassroomAssignmentsPanel({
       {isLoading || isError ? (
         <Pressable
           onPress={() => refetch()}
-          className="rounded-2xl border border-border bg-secondary/40 p-5"
+          style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 20 }}
         >
-          <Text className="text-center font-semibold text-text">
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             {isLoading ? "Loading..." : "Unable to load classwork. Tap to retry."}
           </Text>
         </Pressable>
       ) : null}
 
       {!isLoading && !isError && visible.length === 0 ? (
-        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
-          <Text className="text-center font-semibold text-text">
+        <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 20 }}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             No {kind === "capstone" ? "capstones" : "assignments"} yet.
           </Text>
         </View>

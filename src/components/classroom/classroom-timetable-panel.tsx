@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import useThemeColors from "@/contexts/ThemeColors";
 import {
   formatClassroomDate,
   formatClassroomTime,
@@ -62,6 +63,7 @@ export function ClassroomTimetablePanel({
 }: {
   courseEnrollmentId?: number | string;
 }) {
+  const colors = useThemeColors();
   const today = useMemo(() => new Date(), []);
   const [selected, setSelected] = useState<Date>(today);
   const weekDays = useMemo(() => getWeekDays(selected), [selected]);
@@ -84,29 +86,20 @@ export function ClassroomTimetablePanel({
   }, [rows]);
 
   return (
-    <View className="gap-5">
-      <Text className="font-outfit-bold text-xl text-text">Class Timetable</Text>
+    <View style={{ gap: 20 }}>
+      <Text style={{ fontWeight: "700", fontSize: 20, color: colors.text }}>Class Timetable</Text>
 
-      <View className="rounded-2xl border border-border bg-secondary/60 p-5">
-        <View className="flex-row items-start justify-between">
-          <View className="flex-row items-end gap-3">
-            <Text
-              className="font-outfit-bold text-text"
-              style={{ fontSize: 56, lineHeight: 60 }}
-            >
+      <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}>
+            <Text style={{ fontWeight: "700", color: colors.text, fontSize: 56, lineHeight: 60 }}>
               {selected.getDate()}
             </Text>
-            <View className="pb-2">
-              <Text
-                className="text-text opacity-60"
-                style={{ fontSize: 14 }}
-              >
+            <View style={{ paddingBottom: 8 }}>
+              <Text style={{ color: colors.text, opacity: 0.6, fontSize: 14 }}>
                 {selected.toLocaleDateString("en-US", { weekday: "short" })}
               </Text>
-              <Text
-                className="text-text opacity-60"
-                style={{ fontSize: 14 }}
-              >
+              <Text style={{ color: colors.text, opacity: 0.6, fontSize: 14 }}>
                 {selected.toLocaleDateString("en-US", {
                   month: "short",
                   year: "numeric",
@@ -116,24 +109,23 @@ export function ClassroomTimetablePanel({
           </View>
           <Pressable
             onPress={() => setSelected(new Date())}
-            className="rounded-xl px-4 py-2"
-            style={{ backgroundColor: "rgba(27, 163, 114, 0.12)" }}
+            style={{ borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "rgba(27, 163, 114, 0.12)" }}
           >
-            <Text className="font-semibold" style={{ color: GREEN }}>
+            <Text style={{ fontWeight: "600", color: GREEN }}>
               Today
             </Text>
           </Pressable>
         </View>
 
-        <View className="mt-5 flex-row justify-between">
+        <View style={{ marginTop: 20, flexDirection: "row", justifyContent: "space-between" }}>
           {weekDays.map((d) => {
             const isSelected = sameDay(d, selected);
             return (
               <Pressable
                 key={d.toISOString()}
                 onPress={() => setSelected(d)}
-                className="items-center"
                 style={{
+                  alignItems: "center",
                   width: 38,
                   paddingVertical: 8,
                   borderRadius: 12,
@@ -141,20 +133,12 @@ export function ClassroomTimetablePanel({
                 }}
               >
                 <Text
-                  className="text-xs font-semibold"
-                  style={{
-                    color: isSelected ? "#fff" : undefined,
-                    opacity: isSelected ? 1 : 0.55,
-                  }}
+                  style={{ fontSize: 12, fontWeight: "600", color: isSelected ? "#fff" : colors.text, opacity: isSelected ? 1 : 0.55 }}
                 >
                   {DAY_LABELS[d.getDay()]}
                 </Text>
                 <Text
-                  className="mt-1 font-outfit-bold"
-                  style={{
-                    fontSize: 16,
-                    color: isSelected ? "#fff" : undefined,
-                  }}
+                  style={{ marginTop: 4, fontWeight: "700", fontSize: 16, color: isSelected ? "#fff" : colors.text }}
                 >
                   {d.getDate()}
                 </Text>
@@ -165,13 +149,13 @@ export function ClassroomTimetablePanel({
       </View>
 
       <View>
-        <View className="flex-row items-center gap-2">
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Ionicons name="calendar-outline" size={18} color={ACCENT} />
-          <Text className="font-outfit-bold text-base text-text">
+          <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
             {sameDay(selected, today) ? "Upcoming Events" : "Events"}
           </Text>
           {!sameDay(selected, today) ? (
-            <Text className="text-sm text-text opacity-60">
+            <Text style={{ fontSize: 14, color: colors.text, opacity: 0.6 }}>
               {selected.toLocaleDateString("en-US", {
                 weekday: "short",
                 month: "short",
@@ -181,13 +165,13 @@ export function ClassroomTimetablePanel({
           ) : null}
         </View>
 
-        <View className="mt-3 gap-3">
+        <View style={{ marginTop: 12, gap: 12 }}>
           {isLoading || isError ? (
             <Pressable
               onPress={() => refetch()}
-              className="rounded-2xl border border-border px-4 py-4"
+              style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 16 }}
             >
-              <Text className="text-center font-semibold text-text">
+              <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
                 {isLoading ? "Loading events..." : "Unable to load events. Tap to retry."}
               </Text>
             </Pressable>
@@ -196,8 +180,8 @@ export function ClassroomTimetablePanel({
           {!isLoading && !isError ? (
             (sameDay(selected, today) ? upcomingEvents : eventsForSelectedDay).length ===
             0 ? (
-              <View className="rounded-2xl border border-border px-4 py-4">
-                <Text className="text-center font-semibold text-text">
+              <View style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 16 }}>
+                <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
                   {sameDay(selected, today)
                     ? "No upcoming events."
                     : "No events on this day."}
@@ -211,39 +195,29 @@ export function ClassroomTimetablePanel({
             return (
               <View
                 key={event.id}
-                className="flex-row items-center rounded-2xl border border-border px-4 py-4"
-                style={{ backgroundColor: style.bg }}
+                style={{ flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 16, backgroundColor: style.bg }}
               >
-                <View className="w-12 items-center">
-                  <Text
-                    className="font-outfit-bold text-xs"
-                    style={{ color: style.monthColor, letterSpacing: 1 }}
-                  >
+                <View style={{ width: 48, alignItems: "center" }}>
+                  <Text style={{ fontWeight: "700", fontSize: 12, color: style.monthColor, letterSpacing: 1 }}>
                     {event.monthLabel}
                   </Text>
-                  <Text
-                    className="font-outfit-bold"
-                    style={{ color: style.monthColor, fontSize: 18 }}
-                  >
+                  <Text style={{ fontWeight: "700", color: style.monthColor, fontSize: 18 }}>
                     {event.day}
                   </Text>
                 </View>
-                <View className="ml-3 flex-1">
-                  <Text className="font-outfit-bold text-base text-text">
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
                     {event.title}
                   </Text>
-                  <Text
-                    className="mt-0.5 text-sm text-text opacity-70"
-                    style={{ textDecorationLine: "underline" }}
-                  >
+                  <Text style={{ marginTop: 2, fontSize: 14, color: colors.text, opacity: 0.7, textDecorationLine: "underline" }}>
                     {event.meta}
                   </Text>
                 </View>
                 {event.cta ? (
                   <Pressable
-                    className="rounded-lg border border-border bg-background px-3 py-2"
+                    style={{ borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 8 }}
                   >
-                    <Text className="text-sm font-semibold" style={{ color: ACCENT }}>
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: ACCENT }}>
                       {event.cta}
                     </Text>
                   </Pressable>

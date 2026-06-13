@@ -10,10 +10,10 @@ import { ClassroomParticipantsPanel } from "@/components/classroom/classroom-par
 import { ClassroomRecordingsPanel } from "@/components/classroom/classroom-recordings-panel";
 import { ClassroomResourcesPanel } from "@/components/classroom/classroom-resources-panel";
 import { ClassroomTimetablePanel } from "@/components/classroom/classroom-timetable-panel";
+import useThemeColors from "@/contexts/ThemeColors";
 import { useClassroomSession } from "@/hooks/use-classroom";
 import useThemedNavigation from "@/hooks/useThemedNavigation";
 
-import "../../../global.css";
 
 const ACCENT = "#DA6728";
 
@@ -51,14 +51,14 @@ function PlaceholderSegment({
   subtitle: string;
   colors: { text: string };
 }) {
+  const tc = useThemeColors();
   return (
-    <View className="rounded-2xl border border-border bg-secondary/80 px-5 py-8">
-      <Text className="text-center font-outfit-bold text-lg text-text">
+    <View style={{ borderRadius: 16, borderWidth: 1, borderColor: tc.border, backgroundColor: tc.secondary, paddingHorizontal: 20, paddingVertical: 32 }}>
+      <Text style={{ textAlign: "center", fontWeight: "700", fontSize: 18, color: colors.text }}>
         {title}
       </Text>
       <Text
-        className="mt-2 text-center text-sm opacity-70"
-        style={{ color: colors.text }}
+        style={{ marginTop: 8, textAlign: "center", fontSize: 14, opacity: 0.7, color: colors.text }}
       >
         {subtitle}
       </Text>
@@ -125,21 +125,18 @@ export default function ClassroomScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ThemedStatusBar />
       <View
-        className="flex-row items-center px-5 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingBottom: 12, paddingTop: insets.top + 8 }}
       >
         <View style={{ width: 26 }} />
         <Text
-          className="flex-1 text-center"
-          style={{ color: colors.text, fontSize: 24, fontWeight: "800" }}
+          style={{ flex: 1, textAlign: "center", color: colors.text, fontSize: 24, fontWeight: "800" }}
         >
           Classroom
         </Text>
         <Pressable
-          className="active:opacity-70"
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Notifications"
@@ -151,7 +148,7 @@ export default function ClassroomScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="max-h-[64px] py-3"
+        style={{ maxHeight: 64, paddingVertical: 12 }}
         contentContainerStyle={{ paddingHorizontal: 20, gap: 10, alignItems: "center" }}
       >
         {SEGMENTS.map((s) => {
@@ -160,8 +157,12 @@ export default function ClassroomScreen() {
             <Pressable
               key={s.id}
               onPress={() => setSegment(s.id)}
-              className="flex-row items-center rounded-2xl px-4 py-2.5"
               style={{
+                flexDirection: "row",
+                alignItems: "center",
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
                 backgroundColor: active ? ACCENT : colors.secondary,
                 shadowColor: active ? ACCENT : "transparent",
                 shadowOffset: { width: 0, height: 4 },
@@ -177,8 +178,10 @@ export default function ClassroomScreen() {
                 style={{ opacity: active ? 1 : 0.6 }}
               />
               <Text
-                className="ml-2 text-sm font-semibold"
                 style={{
+                  marginLeft: 8,
+                  fontSize: 14,
+                  fontWeight: "600",
                   color: active ? "#fff" : colors.text,
                   opacity: active ? 1 : 0.65,
                 }}
@@ -190,7 +193,7 @@ export default function ClassroomScreen() {
         })}
       </ScrollView>
 
-      <View className="flex-1 px-5 pt-4">
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }}>
         {isLoading || isError || !session ? (
           <ScrollView
             showsVerticalScrollIndicator={false}

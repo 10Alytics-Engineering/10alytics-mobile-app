@@ -9,7 +9,7 @@ interface HomeCoursesCarouselSkeletonProps {
     cardWidth: number;
 }
 
-/** Horizontal row of cards matching the home “Your courses” carousel. */
+/** Horizontal row of cards matching the home "Your courses" carousel. */
 export function HomeCoursesCarouselSkeleton({ cardWidth }: HomeCoursesCarouselSkeletonProps) {
     const colors = useThemeColors();
     const base = colors.isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)";
@@ -19,52 +19,36 @@ export function HomeCoursesCarouselSkeleton({ cardWidth }: HomeCoursesCarouselSk
         <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            className="mb-6"
+            style={{ marginBottom: 24 }}
             contentContainerStyle={{ gap: 16, paddingRight: 24 }}
         >
             {[0, 1].map((key) => (
                 <View
                     key={key}
-                    className="overflow-hidden rounded-[30px] p-5"
                     style={{
                         width: cardWidth,
+                        overflow: "hidden",
+                        borderRadius: 30,
+                        padding: 20,
                         backgroundColor: colors.isDark ? "#1B1410" : "#F1E7DC",
                     }}
                 >
-                    <View className="flex-row items-start justify-between gap-3">
-                        <View className="flex-row flex-1 items-center gap-3">
-                            <Skeleton
-                                className="h-[54px] w-[54px] rounded-2xl"
-                                style={{ backgroundColor: base }}
-                            />
-                            <View className="min-w-0 flex-1 gap-2">
-                                <Skeleton
-                                    className="h-5 w-full max-w-[200px] rounded-lg"
-                                    style={{ backgroundColor: base }}
-                                />
-                                <Skeleton
-                                    className="h-3 w-24 rounded-md"
-                                    style={{ backgroundColor: soft }}
-                                />
+                    <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                        <View style={{ flexDirection: "row", flex: 1, alignItems: "center", gap: 12 }}>
+                            <Skeleton style={{ height: 54, width: 54, borderRadius: 16, backgroundColor: base }} />
+                            <View style={{ minWidth: 0, flex: 1, gap: 8 }}>
+                                <Skeleton style={{ height: 20, width: "100%", maxWidth: 200, borderRadius: 8, backgroundColor: base }} />
+                                <Skeleton style={{ height: 12, width: 96, borderRadius: 6, backgroundColor: soft }} />
                             </View>
                         </View>
                     </View>
-                    <View className="mt-5 gap-2">
-                        <Skeleton
-                            className="h-2 w-full rounded-full"
-                            style={{ backgroundColor: soft }}
-                        />
-                        <Skeleton
-                            className="h-3 w-16 rounded-md"
-                            style={{ backgroundColor: soft }}
-                        />
+                    <View style={{ marginTop: 20, gap: 8 }}>
+                        <Skeleton style={{ height: 8, width: "100%", borderRadius: 9999, backgroundColor: soft }} />
+                        <Skeleton style={{ height: 12, width: 64, borderRadius: 6, backgroundColor: soft }} />
                     </View>
-                    <View className="mt-5 flex-row items-center justify-between">
-                        <Skeleton
-                            className="h-10 w-28 rounded-xl"
-                            style={{ backgroundColor: base }}
-                        />
-                        <Skeleton className="h-4 w-4 rounded" style={{ backgroundColor: soft }} />
+                    <View style={{ marginTop: 20, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                        <Skeleton style={{ height: 40, width: 112, borderRadius: 12, backgroundColor: base }} />
+                        <Skeleton style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: soft }} />
                     </View>
                 </View>
             ))}
@@ -81,46 +65,26 @@ interface CoursesTabListSkeletonProps {
 export function CoursesTabListSkeleton({ backgroundColor, isDark }: CoursesTabListSkeletonProps) {
     const base = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)";
     const soft = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)";
+    const secondary = isDark ? "#262626" : "#ffffff";
 
     return (
-        <View className="flex-1 px-4" style={{ backgroundColor }}>
-            <View className="mb-4 mt-2 flex-row items-center justify-between">
-                <Skeleton className="h-7 w-40 rounded-lg" style={{ backgroundColor: base }} />
+        <View style={{ flex: 1, paddingHorizontal: 16, backgroundColor }}>
+            <View style={{ marginBottom: 16, marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Skeleton style={{ height: 28, width: 160, borderRadius: 8, backgroundColor: base }} />
             </View>
             {[0, 1, 2, 3].map((key) => (
-                <View key={key} className="mb-global overflow-hidden rounded-2xl bg-secondary p-5">
-                    <View className="flex-row gap-4">
-                        <Skeleton
-                            className="h-[96px] w-[96px] rounded-2xl"
-                            style={{ backgroundColor: base }}
-                        />
-                        <View className="flex-1 gap-2">
-                            <Skeleton
-                                className="h-3 w-28 rounded-md"
-                                style={{ backgroundColor: soft }}
-                            />
-                            <Skeleton
-                                className="h-5 w-full rounded-lg"
-                                style={{ backgroundColor: base }}
-                            />
-                            <Skeleton
-                                className="h-4 w-full rounded-md"
-                                style={{ backgroundColor: soft }}
-                            />
-                            <Skeleton
-                                className="mt-2 h-4 w-[92%] rounded-md"
-                                style={{ backgroundColor: soft }}
-                            />
-                            <Skeleton
-                                className="mt-3 h-2 w-full rounded-full"
-                                style={{ backgroundColor: soft }}
-                            />
-                            <View className="mt-4 flex-row items-center justify-between">
-                                <Skeleton
-                                    className="h-9 w-24 rounded-xl"
-                                    style={{ backgroundColor: base }}
-                                />
-                                <Skeleton className="h-4 w-4 rounded" style={{ backgroundColor: soft }} />
+                <View key={key} style={{ marginBottom: 24, overflow: "hidden", borderRadius: 16, backgroundColor: secondary, padding: 20 }}>
+                    <View style={{ flexDirection: "row", gap: 16 }}>
+                        <Skeleton style={{ height: 96, width: 96, borderRadius: 16, backgroundColor: base }} />
+                        <View style={{ flex: 1, gap: 8 }}>
+                            <Skeleton style={{ height: 12, width: 112, borderRadius: 6, backgroundColor: soft }} />
+                            <Skeleton style={{ height: 20, width: "100%", borderRadius: 8, backgroundColor: base }} />
+                            <Skeleton style={{ height: 16, width: "100%", borderRadius: 6, backgroundColor: soft }} />
+                            <Skeleton style={{ marginTop: 8, height: 16, width: "92%", borderRadius: 6, backgroundColor: soft }} />
+                            <Skeleton style={{ marginTop: 12, height: 8, width: "100%", borderRadius: 9999, backgroundColor: soft }} />
+                            <View style={{ marginTop: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                                <Skeleton style={{ height: 36, width: 96, borderRadius: 12, backgroundColor: base }} />
+                                <Skeleton style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: soft }} />
                             </View>
                         </View>
                     </View>
@@ -143,54 +107,31 @@ export function LuminaCourseDetailSkeleton({
     surfaceHigh,
 }: LuminaCourseDetailSkeletonProps) {
     return (
-        <View className="w-full gap-5 py-4">
-            <Skeleton
-                className="w-full overflow-hidden rounded-2xl"
-                style={{ height: heroH, backgroundColor: surfaceHighest }}
-            />
-            <View className="gap-3">
-                <Skeleton
-                    className="h-6 w-3/4 rounded-lg"
-                    style={{ backgroundColor: surfaceHighest }}
-                />
-                <Skeleton className="h-4 w-full rounded-lg" style={{ backgroundColor: surfaceHigh }} />
-                <Skeleton className="h-4 w-5/6 rounded-lg" style={{ backgroundColor: surfaceHigh }} />
+        <View style={{ width: "100%", gap: 20, paddingVertical: 16 }}>
+            <Skeleton style={{ width: "100%", overflow: "hidden", borderRadius: 16, height: heroH, backgroundColor: surfaceHighest }} />
+            <View style={{ gap: 12 }}>
+                <Skeleton style={{ height: 24, width: "75%", borderRadius: 8, backgroundColor: surfaceHighest }} />
+                <Skeleton style={{ height: 16, width: "100%", borderRadius: 8, backgroundColor: surfaceHigh }} />
+                <Skeleton style={{ height: 16, width: "83.33%", borderRadius: 8, backgroundColor: surfaceHigh }} />
             </View>
-            <View className="flex-row flex-wrap gap-2">
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                 {[0, 1, 2, 3].map((key) => (
-                    <Skeleton
-                        key={key}
-                        className="h-9 w-24 rounded-full"
-                        style={{ backgroundColor: surfaceHigh }}
-                    />
+                    <Skeleton key={key} style={{ height: 36, width: 96, borderRadius: 9999, backgroundColor: surfaceHigh }} />
                 ))}
             </View>
-            <View className="gap-3 rounded-2xl p-4" style={{ backgroundColor: surfaceHigh }}>
-                <Skeleton className="h-5 w-40 rounded-lg" style={{ backgroundColor: surfaceHighest }} />
-                <Skeleton className="h-16 w-full rounded-xl" style={{ backgroundColor: surfaceHighest }} />
-                <Skeleton className="h-16 w-full rounded-xl" style={{ backgroundColor: surfaceHighest }} />
+            <View style={{ gap: 12, borderRadius: 16, padding: 16, backgroundColor: surfaceHigh }}>
+                <Skeleton style={{ height: 20, width: 160, borderRadius: 8, backgroundColor: surfaceHighest }} />
+                <Skeleton style={{ height: 64, width: "100%", borderRadius: 12, backgroundColor: surfaceHighest }} />
+                <Skeleton style={{ height: 64, width: "100%", borderRadius: 12, backgroundColor: surfaceHighest }} />
             </View>
-            <View className="gap-3">
-                <Skeleton className="h-5 w-32 rounded-lg" style={{ backgroundColor: surfaceHighest }} />
+            <View style={{ gap: 12 }}>
+                <Skeleton style={{ height: 20, width: 128, borderRadius: 8, backgroundColor: surfaceHighest }} />
                 {[0, 1].map((key) => (
-                    <View
-                        key={key}
-                        className="flex-row items-center gap-3 rounded-xl p-3"
-                        style={{ backgroundColor: surfaceHigh }}
-                    >
-                        <Skeleton
-                            className="h-12 w-12 rounded-lg"
-                            style={{ backgroundColor: surfaceHighest }}
-                        />
-                        <View className="flex-1 gap-2">
-                            <Skeleton
-                                className="h-4 w-full rounded-md"
-                                style={{ backgroundColor: surfaceHighest }}
-                            />
-                            <Skeleton
-                                className="h-3 w-2/3 rounded-md"
-                                style={{ backgroundColor: surfaceHighest }}
-                            />
+                    <View key={key} style={{ flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 12, padding: 12, backgroundColor: surfaceHigh }}>
+                        <Skeleton style={{ height: 48, width: 48, borderRadius: 8, backgroundColor: surfaceHighest }} />
+                        <View style={{ flex: 1, gap: 8 }}>
+                            <Skeleton style={{ height: 16, width: "100%", borderRadius: 6, backgroundColor: surfaceHighest }} />
+                            <Skeleton style={{ height: 12, width: "66.66%", borderRadius: 6, backgroundColor: surfaceHighest }} />
                         </View>
                     </View>
                 ))}

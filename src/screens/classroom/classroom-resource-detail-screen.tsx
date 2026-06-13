@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HtmlContentView } from "@/components/html-content-view";
+import useThemeColors from "@/contexts/ThemeColors";
 import { formatClassroomDate, useClassroomResources } from "@/hooks/use-classroom";
 import type { ClassroomAttachment, ClassroomResourcePost } from "@/lib/api-client";
 import { resolveMediaUrl } from "@/utils/resolve-media-url";
@@ -20,6 +21,7 @@ const ACCENT = "#DA6728";
 const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
 
 function AttachmentRow({ attachment }: { attachment: ClassroomAttachment }) {
+  const colors = useThemeColors();
   const name = attachment.name ?? "Resource";
   const url = attachment.url ? resolveMediaUrl(attachment.url) : null;
   const sizeLabel = attachment.size
@@ -32,19 +34,18 @@ function AttachmentRow({ attachment }: { attachment: ClassroomAttachment }) {
       onPress={() => {
         if (url) void WebBrowser.openBrowserAsync(url);
       }}
-      className="mt-2 flex-row items-center rounded-xl bg-background px-3 py-3"
+      style={{ marginTop: 8, flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 12 }}
     >
       <View
-        className="h-12 w-12 items-center justify-center rounded-xl"
-        style={{ backgroundColor: ACCENT_SOFT }}
+        style={{ height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: ACCENT_SOFT }}
       >
         <Ionicons name="document-outline" size={22} color={ACCENT} />
       </View>
-      <View className="ml-3 flex-1">
-        <Text className="font-outfit-bold text-sm text-text" numberOfLines={2}>
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }} numberOfLines={2}>
           {name}
         </Text>
-        <Text className="mt-0.5 text-xs text-text opacity-60">
+        <Text style={{ marginTop: 2, fontSize: 12, color: colors.text, opacity: 0.6 }}>
           {[sizeLabel, attachment.mime_type, attachment.type]
             .filter(Boolean)
             .join(" • ")}
@@ -56,6 +57,7 @@ function AttachmentRow({ attachment }: { attachment: ClassroomAttachment }) {
 }
 
 export function ClassroomResourceDetailScreen() {
+  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     resourceId?: string | string[];
@@ -78,40 +80,39 @@ export function ClassroomResourceDetailScreen() {
   );
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View
-        className="flex-row items-center border-b border-border/40 px-4 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 12, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ marginRight: 8, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
           <Ionicons name="chevron-back" size={24} color={ACCENT} />
         </Pressable>
-        <Text className="flex-1 font-outfit-bold text-lg text-text" numberOfLines={1}>
+        <Text style={{ flex: 1, fontWeight: "700", fontSize: 18, color: colors.text }} numberOfLines={1}>
           Material
         </Text>
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={ACCENT} />
         </View>
       ) : isError ? (
         <Pressable
           onPress={() => refetch()}
-          className="m-5 rounded-2xl border border-border bg-secondary/40 p-6"
+          style={{ margin: 20, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 24 }}
         >
-          <Text className="text-center font-semibold text-text">
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             Unable to load material. Tap to retry.
           </Text>
         </Pressable>
       ) : !post ? (
-        <View className="m-5 rounded-2xl border border-border bg-secondary/40 p-6">
-          <Text className="text-center font-semibold text-text">
+        <View style={{ margin: 20, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 24 }}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             This material could not be found.
           </Text>
         </View>
@@ -129,21 +130,22 @@ function ResourceContent({
   post: ClassroomResourcePost;
   bottomInset: number;
 }) {
+  const colors = useThemeColors();
   const body = post.body ?? post.description ?? "";
   const published = post.published_at ?? post.created_at;
 
   return (
     <ScrollView
-      className="flex-1 px-5 pt-4"
+      style={{ flex: 1, paddingHorizontal: 20, paddingTop: 16 }}
       contentContainerStyle={{ paddingBottom: bottomInset + 24 }}
       showsVerticalScrollIndicator={false}
     >
-      <Text className="font-outfit-bold text-2xl leading-8 text-text">
+      <Text style={{ fontWeight: "700", fontSize: 24, lineHeight: 32, color: colors.text }}>
         {post.title}
       </Text>
 
       {published ? (
-        <Text className="mt-2 text-sm text-text opacity-60">
+        <Text style={{ marginTop: 8, fontSize: 14, color: colors.text, opacity: 0.6 }}>
           Posted {formatClassroomDate(published)}
         </Text>
       ) : null}
@@ -151,21 +153,21 @@ function ResourceContent({
       {body ? (
         <HtmlContentView
           html={body}
-          className="mt-4"
-          textClassName="mt-4 text-base leading-6 text-text opacity-80"
+          style={{ marginTop: 16 }}
+          textStyle={{ marginTop: 16, fontSize: 16, lineHeight: 24, color: colors.text, opacity: 0.8 }}
         />
       ) : null}
 
       {(post.attachments ?? []).length > 0 ? (
-        <View className="mt-6">
-          <Text className="font-outfit-bold text-base text-text">Attachments</Text>
+        <View style={{ marginTop: 24 }}>
+          <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>Attachments</Text>
           {(post.attachments ?? []).map((attachment) => (
             <AttachmentRow key={String(attachment.id)} attachment={attachment} />
           ))}
         </View>
       ) : (
-        <View className="mt-6 rounded-2xl border border-border bg-secondary/40 p-5">
-          <Text className="text-center text-sm text-text opacity-70">
+        <View style={{ marginTop: 24, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 20 }}>
+          <Text style={{ textAlign: "center", fontSize: 14, color: colors.text, opacity: 0.7 }}>
             No files attached to this material.
           </Text>
         </View>

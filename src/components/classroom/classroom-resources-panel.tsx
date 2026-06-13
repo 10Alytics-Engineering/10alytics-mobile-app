@@ -3,6 +3,7 @@ import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
+import useThemeColors from "@/contexts/ThemeColors";
 import { useClassroomResources } from "@/hooks/use-classroom";
 import type { ClassroomAttachment, ClassroomResourcePost } from "@/lib/api-client";
 import { openClassroomResourceDetail } from "@/lib/classroom-navigation";
@@ -31,29 +32,20 @@ type Section = {
 function ResourceIcon({ kind }: { kind: ResourceKind }) {
   if (kind === "pdf") {
     return (
-      <View
-        className="h-12 w-12 items-center justify-center rounded-xl"
-        style={{ backgroundColor: "#E84B4B" }}
-      >
-        <Text className="font-outfit-bold text-xs text-white">PDF</Text>
+      <View style={{ height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#E84B4B" }}>
+        <Text style={{ fontWeight: "700", fontSize: 12, color: "#fff" }}>PDF</Text>
       </View>
     );
   }
   if (kind === "ppt") {
     return (
-      <View
-        className="h-12 w-12 items-center justify-center rounded-xl"
-        style={{ backgroundColor: "#2F6FED" }}
-      >
-        <Text className="font-outfit-bold text-xs text-white">PPT</Text>
+      <View style={{ height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#2F6FED" }}>
+        <Text style={{ fontWeight: "700", fontSize: 12, color: "#fff" }}>PPT</Text>
       </View>
     );
   }
   return (
-    <View
-      className="h-12 w-12 items-center justify-center rounded-xl"
-      style={{ backgroundColor: "#8F60E2" }}
-    >
+    <View style={{ height: 48, width: 48, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: "#8F60E2" }}>
       <Ionicons name="open-outline" size={20} color="#fff" />
     </View>
   );
@@ -66,6 +58,7 @@ function ResourceRow({
   resource: Resource;
   attachment?: ClassroomAttachment;
 }) {
+  const colors = useThemeColors();
   const url = attachment?.url ? resolveMediaUrl(attachment.url) : null;
 
   return (
@@ -74,19 +67,19 @@ function ResourceRow({
       onPress={() => {
         if (url) void WebBrowser.openBrowserAsync(url);
       }}
-      className="mt-2 flex-row items-center rounded-xl bg-background px-3 py-3"
+      style={{ marginTop: 8, flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 12 }}
     >
       <ResourceIcon kind={resource.kind} />
-      <View className="ml-3 flex-1">
-        <Text className="font-outfit-bold text-sm text-text" numberOfLines={1}>
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }} numberOfLines={1}>
           {resource.title}
         </Text>
-        <Text className="mt-0.5 text-xs text-text opacity-60">
+        <Text style={{ marginTop: 2, fontSize: 12, color: colors.text, opacity: 0.6 }}>
           {resource.meta}
         </Text>
       </View>
       {url ? (
-        <View className="h-10 w-10 items-center justify-center rounded-lg border border-border bg-background">
+        <View style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg }}>
           <Ionicons name="download-outline" size={20} color={ACCENT} />
         </View>
       ) : null}
@@ -99,6 +92,7 @@ export function ClassroomResourcesPanel({
 }: {
   courseEnrollmentId?: number | string;
 }) {
+  const colors = useThemeColors();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({
     "0": true,
@@ -114,35 +108,40 @@ export function ClassroomResourcesPanel({
       ),
     );
 
-  return (
-    <View className="gap-4">
-      <Text className="font-outfit-bold text-xl text-text">Course Resources</Text>
+  const cardStyle = {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.secondary,
+    padding: 20,
+  } as const;
 
-      <View className="flex-row items-center rounded-xl border border-border bg-secondary/40 px-3 py-2.5">
+  return (
+    <View style={{ gap: 16 }}>
+      <Text style={{ fontWeight: "700", fontSize: 20, color: colors.text }}>Course Resources</Text>
+
+      <View style={{ flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 10 }}>
         <Ionicons name="search" size={18} color="#9A9A9A" />
         <TextInput
           value={query}
           onChangeText={setQuery}
           placeholder="Search resources"
           placeholderTextColor="#9A9A9A"
-          className="ml-2 flex-1 text-sm text-text"
+          style={{ marginLeft: 8, flex: 1, fontSize: 14, color: colors.text }}
         />
       </View>
 
       {isLoading || isError ? (
-        <Pressable
-          onPress={() => refetch()}
-          className="rounded-2xl border border-border bg-secondary/40 p-5"
-        >
-          <Text className="text-center font-semibold text-text">
+        <Pressable onPress={() => refetch()} style={cardStyle}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             {isLoading ? "Loading resources..." : "Unable to load resources. Tap to retry."}
           </Text>
         </Pressable>
       ) : null}
 
       {!isLoading && !isError && sections.length === 0 ? (
-        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
-          <Text className="text-center font-semibold text-text">No resources yet.</Text>
+        <View style={cardStyle}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>No resources yet.</Text>
         </View>
       ) : null}
 
@@ -151,9 +150,9 @@ export function ClassroomResourcesPanel({
         return (
           <View
             key={section.id}
-            className="rounded-2xl border border-border bg-secondary/40 p-4"
+            style={{ borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}
           >
-            <View className="flex-row items-center">
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Pressable
                 onPress={() => {
                   if (courseEnrollmentId) {
@@ -163,21 +162,20 @@ export function ClassroomResourcesPanel({
                     });
                   }
                 }}
-                className="flex-1 flex-row items-center"
+                style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
               >
                 <View
-                  className="h-10 w-10 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: ACCENT_SOFT }}
+                  style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: ACCENT_SOFT }}
                 >
-                  <Text className="font-outfit-bold text-base" style={{ color: ACCENT }}>
+                  <Text style={{ fontWeight: "700", fontSize: 16, color: ACCENT }}>
                     {section.index}
                   </Text>
                 </View>
-                <View className="ml-3 flex-1">
-                  <Text className="font-outfit-bold text-base text-text">
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
                     {section.title}
                   </Text>
-                  <Text className="text-xs text-text opacity-60">
+                  <Text style={{ fontSize: 12, color: colors.text, opacity: 0.6 }}>
                     {section.resources.length} Resources
                   </Text>
                 </View>
@@ -186,7 +184,7 @@ export function ClassroomResourcesPanel({
                 onPress={() =>
                   setOpen((prev) => ({ ...prev, [section.id]: !prev[section.id] }))
                 }
-                className="h-10 w-10 items-center justify-center"
+                style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center" }}
                 hitSlop={8}
               >
                 <Ionicons
@@ -198,7 +196,7 @@ export function ClassroomResourcesPanel({
             </View>
 
             {isOpen && section.resources.length > 0 ? (
-              <View className="mt-2">
+              <View style={{ marginTop: 8 }}>
                 {section.resources.map((r, attachmentIndex) => (
                   <ResourceRow
                     key={r.id}

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
-import {
+import Animated, {
     Easing,
     useAnimatedStyle,
     useSharedValue,
@@ -9,17 +9,14 @@ import {
     withTiming,
 } from "react-native-reanimated";
 
-import { Animated } from "@/tw/animated";
-
 export interface SkeletonProps {
-    className?: string;
     style?: StyleProp<ViewStyle>;
 }
 
 /**
- * Pulsing placeholder block for loading layouts. Prefer NativeWind `className` for size/radius.
+ * Pulsing placeholder block for loading layouts. Pass size/radius/background via `style`.
  */
-export function Skeleton({ className, style }: SkeletonProps) {
+export function Skeleton({ style }: SkeletonProps) {
     const opacity = useSharedValue(0.42);
 
     useEffect(() => {
@@ -43,7 +40,5 @@ export function Skeleton({ className, style }: SkeletonProps) {
         opacity: opacity.value,
     }));
 
-    return (
-        <Animated.View className={className} style={[style, animatedStyle]} />
-    );
+    return <Animated.View style={[style, animatedStyle]} />;
 }

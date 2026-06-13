@@ -71,33 +71,44 @@ const Switch: React.FC<SwitchProps> = ({
       activeOpacity={1}
       onPress={toggleSwitch}
       disabled={disabled}
-      className={`flex-row items-center py-4 pl-4 pr-4 ${disabled ? 'opacity-100' : ''} ${className}`}
-      style={style}
+      style={[{ flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingLeft: 16, paddingRight: 16 }, style]}
     >
       {icon && (
-        <View className={`w-12 h-12 rounded-full bg-background mr-4 items-center justify-center`}>
+        <View style={{ width: 48, height: 48, borderRadius: 9999, backgroundColor: colors.bg, marginRight: 16, alignItems: 'center', justifyContent: 'center' }}>
           <Feather name={icon as any} size={18} color={colors.icon} />
         </View>
       )}
 
-      <View className="flex-1">
+      <View style={{ flex: 1 }}>
         {label && (
-          <Text className="font-semibold text-base text-text">{label}</Text>
+          <Text style={{ fontWeight: '600', fontSize: 16, color: colors.text }}>{label}</Text>
         )}
         {description && (
-          <Text className="text-xs opacity-50 pr-4 text-text">
+          <Text style={{ fontSize: 12, opacity: 0.5, paddingRight: 16, color: colors.text }}>
             {description}
           </Text>
         )}
       </View>
 
 
-      <View className="w-14 h-8 rounded-full">
+      <View style={{ width: 56, height: 32, borderRadius: 9999 }}>
         <View
-          className={`w-full h-full border border-border rounded-full absolute ${switchValue ? 'bg-highlight' : 'bg-background'}`}
+          style={{ width: '100%', height: '100%', borderWidth: 1, borderColor: colors.border, borderRadius: 9999, position: 'absolute', backgroundColor: switchValue ? colors.highlight : colors.bg }}
         />
         <Animated.View
           style={{
+            width: 24,
+            height: 24,
+            backgroundColor: '#fff',
+            borderRadius: 9999,
+            marginVertical: 3,
+            borderWidth: 1,
+            borderColor: colors.border,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.15,
+            shadowRadius: 2,
+            elevation: 2,
             transform: [{
               translateX: slideAnim.interpolate({
                 inputRange: [-0.2, 1.2],
@@ -105,7 +116,6 @@ const Switch: React.FC<SwitchProps> = ({
               })
             }]
           }}
-          className="w-6 h-6 bg-white rounded-full shadow-sm my-[3px] border border-border"
         />
       </View>
     </TouchableOpacity>

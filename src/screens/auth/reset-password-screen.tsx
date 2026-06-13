@@ -2,19 +2,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import { Alert, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import useThemeColors from "@/contexts/ThemeColors";
-import { apiClient } from "@/lib/api-client";
 import {
+  Alert,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
-} from "@/tw";
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import useThemeColors from "@/contexts/ThemeColors";
+import { apiClient } from "@/lib/api-client";
 
 export function ResetPasswordScreen() {
   const colors = useThemeColors();
@@ -65,19 +66,37 @@ export function ResetPasswordScreen() {
     ]);
   };
 
+  const inputStyle = {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    fontSize: 16,
+    color: colors.text,
+  } as const;
+
+  const labelStyle = {
+    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.text,
+    opacity: 0.7,
+  } as const;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-background"
+      style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <StatusBar style={colors.isDark ? "light" : "dark"} />
       <View
-        className="flex-row items-center px-4 pb-2"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 8, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
@@ -86,20 +105,18 @@ export function ResetPasswordScreen() {
       </View>
 
       <ScrollView
-        contentContainerClassName="px-6 pt-6"
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-3xl font-bold text-text">Reset password</Text>
-        <Text className="mt-2 text-base text-text opacity-60">
+        <Text style={{ fontSize: 30, fontWeight: "700", color: colors.text }}>Reset password</Text>
+        <Text style={{ marginTop: 8, fontSize: 16, color: colors.text, opacity: 0.6 }}>
           Enter the code we emailed you along with your new password.
         </Text>
 
-        <View className="mt-8 gap-4">
+        <View style={{ marginTop: 32, gap: 16 }}>
           <View>
-            <Text className="mb-2 text-sm font-semibold text-text opacity-70">
-              Email
-            </Text>
+            <Text style={labelStyle}>Email</Text>
             <TextInput
               autoCapitalize="none"
               autoComplete="email"
@@ -108,14 +125,12 @@ export function ResetPasswordScreen() {
               placeholderTextColor={colors.placeholder}
               value={email}
               onChangeText={setEmail}
-              className="rounded-2xl border border-border bg-secondary/40 px-4 py-4 text-base text-text"
+              style={inputStyle}
             />
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-semibold text-text opacity-70">
-              Reset code
-            </Text>
+            <Text style={labelStyle}>Reset code</Text>
             <TextInput
               autoCapitalize="none"
               keyboardType="number-pad"
@@ -124,15 +139,13 @@ export function ResetPasswordScreen() {
               value={otp}
               onChangeText={setOtp}
               maxLength={6}
-              className="rounded-2xl border border-border bg-secondary/40 px-4 py-4 text-base tracking-[8px] text-text"
+              style={[inputStyle, { letterSpacing: 8 }]}
             />
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-semibold text-text opacity-70">
-              New password
-            </Text>
-            <View className="flex-row items-center rounded-2xl border border-border bg-secondary/40 px-4">
+            <Text style={labelStyle}>New password</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, paddingHorizontal: 16 }}>
               <TextInput
                 autoCapitalize="none"
                 secureTextEntry={!showPassword}
@@ -140,7 +153,7 @@ export function ResetPasswordScreen() {
                 placeholderTextColor={colors.placeholder}
                 value={password}
                 onChangeText={setPassword}
-                className="flex-1 py-4 text-base text-text"
+                style={{ flex: 1, paddingVertical: 16, fontSize: 16, color: colors.text }}
               />
               <Pressable
                 onPress={() => setShowPassword((v) => !v)}
@@ -157,9 +170,7 @@ export function ResetPasswordScreen() {
           </View>
 
           <View>
-            <Text className="mb-2 text-sm font-semibold text-text opacity-70">
-              Confirm new password
-            </Text>
+            <Text style={labelStyle}>Confirm new password</Text>
             <TextInput
               autoCapitalize="none"
               secureTextEntry={!showPassword}
@@ -167,7 +178,7 @@ export function ResetPasswordScreen() {
               placeholderTextColor={colors.placeholder}
               value={confirm}
               onChangeText={setConfirm}
-              className="rounded-2xl border border-border bg-secondary/40 px-4 py-4 text-base text-text"
+              style={inputStyle}
             />
           </View>
         </View>
@@ -175,9 +186,9 @@ export function ResetPasswordScreen() {
         <Pressable
           onPress={handleSubmit}
           disabled={loading}
-          className={`mt-6 items-center rounded-2xl bg-text py-4 ${loading ? "opacity-70" : "active:opacity-90"}`}
+          style={{ marginTop: 24, alignItems: "center", borderRadius: 16, backgroundColor: colors.text, paddingVertical: 16, opacity: loading ? 0.7 : 1 }}
         >
-          <Text className="text-base font-bold text-invert">
+          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.invert }}>
             {loading ? "Resetting..." : "Reset password"}
           </Text>
         </Pressable>

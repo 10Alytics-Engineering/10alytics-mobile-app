@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
+import useThemeColors from "@/contexts/ThemeColors";
 import { formatClassroomDate, useClassroomRecordings } from "@/hooks/use-classroom";
 import type { ClassroomRecording } from "@/lib/api-client";
 
@@ -18,15 +19,20 @@ type Recording = {
 };
 
 function RecordingCard({ recording }: { recording: Recording }) {
+  const colors = useThemeColors();
   return (
-    <View className="overflow-hidden rounded-2xl border border-border bg-secondary/40">
+    <View style={{ overflow: "hidden", borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary }}>
       <View
-        className="h-44 items-center justify-center"
-        style={{ backgroundColor: recording.thumbBg }}
+        style={{ height: 176, alignItems: "center", justifyContent: "center", backgroundColor: recording.thumbBg }}
       >
         <View
-          className="h-16 w-16 items-center justify-center rounded-full bg-white"
           style={{
+            height: 64,
+            width: 64,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 9999,
+            backgroundColor: "#fff",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
@@ -37,41 +43,40 @@ function RecordingCard({ recording }: { recording: Recording }) {
           <Ionicons name="play" size={26} color={ACCENT} style={{ marginLeft: 3 }} />
         </View>
         <View
-          className="absolute bottom-3 right-3 rounded-md px-2 py-1"
-          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+          style={{ position: "absolute", bottom: 12, right: 12, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: "rgba(0,0,0,0.7)" }}
         >
-          <Text className="text-xs font-semibold text-white">
+          <Text style={{ fontSize: 12, fontWeight: "600", color: "#fff" }}>
             {recording.duration}
           </Text>
         </View>
       </View>
 
-      <View className="p-4">
-        <Text className="font-outfit-bold text-base text-text">
+      <View style={{ padding: 16 }}>
+        <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>
           {recording.title}
         </Text>
-        <Text className="mt-1 text-sm text-text opacity-60">
+        <Text style={{ marginTop: 4, fontSize: 14, color: colors.text, opacity: 0.6 }}>
           {recording.module}
         </Text>
 
-        <View className="mt-4 flex-row items-center justify-between gap-3">
-          <Text className="text-sm text-text opacity-60">
+        <View style={{ marginTop: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <Text style={{ fontSize: 14, color: colors.text, opacity: 0.6 }}>
             {recording.date}
           </Text>
-          <View className="flex-1 flex-row items-center gap-2">
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
             <View
-              className="h-1.5 flex-1 overflow-hidden rounded-full"
-              style={{ backgroundColor: "rgba(0,0,0,0.08)" }}
+              style={{ height: 6, flex: 1, overflow: "hidden", borderRadius: 9999, backgroundColor: "rgba(0,0,0,0.08)" }}
             >
               <View
-                className="h-full rounded-full"
                 style={{
+                  height: "100%",
+                  borderRadius: 9999,
                   width: `${Math.round(recording.progress * 100)}%`,
                   backgroundColor: ACCENT,
                 }}
               />
             </View>
-            <Text className="text-xs text-text opacity-60">
+            <Text style={{ fontSize: 12, color: colors.text, opacity: 0.6 }}>
               {Math.round(recording.progress * 100)}%
             </Text>
           </View>
@@ -86,28 +91,34 @@ export function ClassroomRecordingsPanel({
 }: {
   courseEnrollmentId?: number | string;
 }) {
+  const colors = useThemeColors();
   const { data: rows = [], isLoading, isError, refetch } =
     useClassroomRecordings(courseEnrollmentId);
   const recordings = rows.map(mapRecording);
 
+  const cardStyle = {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.secondary,
+    padding: 20,
+  } as const;
+
   return (
-    <View className="gap-4">
-      <Text className="font-outfit-bold text-xl text-text">Class Recordings</Text>
+    <View style={{ gap: 16 }}>
+      <Text style={{ fontWeight: "700", fontSize: 20, color: colors.text }}>Class Recordings</Text>
 
       {isLoading || isError ? (
-        <Pressable
-          onPress={() => refetch()}
-          className="rounded-2xl border border-border bg-secondary/40 p-5"
-        >
-          <Text className="text-center font-semibold text-text">
+        <Pressable onPress={() => refetch()} style={cardStyle}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             {isLoading ? "Loading recordings..." : "Unable to load recordings. Tap to retry."}
           </Text>
         </Pressable>
       ) : null}
 
       {!isLoading && !isError && recordings.length === 0 ? (
-        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
-          <Text className="text-center font-semibold text-text">No recordings yet.</Text>
+        <View style={cardStyle}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>No recordings yet.</Text>
         </View>
       ) : null}
 

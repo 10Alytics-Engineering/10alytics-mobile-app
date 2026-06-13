@@ -50,30 +50,30 @@ function statusColor(status: string): string {
 }
 
 function HistoryRow({ item }: { item: BillingHistoryItem }) {
+  const colors = useThemeColors();
   const color = statusColor(item.status);
   return (
-    <View className="mt-2 flex-row items-center rounded-xl bg-secondary/60 px-3 py-3">
+    <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 12 }}>
       <View
-        className="h-11 w-11 items-center justify-center rounded-xl"
-        style={{ backgroundColor: ACCENT_SOFT }}
+        style={{ height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: ACCENT_SOFT }}
       >
         <Ionicons name="receipt-outline" size={20} color={ACCENT} />
       </View>
-      <View className="ml-3 flex-1">
-        <Text className="font-outfit-bold text-sm text-text" numberOfLines={1}>
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }} numberOfLines={1}>
           {item.course ?? item.invoiceNo}
         </Text>
-        <Text className="mt-0.5 text-xs text-text opacity-60" numberOfLines={1}>
+        <Text style={{ marginTop: 2, fontSize: 12, color: colors.text, opacity: 0.6 }} numberOfLines={1}>
           {item.invoiceNo}
           {item.paymentPlan ? ` • Installment ${item.paymentPlan}` : ""} •{" "}
           {formatDate(item.paymentDate)}
         </Text>
       </View>
-      <View className="ml-2 items-end">
-        <Text className="font-outfit-bold text-sm text-text">
+      <View style={{ marginLeft: 8, alignItems: "flex-end" }}>
+        <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }}>
           {formatAmount(item.amountPaid, item.currency)}
         </Text>
-        <Text className="mt-0.5 text-xs font-semibold" style={{ color }}>
+        <Text style={{ marginTop: 2, fontSize: 12, fontWeight: "600", color }}>
           {item.status}
         </Text>
       </View>
@@ -92,41 +92,40 @@ export function BillingScreen() {
   const hasCard = card && card.last4Digits && card.last4Digits !== "Unknown";
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View
-        className="flex-row items-center border-b border-border/40 px-4 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
+        style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border, paddingHorizontal: 16, paddingBottom: 12, paddingTop: insets.top + 8 }}
       >
         <Pressable
           onPress={() => router.back()}
-          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          style={{ marginRight: 8, height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: colors.secondary }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
           <Ionicons name="chevron-back" size={24} color={ACCENT} />
         </Pressable>
-        <Text className="flex-1 font-outfit-bold text-lg text-text" numberOfLines={1}>
+        <Text style={{ flex: 1, fontWeight: "700", fontSize: 18, color: colors.text }} numberOfLines={1}>
           Billing
         </Text>
       </View>
 
       {isPending ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={ACCENT} />
         </View>
       ) : isError ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center font-outfit-bold text-base text-text">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <Text style={{ textAlign: "center", fontWeight: "700", fontSize: 16, color: colors.text }}>
             Couldn&apos;t load billing
           </Text>
-          <Text className="mt-1 text-center text-sm text-text opacity-60">
+          <Text style={{ marginTop: 4, textAlign: "center", fontSize: 14, color: colors.text, opacity: 0.6 }}>
             {error instanceof Error ? error.message : "Something went wrong"}
           </Text>
           <Pressable
             onPress={() => refetch()}
-            className="mt-4 rounded-xl bg-text px-4 py-2 active:opacity-80"
+            style={{ marginTop: 16, borderRadius: 12, backgroundColor: colors.text, paddingHorizontal: 16, paddingVertical: 8 }}
           >
-            <Text className="font-semibold text-invert">Try again</Text>
+            <Text style={{ fontWeight: "600", color: colors.invert }}>Try again</Text>
           </Pressable>
         </View>
       ) : (
@@ -147,18 +146,17 @@ export function BillingScreen() {
         >
           {/* Next payment */}
           <View
-            className="rounded-2xl p-5"
-            style={{ backgroundColor: ACCENT_SOFT }}
+            style={{ borderRadius: 16, padding: 20, backgroundColor: ACCENT_SOFT }}
           >
-            <Text className="text-xs font-semibold uppercase" style={{ color: ACCENT }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", textTransform: "uppercase", color: ACCENT }}>
               {data?.isPaymentDatePastDue ? "Payment overdue" : "Next payment"}
             </Text>
-            <Text className="mt-2 font-outfit-bold text-3xl text-text">
+            <Text style={{ marginTop: 8, fontWeight: "700", fontSize: 30, color: colors.text }}>
               {data?.upcomingBillId
                 ? formatAmount(data.upcomingBillAmount ?? 0)
                 : "All settled"}
             </Text>
-            <Text className="mt-1 text-sm text-text opacity-70">
+            <Text style={{ marginTop: 4, fontSize: 14, color: colors.text, opacity: 0.7 }}>
               {data?.upcomingBillId
                 ? `Due ${formatDate(data.nextPaymentDate)}`
                 : "You have no upcoming payments."}
@@ -166,28 +164,27 @@ export function BillingScreen() {
           </View>
 
           {/* Saved card */}
-          <Text className="mb-2 mt-6 font-outfit-bold text-base text-text">
+          <Text style={{ marginBottom: 8, marginTop: 24, fontWeight: "700", fontSize: 16, color: colors.text }}>
             Payment Method
           </Text>
-          <View className="flex-row items-center rounded-2xl bg-secondary/60 px-4 py-4">
+          <View style={{ flexDirection: "row", alignItems: "center", borderRadius: 16, backgroundColor: colors.secondary, paddingHorizontal: 16, paddingVertical: 16 }}>
             <View
-              className="h-11 w-11 items-center justify-center rounded-xl"
-              style={{ backgroundColor: ACCENT_SOFT }}
+              style={{ height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 12, backgroundColor: ACCENT_SOFT }}
             >
               <Ionicons name="card-outline" size={22} color={ACCENT} />
             </View>
-            <View className="ml-3 flex-1">
+            <View style={{ marginLeft: 12, flex: 1 }}>
               {hasCard ? (
                 <>
-                  <Text className="font-outfit-bold text-sm text-text">
+                  <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }}>
                     {card?.cardType} •••• {card?.last4Digits}
                   </Text>
-                  <Text className="mt-0.5 text-xs text-text opacity-60">
+                  <Text style={{ marginTop: 2, fontSize: 12, color: colors.text, opacity: 0.6 }}>
                     Expires {card?.expiryDate}
                   </Text>
                 </>
               ) : (
-                <Text className="text-sm text-text opacity-60">
+                <Text style={{ fontSize: 14, color: colors.text, opacity: 0.6 }}>
                   No saved card on file
                 </Text>
               )}
@@ -195,11 +192,11 @@ export function BillingScreen() {
           </View>
 
           {/* History */}
-          <Text className="mb-1 mt-6 font-outfit-bold text-base text-text">
+          <Text style={{ marginBottom: 4, marginTop: 24, fontWeight: "700", fontSize: 16, color: colors.text }}>
             Payment History
           </Text>
           {history.length === 0 ? (
-            <Text className="mt-2 text-sm text-text opacity-60">
+            <Text style={{ marginTop: 8, fontSize: 14, color: colors.text, opacity: 0.6 }}>
               No payments yet.
             </Text>
           ) : (

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
+import useThemeColors from "@/contexts/ThemeColors";
 import {
   getClassroomPersonName,
   useClassroomPeople,
@@ -12,31 +13,31 @@ const ACCENT = "#DA6728";
 const ACCENT_SOFT = "rgba(218, 103, 40, 0.12)";
 
 function PersonRow({ person }: { person: ClassroomPerson }) {
+  const colors = useThemeColors();
   const name = getClassroomPersonName(person);
   const initial = name.charAt(0).toUpperCase();
   const role = person.role?.trim();
 
   return (
-    <View className="flex-row items-center rounded-xl bg-background px-3 py-3">
+    <View style={{ flexDirection: "row", alignItems: "center", borderRadius: 12, backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 12 }}>
       <View
-        className="h-11 w-11 items-center justify-center rounded-full"
-        style={{ backgroundColor: ACCENT_SOFT }}
+        style={{ height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 9999, backgroundColor: ACCENT_SOFT }}
       >
-        <Text className="font-outfit-bold text-base" style={{ color: ACCENT }}>
+        <Text style={{ fontWeight: "700", fontSize: 16, color: ACCENT }}>
           {initial}
         </Text>
       </View>
-      <View className="ml-3 flex-1">
-        <Text className="font-outfit-bold text-sm text-text">{name}</Text>
+      <View style={{ marginLeft: 12, flex: 1 }}>
+        <Text style={{ fontWeight: "700", fontSize: 14, color: colors.text }}>{name}</Text>
         {person.email ? (
-          <Text className="mt-0.5 text-xs text-text opacity-60" numberOfLines={1}>
+          <Text style={{ marginTop: 2, fontSize: 12, color: colors.text, opacity: 0.6 }} numberOfLines={1}>
             {person.email}
           </Text>
         ) : null}
       </View>
       {role ? (
-        <View className="rounded-md px-2.5 py-1" style={{ backgroundColor: ACCENT_SOFT }}>
-          <Text className="text-xs font-semibold capitalize" style={{ color: ACCENT }}>
+        <View style={{ borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: ACCENT_SOFT }}>
+          <Text style={{ fontSize: 12, fontWeight: "600", textTransform: "capitalize", color: ACCENT }}>
             {role.replace(/_/g, " ")}
           </Text>
         </View>
@@ -52,11 +53,12 @@ function PeopleSection({
   title: string;
   people: ClassroomPerson[];
 }) {
+  const colors = useThemeColors();
   if (people.length === 0) return null;
 
   return (
-    <View className="gap-2">
-      <Text className="font-outfit-bold text-base text-text">{title}</Text>
+    <View style={{ gap: 8 }}>
+      <Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>{title}</Text>
       {people.map((person) => (
         <PersonRow key={String(person.id)} person={person} />
       ))}
@@ -71,20 +73,29 @@ export function ClassroomParticipantsPanel({
   classroomId?: number | string;
   sessionLoading?: boolean;
 }) {
+  const colors = useThemeColors();
   const { data, isLoading, isError, refetch } = useClassroomPeople(classroomId);
   const waitingForSession = sessionLoading || classroomId == null;
   const instructors = data?.instructors ?? [];
   const students = data?.students ?? [];
   const total = instructors.length + students.length;
 
+  const cardStyle = {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.secondary,
+    padding: 20,
+  } as const;
+
   return (
-    <View className="gap-4">
-      <View className="flex-row items-center justify-between">
-        <Text className="font-outfit-bold text-xl text-text">Participants</Text>
+    <View style={{ gap: 16 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ fontWeight: "700", fontSize: 20, color: colors.text }}>Participants</Text>
         {total > 0 ? (
-          <View className="flex-row items-center gap-1.5">
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Ionicons name="people-outline" size={16} color={ACCENT} />
-            <Text className="text-sm font-semibold" style={{ color: ACCENT }}>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: ACCENT }}>
               {total}
             </Text>
           </View>
@@ -95,9 +106,9 @@ export function ClassroomParticipantsPanel({
         <Pressable
           onPress={() => refetch()}
           disabled={waitingForSession}
-          className="rounded-2xl border border-border bg-secondary/40 p-5"
+          style={cardStyle}
         >
-          <Text className="text-center font-semibold text-text">
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             {waitingForSession || isLoading
               ? "Loading participants..."
               : "Unable to load participants. Tap to retry."}
@@ -106,15 +117,15 @@ export function ClassroomParticipantsPanel({
       ) : null}
 
       {!waitingForSession && !isLoading && !isError && total === 0 ? (
-        <View className="rounded-2xl border border-border bg-secondary/40 p-5">
-          <Text className="text-center font-semibold text-text">
+        <View style={cardStyle}>
+          <Text style={{ textAlign: "center", fontWeight: "600", color: colors.text }}>
             No participants found for this classroom yet.
           </Text>
         </View>
       ) : null}
 
       {!waitingForSession && !isLoading && !isError && total > 0 ? (
-        <View className="gap-5 rounded-2xl border border-border bg-secondary/40 p-4">
+        <View style={{ gap: 20, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.secondary, padding: 16 }}>
           <PeopleSection title="Instructors" people={instructors} />
           <PeopleSection title="Students" people={students} />
         </View>

@@ -2,6 +2,6 @@
 
 ## Styling
 
-- Always use NativeWind/Tailwind classes instead of inline styles
-- Use `className` prop for styling, not `style` prop
-- Only use inline `style` prop when absolutely necessary (e.g., dynamic values that can't be expressed in Tailwind)
+- This app uses React Native `StyleSheet` / inline `style` props. Tailwind/NativeWind has been removed — do not reintroduce `className`.
+- Read theme colors from `useThemeColors()` (`@/contexts/ThemeColors`); light/dark is driven by `ThemeContext`.
+- Use the `style` prop with plain objects or `StyleSheet.create`. Reserve hardcoded hex values for brand/static colors (e.g. accent `#DA6728`); everything theme-aware should come from `useThemeColors()`.

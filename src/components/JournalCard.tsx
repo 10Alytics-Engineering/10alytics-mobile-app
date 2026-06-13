@@ -36,39 +36,37 @@ export default function JournalCard({
     return (
         <Pressable
             onPress={onPress}
-            style={shadowPresets.large}
-            className='bg-secondary overflow-hidden mb-global rounded-2xl'
+            style={[shadowPresets.large, { backgroundColor: colors.secondary, overflow: 'hidden', marginBottom: 24, borderRadius: 16 }]}
         >
-            <View className="flex-row p-5 gap-4">
+            <View style={{ flexDirection: 'row', padding: 20, gap: 16 }}>
                 {hasMedia && (
-                    <View className="h-[96px] w-[96px] bg-[#DA6728] items-center justify-center overflow-hidden rounded-2xl">
+                    <View style={{ height: 96, width: 96, backgroundColor: '#DA6728', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: 16 }}>
                         {cover != null ? (
                             cover
                         ) : (
                             <Image
                                 source={resolvedImageSource!}
-                                className="h-full w-full"
+                                style={{ height: '100%', width: '100%' }}
                                 resizeMode="cover"
                             />
                         )}
                     </View>
                 )}
-                <View className="flex-1">
-                    <Text className="text-xs uppercase tracking-wider" style={{ color: muted }}>
+                <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: muted }}>
                         {date}
                     </Text>
-                    <Text className="text-lg font-bold text-text mt-1">
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.text, marginTop: 4 }}>
                         {title}
                     </Text>
-                    <Text className="text-sm mt-1" style={{ color: muted }} numberOfLines={2}>
+                    <Text style={{ fontSize: 14, marginTop: 4, color: muted }} numberOfLines={2}>
                         {description}
                     </Text>
 
                     {typeof progress === 'number' && (
-                        <View className="mt-3">
+                        <View style={{ marginTop: 12 }}>
                             <View
-                                className="h-2 rounded-full overflow-hidden"
-                                style={{ backgroundColor: colors.isDark ? '#2A2A2A' : '#E6E6E6' }}
+                                style={{ height: 8, borderRadius: 9999, overflow: 'hidden', backgroundColor: colors.isDark ? '#2A2A2A' : '#E6E6E6' }}
                             >
                                 <View
                                     style={{
@@ -78,19 +76,18 @@ export default function JournalCard({
                                     }}
                                 />
                             </View>
-                            <Text className="text-xs mt-2" style={{ color: muted }}>
+                            <Text style={{ fontSize: 12, marginTop: 8, color: muted }}>
                                 {progress}% complete
                             </Text>
                         </View>
                     )}
 
-                    <View className="flex-row items-center justify-between mt-4 w-full">
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, width: '100%' }}>
                         <Pressable
                             onPress={onPress}
-                            className="bg-text rounded-xl px-4 py-2 w-full flex-row items-center justify-center active:opacity-80"
-                            style={{ backgroundColor: colors.primary }}
+                            style={{ borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary }}
                         >
-                            <Text className="text-white font-semibold text-sm text-center">{actionLabel}</Text>
+                            <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14, textAlign: 'center' }}>{actionLabel}</Text>
                             <Feather name='chevron-right' size={18} color="white" />
                         </Pressable>
                     </View>
