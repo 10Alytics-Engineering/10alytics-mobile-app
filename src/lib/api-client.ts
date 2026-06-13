@@ -4,8 +4,7 @@ import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
+import { API_BASE_URL } from "@/lib/api-url";
 
 const TIMEZONE_HEADER = "X-Timezone";
 
@@ -13,13 +12,7 @@ const TIMEZONE_HEADER = "X-Timezone";
 WebBrowser.maybeCompleteAuthSession();
 
 interface LoginResponse {
-  user: {
-    id: string;
-    first_name: string;
-    other_names: string;
-    email: string;
-    image?: string;
-  };
+  user: MobileUser;
   token: string;
   token_type?: string;
   expires_in?: number;
@@ -35,6 +28,14 @@ interface ChatDevicePayload {
   platform: "ios" | "android";
   device_name?: string | null;
   app_version?: string | null;
+}
+
+export interface RegisterPayload {
+  first_name: string;
+  other_names: string;
+  email: string;
+  password: string;
+  phone: string;
 }
 
 export type ChatConversationType = "classroom" | "pod" | "instructor_dm";
@@ -541,7 +542,7 @@ export interface NotificationPreferences {
 
 /** Full current-user shape from `GET /api/v2/user` (UserResource). */
 export interface MobileUser {
-  id: string;
+  id: string | number;
   first_name: string;
   other_names: string;
   name?: string;
@@ -687,10 +688,7 @@ class ApiClient {
       const headers = await this.getHeaders(shouldIncludeAuth);
 
       // Let fetch set the multipart boundary itself for FormData uploads.
-      if (
-        typeof FormData !== "undefined" &&
-        options.body instanceof FormData
-      ) {
+      if (typeof FormData !== "undefined" && options.body instanceof FormData) {
         delete (headers as Record<string, string>)["Content-Type"];
       }
 
@@ -702,13 +700,29 @@ class ApiClient {
         },
       });
 
-      const responseData = await response.json();
+      const responseText = await response.text();
+      let responseData: unknown = {};
+
+      if (responseText) {
+        try {
+          responseData = JSON.parse(responseText);
+        } catch {
+          responseData = { message: responseText };
+        }
+      }
 
       if (!response.ok) {
+        const errorData: Partial<ApiError> | undefined =
+          responseData && typeof responseData === "object"
+            ? (responseData as Partial<ApiError>)
+            : undefined;
+
         return {
           error: {
-            message: responseData.message || "An error occurred",
-            errors: responseData.errors,
+            message:
+              errorData?.message ||
+              `Request failed with status ${response.status}`,
+            errors: errorData?.errors,
           },
         };
       }
@@ -716,12 +730,15 @@ class ApiClient {
       // Handle token storage for login/register
       if (
         (endpoint.includes("/login") || endpoint.includes("/register")) &&
-        responseData.token
+        responseData &&
+        typeof responseData === "object" &&
+        "token" in responseData &&
+        typeof (responseData as { token?: unknown }).token === "string"
       ) {
-        await this.setToken(responseData.token);
+        await this.setToken((responseData as { token: string }).token);
       }
 
-      return { data: responseData };
+      return { data: responseData as T };
     } catch (error) {
       return {
         error: {
@@ -747,18 +764,13 @@ class ApiClient {
     });
   }
 
-  async register(
-    first_name: string,
-    other_names: string,
-    email: string,
-    password: string,
-  ): Promise<{
-    data?: LoginResponse;
+  async register(payload: RegisterPayload): Promise<{
+    data?: MobileUser;
     error?: ApiError;
   }> {
-    return this.request<LoginResponse>("/api/v2/register", {
+    return this.request<MobileUser>("/api/v2/register", {
       method: "POST",
-      body: JSON.stringify({ first_name, other_names, email, password }),
+      body: JSON.stringify(payload),
     });
   }
 
@@ -943,8 +955,10 @@ class ApiClient {
   private buildScopeQuery(scope?: GamificationScope): string {
     if (!scope) return "";
     const params = new URLSearchParams();
-    if (scope.course_id != null) params.set("course_id", String(scope.course_id));
-    if (scope.cohort_id != null) params.set("cohort_id", String(scope.cohort_id));
+    if (scope.course_id != null)
+      params.set("course_id", String(scope.course_id));
+    if (scope.cohort_id != null)
+      params.set("cohort_id", String(scope.cohort_id));
     const query = params.toString();
     return query ? `?${query}` : "";
   }
@@ -987,7 +1001,7 @@ class ApiClient {
     data?: ApiEnvelope<BillingInfo>;
     error?: ApiError;
   }> {
-    return this.request<ApiEnvelope<BillingInfo>>("/api/v2/user/billing-info", {
+    return this.request<ApiEnvelope<BillingInfo>>("/api/user/billing-info", {
       method: "GET",
     });
   }
@@ -997,7 +1011,7 @@ class ApiClient {
     data?: ApiEnvelope<unknown[]>;
     error?: ApiError;
   }> {
-    return this.request<ApiEnvelope<unknown[]>>("/api/v2/user/payment-plans", {
+    return this.request<ApiEnvelope<unknown[]>>("/api/user/payment-plans", {
       method: "GET",
     });
   }
@@ -1437,7 +1451,6 @@ class ApiClient {
           if (token) {
             await this.setToken(token);
 
-            console.log("token", token);
             // Fetch user data after setting token
             const userResult = await this.getCurrentUser();
             if (userResult.data) {

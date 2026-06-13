@@ -20,6 +20,14 @@ import {
 import { moderateScale, scale, verticalScale } from "react-native-size-matters";
 import { Defs, RadialGradient, Rect, Stop, Svg } from "react-native-svg";
 
+const absoluteFillObject = {
+  position: "absolute" as const,
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+};
+
 export default function Slide({
   slide,
   index,
@@ -146,7 +154,7 @@ export default function Slide({
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...absoluteFillObject,
     padding: scale(60),
     paddingTop: verticalScale(100),
     alignItems: "center",

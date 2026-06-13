@@ -16,11 +16,7 @@ export default function useThemedNavigation() {
     }
   }, [theme, colors.bg]);
   const ThemedStatusBar = () => (
-    <StatusBar
-      style={theme === "dark" ? "light" : "dark"}
-      backgroundColor="transparent"
-      translucent
-    />
+    <StatusBar style={theme === "dark" ? "light" : "dark"} />
   );
 
   const screenOptions = {

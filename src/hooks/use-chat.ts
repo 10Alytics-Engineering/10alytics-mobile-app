@@ -12,7 +12,8 @@ import { showLocalChatNotification } from "@/lib/notifications";
 
 export const chatKeys = {
   conversations: ["chat", "conversations"] as const,
-  conversation: (id: string | number) => ["chat", "conversation", String(id)] as const,
+  conversation: (id: string | number) =>
+    ["chat", "conversation", String(id)] as const,
   messages: (id: string | number) => ["chat", "messages", String(id)] as const,
   unread: ["chat", "unread"] as const,
 };
@@ -128,10 +129,7 @@ export function useChatRealtime(
 ) {
   const queryClient = useQueryClient();
   const idsKey = conversationIds.map(String).filter(Boolean).join(",");
-  const stableIds = useMemo(
-    () => idsKey.split(",").filter(Boolean),
-    [idsKey],
-  );
+  const stableIds = useMemo(() => idsKey.split(",").filter(Boolean), [idsKey]);
 
   useEffect(() => {
     let cleanupFns: (() => void)[] = [];
@@ -144,15 +142,22 @@ export function useChatRealtime(
             conversationId,
             {
               onMessageSent: (event) => {
+                if (event.conversation_id == null) return;
+                const deliveredEvent = {
+                  ...event,
+                  conversation_id: event.conversation_id,
+                  status: "delivered" as const,
+                };
+
                 queryClient.setQueryData<ChatMessage[]>(
-                  chatKeys.messages(event.conversation_id),
+                  chatKeys.messages(deliveredEvent.conversation_id),
                   (current = []) =>
-                    dedupeMessages([...current, { ...event, status: "delivered" }]),
+                    dedupeMessages([...current, deliveredEvent]),
                 );
                 queryClient.invalidateQueries({
                   queryKey: chatKeys.conversations,
                 });
-                showLocalChatNotification(event);
+                showLocalChatNotification(deliveredEvent);
               },
               onMessageEdited: (event) => {
                 queryClient.setQueryData<ChatMessage[]>(
@@ -160,7 +165,11 @@ export function useChatRealtime(
                   (current = []) =>
                     current.map((message) =>
                       message.id === event.id
-                        ? { ...message, body: event.body, edited_at: event.edited_at }
+                        ? {
+                            ...message,
+                            body: event.body,
+                            edited_at: event.edited_at,
+                          }
                         : message,
                     ),
                 );
@@ -177,7 +186,9 @@ export function useChatRealtime(
                 );
               },
               onConversationRead: () => {
-                queryClient.invalidateQueries({ queryKey: chatKeys.conversations });
+                queryClient.invalidateQueries({
+                  queryKey: chatKeys.conversations,
+                });
                 queryClient.invalidateQueries({ queryKey: chatKeys.unread });
               },
             },
@@ -203,7 +214,9 @@ export function useChatRealtime(
   }, [options.presence, queryClient, stableIds]);
 }
 
-export function useChatPresenceHeartbeat(conversationId?: string | number | null) {
+export function useChatPresenceHeartbeat(
+  conversationId?: string | number | null,
+) {
   useEffect(() => {
     if (conversationId == null) return;
 

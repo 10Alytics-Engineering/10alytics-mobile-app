@@ -8,26 +8,28 @@ import { unregisterPushNotifications } from "@/lib/notifications";
 
 const isWeb = Platform.OS === "web";
 
+type AuthUser = {
+  id: string | number;
+  first_name: string;
+  other_names: string;
+  email: string;
+  avatar?: string;
+};
+
 type UserState = {
   isLoggedIn: boolean;
   shouldCreateAccount: boolean;
   hasCompletedOnboarding: boolean;
   isVip: boolean;
   _hasHydrated: boolean;
-  user: {
-    id: string;
-    first_name: string;
-    other_names: string;
-    email: string;
-    avatar?: string;
-  } | null;
-  logIn: (user?: { id: string; first_name: string; other_names: string; email: string; avatar?: string }) => void;
+  user: AuthUser | null;
+  logIn: (user?: AuthUser) => void;
   logOut: () => Promise<void>;
   completeOnboarding: () => void;
   resetOnboarding: () => void;
   logInAsVip: () => void;
   setHasHydrated: (value: boolean) => void;
-  setUser: (user: { id: string; first_name: string; other_names: string; email: string; avatar?: string } | null) => void;
+  setUser: (user: AuthUser | null) => void;
   checkAuth: () => Promise<void>;
 };
 
@@ -138,11 +140,11 @@ export const useAuthStore = create(
       storage: isWeb
         ? createJSONStorage(() => localStorage)
         : createJSONStorage(() => ({
-          setItem: (key: string, value: string) =>
-            SecureStore.setItemAsync(key, value),
-          getItem: (key: string) => SecureStore.getItemAsync(key),
-          removeItem: (key: string) => SecureStore.deleteItemAsync(key),
-        })),
+            setItem: (key: string, value: string) =>
+              SecureStore.setItemAsync(key, value),
+            getItem: (key: string) => SecureStore.getItemAsync(key),
+            removeItem: (key: string) => SecureStore.deleteItemAsync(key),
+          })),
       onRehydrateStorage: () => {
         return (state) => {
           state?.setHasHydrated(true);

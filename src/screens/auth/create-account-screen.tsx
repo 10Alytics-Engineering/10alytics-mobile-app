@@ -1,143 +1,178 @@
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import { Alert, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { apiClient } from "@/lib/api-client";
-import { KeyboardAvoidingView, PressableScale, ScrollView, Text, TextInput, View } from "@/tw";
-import { Animated } from "@/tw/animated";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "@/tw";
+import { Image } from "@/tw/image";
 import { useAuthStore } from "@/utils/auth-store";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import {
-  Alert,
-  Platform,
-  StyleSheet,
-} from "react-native";
-import {
-  FadeInDown,
-  FadeInRight,
-} from "react-native-reanimated";
 
-const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  scroll: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
-  gradientHeader: {
-    paddingTop: 80,
-    paddingBottom: 48,
-    paddingHorizontal: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerTitle: {
-    fontSize: 36,
-    fontWeight: "700",
-    marginBottom: 8,
-    textAlign: "center",
-    color: "#FFFFFF",
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    opacity: 0.9,
-    textAlign: "center",
-    color: "#FFFFFF",
-  },
-  content: { flex: 1, paddingHorizontal: 24, marginTop: 32 },
-  fieldWrap: { marginBottom: 16 },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-  },
-  eyeButton: { padding: 8 },
-  hint: { fontSize: 12, marginTop: 8 },
-  primaryButton: {
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 24,
-  },
-  dividerLine: { flex: 1, height: 1 },
-  dividerText: { marginHorizontal: 16, fontSize: 14 },
-  secondaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-  },
-  secondaryButtonEmoji: { fontSize: 24, marginRight: 12 },
-  secondaryButtonText: { fontSize: 16, fontWeight: "600" },
-  footerRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 24,
-  },
-  footerHint: { fontSize: 14 },
-  footerLink: { fontSize: 14, fontWeight: "600" },
-});
+function splitFullName(value: string): {
+  firstName: string;
+  otherNames: string;
+} {
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    otherNames: parts.slice(1).join(" "),
+  };
+}
+
+function getValidationMessage({
+  fullName,
+  email,
+  phone,
+  password,
+}: {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+}): string | null {
+  const { firstName, otherNames } = splitFullName(fullName);
+
+  if (!firstName || !otherNames) {
+    return "Please enter your first and last name.";
+  }
+
+  if (!email.trim()) {
+    return "Please enter your email address.";
+  }
+
+  if (!phone.trim()) {
+    return "Please enter your phone number.";
+  }
+
+  if (password.length < 8) {
+    return "Password must be at least 8 characters.";
+  }
+
+  return null;
+}
+
+function AuthInput({
+  icon,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType,
+  secureTextEntry,
+  autoComplete,
+  autoCapitalize = "none",
+  trailing,
+}: {
+  icon: React.ComponentProps<typeof AntDesign>["name"];
+  value: string;
+  onChangeText: (value: string) => void;
+  placeholder: string;
+  keyboardType?: "default" | "email-address" | "phone-pad";
+  secureTextEntry?: boolean;
+  autoComplete?: "email" | "password-new" | "tel";
+  autoCapitalize?: "none" | "words";
+  trailing?: React.ReactNode;
+}) {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? "light"];
+
+  return (
+    <View className="min-h-16 flex-row items-center rounded-[20px] border border-border bg-secondary px-[18px]">
+      <AntDesign color={colors.icon} name={icon} size={20} />
+      <TextInput
+        autoCapitalize={autoCapitalize}
+        autoComplete={autoComplete}
+        keyboardType={keyboardType ?? "default"}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.icon}
+        secureTextEntry={secureTextEntry}
+        className="min-h-16 flex-1 px-3 text-[17px] text-text"
+        value={value}
+      />
+      {trailing}
+    </View>
+  );
+}
 
 export function CreateAccountScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const isDark = (colorScheme ?? "light") === "dark";
+  const insets = useSafeAreaInsets();
   const { logIn } = useAuthStore();
-  const [name, setName] = useState("");
+
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const muted = isDark ? "#A1A1AA" : "#6B7280";
+  const primaryFill = isDark ? "#FFFFFF" : "#0A0A0A";
+  const primaryText = isDark ? "#0A0A0A" : "#FFFFFF";
+
   const handleSignUp = async () => {
-    if (!name || !email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+    const validationMessage = getValidationMessage({
+      fullName,
+      email,
+      phone,
+      password,
+    });
+
+    if (validationMessage) {
+      Alert.alert("Create Account", validationMessage);
       return;
     }
 
-    if (password.length < 8) {
-      Alert.alert("Error", "Password must be at least 8 characters");
-      return;
-    }
+    const { firstName, otherNames } = splitFullName(fullName);
+    const normalizedEmail = email.trim().toLowerCase();
 
     setLoading(true);
     try {
-      const { data, error } = await apiClient.register(name, email, password);
+      const { error: registerError } = await apiClient.register({
+        first_name: firstName,
+        other_names: otherNames,
+        email: normalizedEmail,
+        password,
+        phone: phone.trim(),
+      });
 
-      if (error) {
+      if (registerError) {
         const errorMessage =
-          error.errors && Object.keys(error.errors).length > 0
-            ? Object.values(error.errors)[0][0]
-            : error.message || "Sign up failed. Please try again.";
+          registerError.errors && Object.keys(registerError.errors).length > 0
+            ? Object.values(registerError.errors)[0][0]
+            : registerError.message || "Sign up failed. Please try again.";
         Alert.alert("Sign Up Failed", errorMessage);
-        setLoading(false);
         return;
       }
 
-      if (data && data.user) {
-        logIn(data.user);
-        router.replace("/(tabs)");
+      const { data: loginData, error: loginError } = await apiClient.login(
+        normalizedEmail,
+        password,
+      );
+
+      if (loginError || !loginData?.user) {
+        Alert.alert(
+          "Account Created",
+          "Your account was created, but automatic sign in failed. Please sign in with your new credentials.",
+          [{ text: "OK", onPress: () => router.replace("/sign-in") }],
+        );
+        return;
       }
+
+      logIn(loginData.user);
+      router.replace("/(tabs)");
     } catch {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
@@ -152,7 +187,6 @@ export function CreateAccountScreen() {
 
       if (error) {
         Alert.alert("Sign Up Failed", error.message);
-        setLoading(false);
         return;
       }
 
@@ -169,193 +203,138 @@ export function CreateAccountScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.screen, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      className="flex-1 bg-background"
     >
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerClassName="flex-grow justify-center px-6"
+        contentContainerStyle={{
+          paddingTop: Math.max(insets.top + 20, 40),
+          paddingBottom: Math.max(insets.bottom + 28, 40),
+        }}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <LinearGradient
-          colors={[colors.primary, `${colors.primary}DD`]}
-          style={styles.gradientHeader}
-        >
-          <Animated.View entering={FadeInDown.delay(100)}>
-            <Text style={styles.headerTitle}>
-              Create Account
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              Start your learning journey today
-            </Text>
-          </Animated.View>
-        </LinearGradient>
+        <View className="w-full self-center" style={{ maxWidth: 440 }}>
+          <View className="items-center gap-7">
+            <Image
+              source={require("@/assets/images/splash-icon-light.png")}
+              className="h-24 w-32"
+              contentFit="contain"
+            />
 
-        <View style={styles.content}>
-          {/* Name Input */}
-          <Animated.View entering={FadeInRight.delay(200)}>
-            <View style={styles.fieldWrap}>
-              <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                Full Name
+            <View className="items-center gap-2.5">
+              <Text className="text-center text-[32px] font-bold leading-[38px] text-text">
+                Create your 10Alytics account
               </Text>
-              <View
-                style={[
-                  styles.inputRow,
-                  {
-                    backgroundColor: `${colors.primary}10`,
-                    borderWidth: 1,
-                    borderColor: `${colors.primary}30`,
-                  },
-                ]}
+              <Text
+                className="text-center text-[15px] leading-[22px]"
+                style={{ color: muted }}
               >
-                <AntDesign name="user" size={20} color={colors.icon} style={{ marginRight: 12 }} />
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Enter your name"
-                  placeholderTextColor={colors.icon}
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                />
-              </View>
+                Join your classroom, track progress, and keep your learning in
+                one place.
+              </Text>
             </View>
-          </Animated.View>
+          </View>
 
-          {/* Email Input */}
-          <Animated.View entering={FadeInRight.delay(300)}>
-            <View style={styles.fieldWrap}>
-              <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                Email
-              </Text>
-              <View
-                style={[
-                  styles.inputRow,
-                  {
-                    backgroundColor: `${colors.primary}10`,
-                    borderWidth: 1,
-                    borderColor: `${colors.primary}30`,
-                  },
-                ]}
-              >
-                <AntDesign name="mail" size={20} color={colors.icon} style={{ marginRight: 12 }} />
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Enter your email"
-                  placeholderTextColor={colors.icon}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                />
-              </View>
-            </View>
-          </Animated.View>
-
-          {/* Password Input */}
-          <Animated.View entering={FadeInRight.delay(400)}>
-            <View style={[styles.fieldWrap, { marginBottom: 24 }]}>
-              <Text style={[styles.fieldLabel, { color: colors.text }]}>
-                Password
-              </Text>
-              <View
-                style={[
-                  styles.inputRow,
-                  {
-                    backgroundColor: `${colors.primary}10`,
-                    borderWidth: 1,
-                    borderColor: `${colors.primary}30`,
-                  },
-                ]}
-              >
-                <AntDesign name="lock" size={20} color={colors.icon} style={{ marginRight: 12 }} />
-                <TextInput
-                  style={[styles.input, { color: colors.text }]}
-                  placeholder="Create a password"
-                  placeholderTextColor={colors.icon}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoComplete="password-new"
-                />
-                <PressableScale
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeButton}
+          <View className="mt-9 gap-3.5">
+            <AuthInput
+              autoCapitalize="words"
+              icon="user"
+              onChangeText={setFullName}
+              placeholder="First and last name"
+              value={fullName}
+            />
+            <AuthInput
+              autoComplete="email"
+              icon="mail"
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              placeholder="Email address"
+              value={email}
+            />
+            <AuthInput
+              autoComplete="tel"
+              icon="phone"
+              keyboardType="phone-pad"
+              onChangeText={setPhone}
+              placeholder="Phone number"
+              value={phone}
+            />
+            <AuthInput
+              autoComplete="password-new"
+              icon="lock"
+              onChangeText={setPassword}
+              placeholder="Create a password"
+              secureTextEntry={!showPassword}
+              trailing={
+                <Pressable
+                  accessibilityLabel={
+                    showPassword ? "Hide password" : "Show password"
+                  }
+                  accessibilityRole="button"
+                  className="h-9 w-9 items-center justify-center"
+                  hitSlop={8}
+                  onPress={() => setShowPassword((value) => !value)}
                 >
-                  {showPassword ? (
-                    <AntDesign name="eye-invisible" size={20} color={colors.icon} />
-                  ) : (
-                    <AntDesign name="eye" size={20} color={colors.icon} />
-                  )}
-                </PressableScale>
-              </View>
-              <Text style={[styles.hint, { color: colors.icon }]}>
-                Must be at least 8 characters
-              </Text>
-            </View>
-          </Animated.View>
+                  <AntDesign
+                    color={colors.icon}
+                    name={showPassword ? "eye-invisible" : "eye"}
+                    size={20}
+                  />
+                </Pressable>
+              }
+              value={password}
+            />
 
-          {/* Sign Up Button */}
-          <Animated.View entering={FadeInDown.delay(500)}>
-            <PressableScale
+            <Pressable
+              accessibilityRole="button"
+              className="mt-2 min-h-16 w-full items-center justify-center rounded-[20px]"
+              disabled={loading}
               onPress={handleSignUp}
-              disabled={loading}
-              style={[
-                styles.primaryButton,
-                {
-                  backgroundColor: colors.primary,
-                  opacity: loading ? 0.6 : 1,
-                },
-              ]}
+              style={{
+                backgroundColor: primaryFill,
+                opacity: loading ? 0.7 : 1,
+              }}
             >
-              <Text style={styles.primaryButtonText}>
-                {loading ? "Creating account..." : "Create Account"}
+              <Text
+                className="text-lg font-bold"
+                style={{ color: primaryText }}
+              >
+                {loading ? "Creating account..." : "Create account"}
               </Text>
-            </PressableScale>
-          </Animated.View>
+            </Pressable>
 
-          {/* Divider */}
-          <Animated.View entering={FadeInDown.delay(600)} style={styles.dividerRow}>
-            <View style={[styles.dividerLine, { backgroundColor: colors.icon }]} />
-            <Text style={[styles.dividerText, { color: colors.icon }]}>
-              OR
+            <Text className="mt-2 text-center text-lg" style={{ color: muted }}>
+              or
             </Text>
-            <View style={[styles.dividerLine, { backgroundColor: colors.icon }]} />
-          </Animated.View>
 
-          {/* Google Sign Up Button */}
-          <Animated.View entering={FadeInDown.delay(700)}>
-            <PressableScale
-              onPress={handleGoogleSignUp}
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-16 w-full flex-row items-center justify-center gap-3.5 rounded-[20px] border border-border bg-secondary px-5"
               disabled={loading}
-              style={[
-                styles.secondaryButton,
-                {
-                  borderColor: colors.primary,
-                  opacity: loading ? 0.6 : 1,
-                },
-              ]}
+              onPress={handleGoogleSignUp}
+              style={{ opacity: loading ? 0.7 : 1 }}
             >
-              <Text style={styles.secondaryButtonEmoji}>🔍</Text>
-              <Text style={[styles.secondaryButtonText, { color: colors.primary }]}>
+              <Image
+                source={require("@/assets/images/onboarding/google.png")}
+                className="h-[22px] w-[22px]"
+              />
+              <Text className="text-[17px] font-bold text-text">
                 Continue with Google
               </Text>
-            </PressableScale>
-          </Animated.View>
+            </Pressable>
+          </View>
 
-          {/* Sign In Link */}
-          <Animated.View entering={FadeInDown.delay(800)} style={styles.footerRow}>
-            <Text style={[styles.footerHint, { color: colors.icon }]}>
-              Already have an account?{" "}
+          <View className="mt-7 flex-row flex-wrap items-center justify-center gap-1.5">
+            <Text className="text-sm" style={{ color: muted }}>
+              Already have an account?
             </Text>
-            <PressableScale onPress={() => router.push("/sign-in")}>
-              <Text style={[styles.footerLink, { color: colors.primary }]}>
-                Sign In
-              </Text>
-            </PressableScale>
-          </Animated.View>
+            <Pressable onPress={() => router.push("/sign-in")}>
+              <Text className="text-sm font-bold text-text">Sign in</Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

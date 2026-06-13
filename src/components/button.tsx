@@ -55,13 +55,13 @@ export function Button({
   return (
     <Pressable
       onPress={onPress}
-      style={[
+      style={(state) => [
         styles.pressable,
         theme === "primary" && styles.primary,
         theme === "secondary" && styles.secondary,
         theme === "tertiary" && styles.tertiary,
         disabled && styles.disabled,
-        style,
+        typeof style === "function" ? style(state) : style,
       ]}
       disabled={disabled}
       {...rest}

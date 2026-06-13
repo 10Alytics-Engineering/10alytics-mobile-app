@@ -77,30 +77,6 @@ export function SignInScreen() {
     }
   };
 
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await apiClient.appleAuth();
-
-      if (error) {
-        if (error.message !== "Sign in was cancelled.") {
-          Alert.alert("Sign In Failed", error.message);
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (data) {
-        logIn(data);
-        router.replace("/(tabs)");
-      }
-    } catch {
-      Alert.alert("Error", "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
@@ -145,7 +121,10 @@ export function SignInScreen() {
         <View style={[styles.shell, { maxWidth: 440 }]}>
           <View style={styles.brandWrap}>
             <View style={styles.brandMark}>
-              <Image source={require("@/assets/images/splash-icon-light.png")} style={{ width: 150, height: 120 }} />
+              <Image
+                source={require("@/assets/images/splash-icon-light.png")}
+                style={{ width: 150, height: 120 }}
+              />
             </View>
 
             <View style={styles.titleWrap}>
@@ -224,7 +203,11 @@ export function SignInScreen() {
                 ]}
               >
                 {showPassword ? (
-                  <AntDesign color={palette.muted} name="eye-invisible" size={20} />
+                  <AntDesign
+                    color={palette.muted}
+                    name="eye-invisible"
+                    size={20}
+                  />
                 ) : (
                   <AntDesign color={palette.muted} name="eye" size={20} />
                 )}
@@ -244,7 +227,9 @@ export function SignInScreen() {
 
             <Pressable
               accessibilityRole="button"
-              android_ripple={{ color: isDark ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.16)" }}
+              android_ripple={{
+                color: isDark ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.16)",
+              }}
               onPress={handleEmailSignIn}
               pointerEvents={loading ? "none" : "auto"}
               style={({ pressed }) => [
@@ -262,13 +247,20 @@ export function SignInScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.primaryButtonText, { color: palette.primaryText }]}>
+                <Text
+                  style={[
+                    styles.primaryButtonText,
+                    { color: palette.primaryText },
+                  ]}
+                >
                   {loading ? "Continuing..." : "Continue"}
                 </Text>
               </View>
             </Pressable>
 
-            <Text style={[styles.dividerText, { color: palette.muted }]}>or</Text>
+            <Text style={[styles.dividerText, { color: palette.muted }]}>
+              or
+            </Text>
 
             <Pressable
               accessibilityRole="button"
@@ -298,41 +290,10 @@ export function SignInScreen() {
                     style={styles.secondaryButtonIcon}
                   />
                 </View>
-                <Text style={[styles.secondaryButtonText, { color: palette.text }]}>
+                <Text
+                  style={[styles.secondaryButtonText, { color: palette.text }]}
+                >
                   Continue with Google
-                </Text>
-              </View>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={handleAppleSignIn}
-              pointerEvents={loading ? "none" : "auto"}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                pressed && !loading && { opacity: 0.9 },
-                loading && { opacity: 0.7 },
-              ]}
-            >
-              <View
-                style={[
-                  styles.secondaryButtonInner,
-                  {
-                    backgroundColor: palette.secondaryFill,
-                    borderColor: palette.secondaryBorder,
-                    borderWidth: 1.5,
-                    borderCurve: "continuous",
-                  },
-                ]}
-              >
-                <View style={styles.secondaryButtonIconWrap}>
-                  <Image
-                    source={require("@/assets/images/onboarding/apple.png")}
-                    style={styles.secondaryButtonIcon}
-                  />
-                </View>
-                <Text style={[styles.secondaryButtonText, { color: palette.text }]}>
-                  Continue with Apple
                 </Text>
               </View>
             </Pressable>
@@ -354,7 +315,6 @@ export function SignInScreen() {
     </KeyboardAvoidingView>
   );
 }
-
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
