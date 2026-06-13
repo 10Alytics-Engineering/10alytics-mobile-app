@@ -25,6 +25,7 @@ export function SignInScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const isDark = (colorScheme ?? "light") === "dark";
+  const isIOS = Platform.OS === "ios";
   const insets = useSafeAreaInsets();
   const { logIn } = useAuthStore();
 
@@ -99,6 +100,30 @@ export function SignInScreen() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await apiClient.appleAuth();
+
+      if (error) {
+        if (error.message !== "Sign in was cancelled.") {
+          Alert.alert("Sign In Failed", error.message);
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        logIn(data);
+        router.replace("/(tabs)");
+      }
+    } catch {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -132,7 +157,7 @@ export function SignInScreen() {
                 Log in to 10Alytics
               </Text>
               <Text style={[styles.subtitle, { color: palette.muted }]}>
-                Use your email and password or continue with Google or Apple.
+                {`Use your email and password or continue with ${isIOS ? "Google or Apple" : "Google"}.`}
               </Text>
             </View>
           </View>
@@ -297,6 +322,46 @@ export function SignInScreen() {
                 </Text>
               </View>
             </Pressable>
+
+            {isIOS ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleAppleSignIn}
+                pointerEvents={loading ? "none" : "auto"}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && !loading && { opacity: 0.9 },
+                  loading && { opacity: 0.7 },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.secondaryButtonInner,
+                    {
+                      backgroundColor: palette.secondaryFill,
+                      borderColor: palette.secondaryBorder,
+                      borderWidth: 1.5,
+                      borderCurve: "continuous",
+                    },
+                  ]}
+                >
+                  <View style={styles.secondaryButtonIconWrap}>
+                    <Image
+                      source={require("@/assets/images/onboarding/apple.png")}
+                      style={styles.secondaryButtonIcon}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.secondaryButtonText,
+                      { color: palette.text },
+                    ]}
+                  >
+                    Continue with Apple
+                  </Text>
+                </View>
+              </Pressable>
+            ) : null}
           </View>
 
           <View style={styles.footerWrap}>

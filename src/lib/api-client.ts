@@ -1490,12 +1490,27 @@ class ApiClient {
     error?: ApiError;
   }> {
     try {
+      if (Platform.OS !== "ios") {
+        return {
+          error: { message: "Apple sign in is only available on iOS devices." },
+        };
+      }
+
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
+
+      if (!credential.identityToken) {
+        return {
+          error: {
+            message:
+              "Apple did not return an identity token. Please try again.",
+          },
+        };
+      }
 
       const result = await this.request<LoginResponse>("/api/v2/auth/apple", {
         method: "POST",
@@ -1510,6 +1525,7 @@ class ApiClient {
       if (result.error) return { error: result.error };
 
       if (result.data?.user) {
+        await this.setToken(result.data.token);
         return { data: result.data.user };
       }
 
