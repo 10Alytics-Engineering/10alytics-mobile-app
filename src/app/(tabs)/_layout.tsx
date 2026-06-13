@@ -7,7 +7,7 @@ import { Image, Platform, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
-import useThemeColors from "@/contexts/theme-colors";
+import useThemeColors from '@/contexts/theme-colors';
 import { useTheme } from "@/contexts/theme-context";
 import useThemedNavigation from "@/hooks/use-themed-navigation";
 
