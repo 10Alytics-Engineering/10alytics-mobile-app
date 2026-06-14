@@ -4,6 +4,12 @@ import Pusher from "pusher-js/react-native";
 import { apiClient, type ChatMessage } from "@/lib/api-client";
 
 type EchoInstance = Echo<"reverb">;
+type PrivateConversationChannel = ReturnType<EchoInstance["private"]>;
+type PresenceConversationChannel = ReturnType<EchoInstance["join"]>;
+type RetainedChannel<T> = {
+  channel: T;
+  release: () => void;
+};
 
 type ChatEventHandlers = {
   onMessageSent?: (event: ChatMessage) => void;
@@ -28,6 +34,7 @@ type ChatEventHandlers = {
 };
 
 let echo: EchoInstance | null = null;
+const channelRefs = new Map<string, number>();
 
 export async function getChatEcho() {
   const token = await apiClient.getAuthToken();
@@ -71,6 +78,57 @@ export async function getChatEcho() {
 export function disconnectChatEcho() {
   echo?.disconnect();
   echo = null;
+  channelRefs.clear();
+}
+
+function retainChannel<T>(
+  instance: EchoInstance,
+  echoChannelName: string,
+  getChannel: () => T,
+): RetainedChannel<T> {
+  const channel = getChannel();
+  channelRefs.set(echoChannelName, (channelRefs.get(echoChannelName) ?? 0) + 1);
+
+  let released = false;
+
+  return {
+    channel,
+    release: () => {
+      if (released) return;
+      released = true;
+
+      const nextCount = (channelRefs.get(echoChannelName) ?? 1) - 1;
+      if (nextCount <= 0) {
+        channelRefs.delete(echoChannelName);
+        instance.leaveChannel(echoChannelName);
+        return;
+      }
+
+      channelRefs.set(echoChannelName, nextCount);
+    },
+  };
+}
+
+function retainPrivateConversationChannel(
+  instance: EchoInstance,
+  channelName: string,
+) {
+  return retainChannel<PrivateConversationChannel>(
+    instance,
+    `private-${channelName}`,
+    () => instance.private(channelName),
+  );
+}
+
+function retainPresenceConversationChannel(
+  instance: EchoInstance,
+  channelName: string,
+) {
+  return retainChannel<PresenceConversationChannel>(
+    instance,
+    `presence-${channelName}`,
+    () => instance.join(channelName),
+  );
 }
 
 export async function subscribeToChatConversation(
@@ -82,24 +140,43 @@ export async function subscribeToChatConversation(
   if (!instance) return () => {};
 
   const channelName = `conversation.${conversationId}`;
-  const channel = options.presence
-    ? instance.join(channelName)
-    : instance.private(channelName);
+  const privateRef = retainPrivateConversationChannel(instance, channelName);
+  const privateChannel = privateRef.channel;
+  const presenceRef =
+    options.presence || handlers.onTyping
+      ? retainPresenceConversationChannel(instance, channelName)
+      : null;
+  const onMessageSent = (event: ChatMessage) => {
+    handlers.onMessageSent?.(event);
+  };
+  const onMessageEdited = handlers.onMessageEdited ?? (() => {});
+  const onMessageDeleted = handlers.onMessageDeleted ?? (() => {});
+  const onConversationRead = handlers.onConversationRead ?? (() => {});
+  const onTyping = handlers.onTyping;
 
-  channel
-    .listen(".message.sent", (event: ChatMessage) => {
-      handlers.onMessageSent?.(event);
-    })
-    .listen(".message.edited", handlers.onMessageEdited ?? (() => {}))
-    .listen(".message.deleted", handlers.onMessageDeleted ?? (() => {}))
-    .listen(".conversation.read", handlers.onConversationRead ?? (() => {}));
+  privateChannel
+    .listen(".message.sent", onMessageSent)
+    .listen(".message.edited", onMessageEdited)
+    .listen(".message.deleted", onMessageDeleted)
+    .listen(".conversation.read", onConversationRead);
 
-  if ("listenForWhisper" in channel && handlers.onTyping) {
-    channel.listenForWhisper("typing", handlers.onTyping);
+  if (presenceRef && onTyping) {
+    presenceRef.channel.listenForWhisper("typing", onTyping);
   }
 
   return () => {
-    instance.leave(channelName);
+    privateChannel
+      .stopListening(".message.sent", onMessageSent)
+      .stopListening(".message.edited", onMessageEdited)
+      .stopListening(".message.deleted", onMessageDeleted)
+      .stopListening(".conversation.read", onConversationRead);
+
+    if (presenceRef && onTyping) {
+      presenceRef.channel.stopListeningForWhisper("typing", onTyping);
+    }
+
+    privateRef.release();
+    presenceRef?.release();
   };
 }
 

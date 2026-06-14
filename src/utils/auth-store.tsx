@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { apiClient } from "@/lib/api-client";
+import { disconnectChatEcho } from "@/lib/chat-realtime";
 import { unregisterPushNotifications } from "@/lib/notifications";
 
 const isWeb = Platform.OS === "web";
@@ -61,6 +62,7 @@ export const useAuthStore = create(
         });
       },
       logOut: async () => {
+        disconnectChatEcho();
         try {
           await unregisterPushNotifications();
         } catch {
@@ -120,6 +122,7 @@ export const useAuthStore = create(
               user,
             }));
           } else {
+            disconnectChatEcho();
             set((state) => ({
               ...state,
               isLoggedIn: false,
@@ -127,6 +130,7 @@ export const useAuthStore = create(
             }));
           }
         } catch {
+          disconnectChatEcho();
           set((state) => ({
             ...state,
             isLoggedIn: false,
