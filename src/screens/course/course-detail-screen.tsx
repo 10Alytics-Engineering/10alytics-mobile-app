@@ -562,20 +562,6 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     `${lessonCountAcrossCourse} lectures`,
   ].filter(Boolean) as string[];
 
-  const helperCardDescription = course?.whatsapp_community_link
-    ? "Stuck on a lesson or assignment? Jump into the community and ask for help while you learn."
-    : resourceItems.length
-      ? "Need supporting material? Your course guide and downloadable resources are one tap away."
-      : "Keep your momentum going with the next lecture and the course overview.";
-
-  const helperCardActionLabel = course?.whatsapp_community_link
-    ? "Start chat"
-    : resourceItems.length
-      ? "Open downloads"
-      : resumeLesson
-        ? "Continue lesson"
-        : "Read more";
-
   function openLesson(
     lesson: UserCourseLesson,
     week?: UserCourseWeek,
@@ -608,26 +594,6 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
         moduleId: currentModuleId === moduleId ? null : moduleId,
       };
     });
-  }
-
-  function handleHelperAction() {
-    if (course?.whatsapp_community_link) {
-      openExternalUrl(course.whatsapp_community_link).catch(() => { });
-      return;
-    }
-    if (resourceItems.length) {
-      setSelectedTab("downloads");
-      return;
-    }
-    if (resumeLesson) {
-      openLesson(
-        resumeLesson,
-        resumeLessonContext?.week,
-        resumeLessonContext?.module,
-      );
-      return;
-    }
-    setSelectedTab("more");
   }
 
   return (

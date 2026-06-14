@@ -4,7 +4,6 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { LinearGradient } from "expo-linear-gradient";
 import Feather from '@expo/vector-icons/Feather';
 import { BlurView } from "expo-blur";
-import { useAnimatedValue } from "@/hooks/use-animated-value";
 import { shadowPresets } from "@/utils/useShadow";
 interface VideoCardProps {
     videoUrl: string;
@@ -24,9 +23,9 @@ export default function VideoCard({
     const [error] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(false);
 
-    const fadeAnim = useAnimatedValue(1);
-    const heightAnim = useAnimatedValue(220);
-    const translateYAnim = useAnimatedValue(-20);
+    const [fadeAnim] = useState(() => new Animated.Value(1));
+    const [heightAnim] = useState(() => new Animated.Value(220));
+    const [translateYAnim] = useState(() => new Animated.Value(-20));
 
     const player = useVideoPlayer(videoUrl, player => {
         player.loop = true;

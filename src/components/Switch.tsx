@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Animated, TouchableOpacity, StyleProp, ViewStyle, Text } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import useThemeColors from '@/contexts/ThemeColors';
-import { useAnimatedValue } from '@/hooks/use-animated-value';
 
 interface SwitchProps {
   value?: boolean;
@@ -27,7 +26,7 @@ const Switch: React.FC<SwitchProps> = ({
 }) => {
   const colors = useThemeColors();
   const [isOn, setIsOn] = useState(value ?? false);
-  const slideAnim = useAnimatedValue(value ?? false ? 1 : 0);
+  const [slideAnim] = useState(() => new Animated.Value(value ?? false ? 1 : 0));
 
   // Handle controlled vs uncontrolled state
   const isControlled = value !== undefined;

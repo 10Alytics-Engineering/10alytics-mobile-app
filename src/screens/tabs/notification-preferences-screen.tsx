@@ -5,7 +5,6 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Switch from "@/components/Switch";
-import useThemeColors from "@/contexts/ThemeColors";
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -50,7 +49,6 @@ const TOGGLES: ToggleConfig[] = [
 
 export function NotificationPreferencesScreen() {
   const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
   const { data, isPending, isError, error, refetch } =
     useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();

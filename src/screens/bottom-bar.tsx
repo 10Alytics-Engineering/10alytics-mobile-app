@@ -1,4 +1,4 @@
-import { View, ScrollView, ImageBackground } from 'react-native';
+import { View, ImageBackground } from 'react-native';
 import Header from '@/components/Header';
 import React from 'react';
 import BottomBar from '@/components/BottomBar';
@@ -35,7 +35,6 @@ const CameraButton = () => {
         </View>
     );
 }
-
 
 
 

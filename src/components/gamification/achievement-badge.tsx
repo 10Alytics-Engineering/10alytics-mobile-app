@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import Animated, {
-  FadeInDown,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -34,19 +33,19 @@ export function AchievementBadge({
 
   React.useEffect(() => {
     if (unlocked) {
-      scale.value = withRepeat(
+      scale.set(withRepeat(
         withSequence(
           withSpring(1.1, { damping: 10 }),
           withSpring(1, { damping: 10 })
         ),
         2,
         false
-      );
+      ));
     }
-  }, [unlocked]);
+  }, [scale, unlocked]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.get() }],
   }));
 
   const content = (

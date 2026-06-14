@@ -6,7 +6,7 @@ import { Animated } from "@/tw/animated";
 import * as Haptics from "expo-haptics";
 import { SymbolView } from "expo-symbols";
 import React from "react";
-import { StyleSheet, useWindowDimensions } from "react-native";
+import { StyleSheet } from "react-native";
 import { FadeInDown, FadeInRight, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -15,7 +15,6 @@ export function DashboardScreen() {
   const colors = Colors[colorScheme ?? "light"];
   const isDark = colorScheme === "dark";
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -23,27 +22,6 @@ export function DashboardScreen() {
 
   const streakDays = ["M", "T", "W", "T", "F", "S", "S"];
   const activeStreak = [true, true, true, true, false, false, false];
-
-  const categories = [
-    {
-      id: "ds",
-      name: "Data Science",
-      icon: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400",
-      color: "#DA6728"
-    },
-    {
-      id: "fs",
-      name: "Full Stack",
-      icon: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=400",
-      color: "#DA6728"
-    },
-    {
-      id: "pd",
-      name: "Product Design",
-      icon: "https://images.unsplash.com/photo-1586717791821-3f44a563eb4c?auto=format&fit=crop&q=80&w=400",
-      color: "#DA6728"
-    },
-  ];
 
   const achievements = [
     { id: "1", title: "Quick Learner", icon: "bolt.fill", color: "#FFD700" },

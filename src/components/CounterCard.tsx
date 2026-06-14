@@ -3,6 +3,10 @@ import { View, Text, Pressable } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import useThemeColors from '@/contexts/ThemeColors';
 
+const TODAY_VALUE = 1495;
+const YESTERDAY_VALUE = 1375;
+const ANIMATION_DURATION_MS = 500;
+
 const formatCurrency = (value: number) => {
     return `$${value.toLocaleString()}.00`;
 };
@@ -11,46 +15,41 @@ export default function CounterCard() {
     const colors = useThemeColors();
     const [activeTab, setActiveTab] = useState('today');
 
-    const todayValue = 1495;
-    const yesterdayValue = 1375;
-
-    const [displayValue, setDisplayValue] = useState(todayValue);
+    const [displayValue, setDisplayValue] = useState(TODAY_VALUE);
 
     const animationRef = useRef<number | null>(null);
     const startTimeRef = useRef<number>(0);
-    const startValueRef = useRef<number>(todayValue);
-
-    const duration = 500;
-
-    const animateValue = (timestamp: number) => {
-        if (!startTimeRef.current) {
-            startTimeRef.current = timestamp;
-        }
-
-        const elapsed = timestamp - startTimeRef.current;
-        const progress = Math.min(elapsed / duration, 1);
-
-        const targetValue = activeTab === 'today' ? todayValue : yesterdayValue;
-        const startValue = startValueRef.current;
-
-        const currentValue = startValue + progress * (targetValue - startValue);
-        setDisplayValue(Math.floor(currentValue));
-
-        if (progress < 1) {
-            animationRef.current = requestAnimationFrame(animateValue);
-        } else {
-            setDisplayValue(targetValue);
-            animationRef.current = null;
-            startTimeRef.current = 0;
-        }
-    };
+    const displayValueRef = useRef<number>(TODAY_VALUE);
 
     useEffect(() => {
-        startValueRef.current = displayValue;
+        const startValue = displayValueRef.current;
+        const targetValue = activeTab === 'today' ? TODAY_VALUE : YESTERDAY_VALUE;
 
         if (animationRef.current) {
             cancelAnimationFrame(animationRef.current);
         }
+
+        const animateValue = (timestamp: number) => {
+            if (!startTimeRef.current) {
+                startTimeRef.current = timestamp;
+            }
+
+            const elapsed = timestamp - startTimeRef.current;
+            const progress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
+            const currentValue = startValue + progress * (targetValue - startValue);
+            const nextValue = Math.floor(currentValue);
+            displayValueRef.current = nextValue;
+            setDisplayValue(nextValue);
+
+            if (progress < 1) {
+                animationRef.current = requestAnimationFrame(animateValue);
+            } else {
+                displayValueRef.current = targetValue;
+                setDisplayValue(targetValue);
+                animationRef.current = null;
+                startTimeRef.current = 0;
+            }
+        };
 
         animationRef.current = requestAnimationFrame(animateValue);
 

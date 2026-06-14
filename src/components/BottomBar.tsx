@@ -3,7 +3,6 @@ import Feather from '@expo/vector-icons/Feather';
 import { Feather as FeatherIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import React, { useState } from 'react';
-import { useAnimatedValue } from '@/hooks/use-animated-value';
 import { shadowPresets } from "@/utils/useShadow";
 
 type FeatherIconName = keyof typeof FeatherIcons.glyphMap;
@@ -71,8 +70,8 @@ interface BottomBarItemProps {
 }
 
 const BottomBarItem = ({ icon, title, isActive, onPress }: BottomBarItemProps) => {
-    const widthAnim = useAnimatedValue(isActive ? 100 : 40);
-    const textOpacityAnim = useAnimatedValue(isActive ? 1 : 0);
+    const [widthAnim] = useState(() => new Animated.Value(isActive ? 100 : 40));
+    const [textOpacityAnim] = useState(() => new Animated.Value(isActive ? 1 : 0));
 
     React.useEffect(() => {
         Animated.parallel([

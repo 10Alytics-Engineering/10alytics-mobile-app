@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Image, Pressable, Text, Animated, Easing, ImageSourcePropType } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAnimatedValue } from "@/hooks/use-animated-value";
 import { shadowPresets } from "@/utils/useShadow";
 interface SlideUpProps {
     visible?: boolean;
@@ -13,8 +12,8 @@ interface SlideUpProps {
 export default function SlideUp({ visible = true, onClose, avatarSource, name }: SlideUpProps) {
     const insets = useSafeAreaInsets();
     const [showComponent, setShowComponent] = useState(visible);
-    const slideAnim = useAnimatedValue(1000);
-    const opacityAnim = useAnimatedValue(0);
+    const [slideAnim] = useState(() => new Animated.Value(1000));
+    const [opacityAnim] = useState(() => new Animated.Value(0));
 
     useEffect(() => {
         if (visible) {

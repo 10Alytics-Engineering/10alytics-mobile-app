@@ -32,14 +32,14 @@ export function ProgressRing({
   const progressValue = useSharedValue(0);
 
   React.useEffect(() => {
-    progressValue.value = withSpring(progress / 100, {
+    progressValue.set(withSpring(progress / 100, {
       damping: 15,
       stiffness: 100,
-    });
-  }, [progress]);
+    }));
+  }, [progress, progressValue]);
 
   const animatedProps = useAnimatedProps(() => {
-    const strokeDashoffset = circumference * (1 - progressValue.value);
+    const strokeDashoffset = circumference * (1 - progressValue.get());
     return {
       strokeDashoffset: withTiming(strokeDashoffset, { duration: 1000 }),
     };

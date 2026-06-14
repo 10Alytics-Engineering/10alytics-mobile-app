@@ -1,11 +1,10 @@
-import { View, ScrollView, Pressable, Animated, Text, Easing } from 'react-native';
+import { View, ScrollView, Pressable, Animated, Text } from 'react-native';
 import Header from '@/components/Header';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useThemeColors from '@/contexts/ThemeColors';
-import { useAnimatedValue } from '@/hooks/use-animated-value';
 
 export default function JournalCardsScreen() {
     const insets = useSafeAreaInsets();
@@ -60,7 +59,6 @@ const Chart = ({ currentDataIndex }: { currentDataIndex: number }) => {
                             <ChartBar
                                 key={index}
                                 height={(value / maxValue) * maxBarHeight}
-                                index={index}
                                 dataIndex={currentDataIndex}
                             />
                         ))}
@@ -71,8 +69,8 @@ const Chart = ({ currentDataIndex }: { currentDataIndex: number }) => {
     );
 };
 
-const ChartBar = ({ height, index, dataIndex }: { height: number; index: number; dataIndex: number }) => {
-    const animatedHeight = useAnimatedValue(0);
+const ChartBar = ({ height, dataIndex }: { height: number; dataIndex: number }) => {
+    const [animatedHeight] = useState(() => new Animated.Value(0));
 
     useEffect(() => {
         Animated.timing(animatedHeight, {
@@ -105,8 +103,8 @@ const ChartBar = ({ height, index, dataIndex }: { height: number; index: number;
 const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: number; setCurrentDataIndex: (index: number) => void }) => {
     const colors = useThemeColors();
     const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
-    const fadeAnim = useAnimatedValue(1);
-    const countAnim = useAnimatedValue(0);
+    const [fadeAnim] = useState(() => new Animated.Value(1));
+    const [countAnim] = useState(() => new Animated.Value(0));
 
     const monthsData = [
         { month: 'this month', amount: 10201 },
@@ -119,11 +117,13 @@ const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: 
 
     const currentData = monthsData[currentMonthIndex];
     const [displayAmount, setDisplayAmount] = useState(currentData.amount);
+    const previousAmountRef = useRef(currentData.amount);
 
     useEffect(() => {
         // Animate number counting
-        const startValue = displayAmount;
+        const startValue = previousAmountRef.current;
         const endValue = currentData.amount;
+        previousAmountRef.current = endValue;
 
         countAnim.setValue(0);
 
@@ -141,7 +141,7 @@ const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: 
         return () => {
             countAnim.removeListener(listener);
         };
-    }, [currentMonthIndex]);
+    }, [countAnim, currentData.amount]);
 
     const animateTransition = (callback: () => void) => {
         Animated.sequence([
@@ -211,6 +211,4 @@ const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: 
         </View>
     );
 };
-
-
 

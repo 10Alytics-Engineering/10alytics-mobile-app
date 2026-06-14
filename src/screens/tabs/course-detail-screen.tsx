@@ -4,7 +4,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { PressableScale, ScrollView, Text, View } from "@/tw";
 import { Animated } from "@/tw/animated";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { Dimensions, StyleSheet } from "react-native";
@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
 });
 
 export function CourseDetailScreen() {
-  const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const isDark = colorScheme === "dark";

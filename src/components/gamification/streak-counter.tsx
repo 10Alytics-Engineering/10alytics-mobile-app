@@ -23,18 +23,18 @@ export function StreakCounter({ days, size = "medium" }: StreakCounterProps) {
   const scale = useSharedValue(1);
 
   React.useEffect(() => {
-    scale.value = withRepeat(
+    scale.set(withRepeat(
       withSequence(
         withSpring(1.1, { damping: 8 }),
         withSpring(1, { damping: 8 })
       ),
       -1,
       true
-    );
-  }, []);
+    ));
+  }, [scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: scale.get() }],
   }));
 
   const sizeConfig = {

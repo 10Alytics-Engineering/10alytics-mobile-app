@@ -128,6 +128,7 @@ export function useChatRealtime(
   options: { presence?: boolean } = {},
 ) {
   const queryClient = useQueryClient();
+  const { presence = false } = options;
   const idsKey = conversationIds.map(String).filter(Boolean).join(",");
   const stableIds = useMemo(() => idsKey.split(",").filter(Boolean), [idsKey]);
 
@@ -192,7 +193,7 @@ export function useChatRealtime(
                 queryClient.invalidateQueries({ queryKey: chatKeys.unread });
               },
             },
-            options,
+            { presence },
           ),
         ),
       );
@@ -211,7 +212,7 @@ export function useChatRealtime(
       cancelled = true;
       cleanupFns.forEach((cleanup) => cleanup());
     };
-  }, [options.presence, queryClient, stableIds]);
+  }, [presence, queryClient, stableIds]);
 }
 
 export function useChatPresenceHeartbeat(

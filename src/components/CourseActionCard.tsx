@@ -40,7 +40,6 @@ export default function CourseActionCard({
     const accent = "#DA6728";
     const surface = isDark ? "#121212" : "#F9F6F2";
     const muted = isDark ? "rgba(255,255,255,0.7)" : "rgba(17,17,17,0.6)";
-    const accentGlow = isDark ? "rgba(218, 103, 40, 0.35)" : "rgba(218, 103, 40, 0.25)";
 
     return (
         <View className="rounded-[30px] overflow-hidden" style={{ backgroundColor: surface }}>

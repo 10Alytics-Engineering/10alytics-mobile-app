@@ -11,7 +11,6 @@ import {
 } from "react-native";
 
 import Header from "@/components/Header";
-import { useAnimatedValue } from "@/hooks/use-animated-value";
 import useThemeColors from "../contexts/ThemeColors";
 
 const { width } = Dimensions.get("window");
@@ -63,10 +62,10 @@ export default function ParallaxScreen() {
   const colors = useThemeColors();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
-  const scrollX = useAnimatedValue(0);
+  const [scrollX] = useState(() => new Animated.Value(0));
 
-  const translateXAnim = useAnimatedValue(30);
-  const scaleAnim = useAnimatedValue(0.9);
+  const [translateXAnim] = useState(() => new Animated.Value(30));
+  const [scaleAnim] = useState(() => new Animated.Value(0.9));
 
   useEffect(() => {
     translateXAnim.setValue(30);

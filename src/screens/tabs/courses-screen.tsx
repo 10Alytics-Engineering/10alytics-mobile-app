@@ -45,7 +45,10 @@ export function CoursesScreen() {
   const userCoursesQuery = useUserCourses();
   const coursesQuery = useCourses();
 
-  const myCourses: UserCourse[] = userCoursesQuery.data?.data ?? [];
+  const myCourses: UserCourse[] = useMemo(
+    () => userCoursesQuery.data?.data ?? [],
+    [userCoursesQuery.data?.data],
+  );
 
   const enrolledCourseIds = useMemo(
     () => new Set(myCourses.map((course) => course.course_id)),
