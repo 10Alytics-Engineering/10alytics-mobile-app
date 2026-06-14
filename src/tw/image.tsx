@@ -1,13 +1,11 @@
 import { Image as RNImage } from "expo-image";
-import { cssInterop } from "nativewind";
 import React from "react";
 import { StyleSheet } from "react-native";
 import Animated from "react-native-reanimated";
+import { withUniwind } from "uniwind";
 
 const AnimatedExpoImage = Animated.createAnimatedComponent(RNImage);
-const StyledAnimatedExpoImage = cssInterop(AnimatedExpoImage, {
-  className: "style",
-});
+const StyledAnimatedExpoImage = withUniwind(AnimatedExpoImage);
 
 type ImageStyle = React.ComponentProps<typeof RNImage>["style"] & {
   objectFit?: React.ComponentProps<typeof RNImage>["contentFit"];

@@ -13,8 +13,6 @@ import { ClassroomTimetablePanel } from "@/components/classroom/classroom-timeta
 import { useClassroomSession } from "@/hooks/use-classroom";
 import useThemedNavigation from "@/hooks/useThemedNavigation";
 
-import "../../../global.css";
-
 const ACCENT = "#DA6728";
 
 type SegmentId =

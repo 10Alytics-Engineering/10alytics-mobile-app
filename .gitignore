@@ -68,7 +68,9 @@ yarn-error.*
 # @end expo-cli
 /.agent
 /.agent
+/.claude
 /.agent
+/.vscode
 /.agents
 /.cursor
 /.claude
@@ -76,3 +78,4 @@ yarn-error.*
 .env
 .agent/skills/vercel-react-native-skills
 alytics-mobile-firebase-adminsdk-fbsvc-293d6ced6b.json
+google-services.json

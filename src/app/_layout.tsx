@@ -1,4 +1,9 @@
-import '../../global.css';
+import '../global.css';
+import {
+    Outfit_400Regular,
+    Outfit_700Bold,
+    useFonts,
+} from '@expo-google-fonts/outfit';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SplashScreen, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -29,18 +34,21 @@ export default function RootLayout() {
     const { screenOptions } = useThemedNavigation();
     const { isLoggedIn, shouldCreateAccount, hasCompletedOnboarding, _hasHydrated, checkAuth } =
         useAuthStore();
+    const [fontsLoaded] = useFonts({
+        Outfit_400Regular,
+        Outfit_700Bold,
+    });
 
     useEffect(() => {
         bindReactQueryOnlineManager();
     }, []);
 
     useEffect(() => {
-        if (_hasHydrated) {
-            // Check authentication status when app loads
+        if (_hasHydrated && fontsLoaded) {
             checkAuth();
             SplashScreen.hideAsync();
         }
-    }, [_hasHydrated, checkAuth]);
+    }, [_hasHydrated, fontsLoaded, checkAuth]);
 
     useEffect(() => {
         if (_hasHydrated) {
@@ -117,14 +125,6 @@ export default function RootLayout() {
                                         gestureEnabled: true,
                                         fullScreenGestureEnabled: Platform.OS === 'ios',
                                         animationMatchesGesture: Platform.OS === 'ios',
-                                    }}
-                                />
-                                <Stack.Screen
-                                    name="settings"
-                                    options={{
-                                        headerShown: false,
-                                        presentation: 'card',
-                                        animation: 'default',
                                     }}
                                 />
                             </Stack.Protected>

@@ -36,8 +36,6 @@ import type { ClassroomCalendarEvent, ClassroomPost, UserCourse } from "@/lib/ap
 import { useAuthStore } from "@/utils/auth-store";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
-
 function formatSlugLabel(slug: string): string {
     if (!slug) return "Course";
     return slug

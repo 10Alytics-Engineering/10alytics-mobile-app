@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import { createElement, type ComponentType } from 'react';
 import type { SvgProps } from 'react-native-svg';
 
 import Agile from '@/assets/courses/agile.svg';
@@ -45,6 +45,6 @@ function coerceSvgComponent(
 
 /** Deterministic local SVG cover per course slug (Metro + react-native-svg-transformer). */
 export function CourseCoverForSlug({ slug, size = 96 }: { slug: string; size?: number }) {
-    const Cover = coerceSvgComponent(COVER_POOL[slugCoverIndex(slug)] ?? Fsds, Fsds);
-    return <Cover width={size} height={size} />;
+    const cover = coerceSvgComponent(COVER_POOL[slugCoverIndex(slug)] ?? Fsds, Fsds);
+    return createElement(cover, { width: size, height: size });
 }

@@ -12,8 +12,6 @@ import { useUserCourses } from "@/hooks/use-user-courses";
 import type { Course, UserCourse } from "@/lib/api-client";
 import { CourseCoverForSlug } from "@/utils/course-cover";
 
-import "../../../global.css";
-
 type TabKey = "my" | "all";
 
 const TABS: { key: TabKey; label: string }[] = [

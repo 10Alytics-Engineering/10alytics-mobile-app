@@ -1,80 +1,61 @@
 import { Platform, ViewStyle } from 'react-native';
 
-interface ShadowProps {
-  elevation?: number;
-  shadowColor?: string;
-  shadowOpacity?: number;
-  shadowRadius?: number;
-  shadowOffset?: {
-    width: number;
-    height: number;
-  };
+export type ShadowOptions = {
+    color?: string;
+    offset?: { width: number; height: number };
+    opacity?: number;
+    radius?: number;
+    elevation?: number;
+};
+
+export function createShadowStyle({
+    color = '#000',
+    offset = { width: 0, height: 0 },
+    opacity = 0.1,
+    radius = 1,
+    elevation = 1,
+}: ShadowOptions = {}): ViewStyle {
+    return Platform.select({
+        ios: {
+            shadowColor: color,
+            shadowOffset: offset,
+            shadowOpacity: opacity,
+            shadowRadius: radius,
+        },
+        android: {
+            elevation,
+        },
+        default: {},
+    }) as ViewStyle;
 }
 
-/**
- * Hook to generate consistent shadow styles across the app
- * @param options - Shadow configuration options
- * @returns Shadow style object for React Native components
- */
-export const useShadow = (options?: ShadowProps): ViewStyle => {
-  const {
-    elevation = 5,
-    shadowColor = '#000',
-    shadowOpacity = 0.2,
-    shadowRadius = 3.84,
-    shadowOffset = { 
-      width: 0, 
-      height: 2 
-    }
-  } = options || {};
+/** @deprecated Prefer `createShadowStyle` — this is not a React hook. */
+export const useShadow = createShadowStyle;
 
-  // iOS shadows
-  const iosShadow: ViewStyle = {
-    shadowColor,
-    shadowOpacity,
-    shadowRadius,
-    shadowOffset,
-  };
-
-  // Android elevation
-  const androidShadow: ViewStyle = {
-    elevation,
-  };
-
-  // Return platform-specific shadow styles.
-  // Android uses elevation only — spreading the iOS shadow props
-  // (offset/radius) on top of elevation double-renders on the new
-  // architecture and produces a hard, thin shadow band.
-  return Platform.OS === 'ios' ? iosShadow : androidShadow;
-};
-
-/**
- * Preset shadow styles for common use cases
- */
 export const shadowPresets = {
-  small: useShadow({
-    elevation: 3,
-    shadowRadius: 2.5,
-    shadowOffset: { width: 0, height: 1 }
-  }),
-  
-  medium: useShadow({
-    elevation: 8,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 3 }
-  }),
-  
-  large: useShadow({
-    elevation: 15,
-    shadowRadius: 10.84,
-    shadowOffset: { width: 0, height: 10 }
-  }),
-  
-  card: useShadow({
-    elevation: 4,
-    shadowRadius: 3.84,
-    shadowOffset: { width: 0, height: 2 }
-  })
+    small: createShadowStyle({
+        elevation: 3,
+        radius: 2.5,
+        offset: { width: 0, height: 1 },
+    }),
+    medium: createShadowStyle({
+        elevation: 8,
+        radius: 5,
+        offset: { width: 0, height: 3 },
+    }),
+    large: createShadowStyle({
+        elevation: 15,
+        radius: 10.84,
+        offset: { width: 0, height: 10 },
+    }),
+    card: createShadowStyle({
+        elevation: 4,
+        radius: 3.84,
+        offset: { width: 0, height: 2 },
+    }),
+    // Aliases
+    sm: createShadowStyle({ offset: { width: 0, height: 2 }, opacity: 0.15, radius: 4, elevation: 2 }),
+    md: createShadowStyle({ offset: { width: 0, height: 4 }, opacity: 0.2, radius: 8, elevation: 4 }),
+    lg: createShadowStyle({ offset: { width: 0, height: 8 }, opacity: 0.25, radius: 16, elevation: 8 }),
+    xl: createShadowStyle({ offset: { width: 0, height: 12 }, opacity: 0.3, radius: 24, elevation: 12 }),
 };
-
-export default useShadow; 

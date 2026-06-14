@@ -5,8 +5,7 @@ import Feather from '@expo/vector-icons/Feather';
 import ThemeToggle from './ThemeToggle';
 import useThemeColors from '@/contexts/ThemeColors';
 import SlideUp from './SlideUp';
-import { useState } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '@/utils/auth-store';
 
 interface HeaderProps {

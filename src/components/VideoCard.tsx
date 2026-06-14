@@ -1,7 +1,6 @@
 import { View, Pressable, Text, Animated, Easing } from "react-native";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useVideoPlayer, VideoView } from 'expo-video';
-import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import Feather from '@expo/vector-icons/Feather';
 import { BlurView } from "expo-blur";
