@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Tenalytics",
+    "name": "10Alytics",
     "slug": "tenalytics-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,8 +24,7 @@
         "monochromeImage": "./src/assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.tenalytics.mobile",
-      "label": "10Alytics"
+      "package": "com.tenalytics.mobile"
     },
     "web": {
       "output": "static",

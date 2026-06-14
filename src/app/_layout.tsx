@@ -31,7 +31,6 @@ if (!isWeb) {
 
 export default function RootLayout() {
     const [queryClient] = useState(() => createQueryClient());
-    const { screenOptions } = useThemedNavigation();
     const { isLoggedIn, shouldCreateAccount, hasCompletedOnboarding, _hasHydrated, checkAuth } =
         useAuthStore();
     const [fontsLoaded] = useFonts({
@@ -63,75 +62,95 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <QueryClientProvider client={queryClient}>
                 <ThemeProvider>
-                    <>
-                        <NetworkToastBridge />
-                        <Stack screenOptions={screenOptions}>
-                            <Stack.Protected guard={!hasCompletedOnboarding}>
-                                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                            </Stack.Protected>
-                            <Stack.Protected guard={!isLoggedIn && hasCompletedOnboarding}>
-                                <Stack.Screen name="index" />
-                                <Stack.Screen
-                                    name="sign-in"
-                                    options={{
-                                        title: 'Sign In',
-                                        presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
-                                        sheetGrabberVisible: true,
-                                        sheetAllowedDetents: [0.4],
-                                        sheetCornerRadius: 24,
-                                        headerShown: false,
-                                        contentStyle: { backgroundColor: 'transparent' },
-                                    }}
-                                />
-                                <Stack.Screen
-                                    name="forgot-password"
-                                    options={{ headerShown: false, presentation: 'card' }}
-                                />
-                                <Stack.Screen
-                                    name="reset-password"
-                                    options={{ headerShown: false, presentation: 'card' }}
-                                />
-                                <Stack.Protected guard={shouldCreateAccount}>
-                                    <Stack.Screen
-                                        name="create-account"
-                                        options={{
-                                            title: 'Create Account',
-                                            presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
-                                            sheetGrabberVisible: true,
-                                            sheetAllowedDetents: [0.4],
-                                            sheetCornerRadius: 24,
-                                            headerShown: false,
-                                            contentStyle: { backgroundColor: 'transparent' },
-                                        }}
-                                    />
-                                </Stack.Protected>
-                            </Stack.Protected>
-                            <Stack.Protected guard={isLoggedIn}>
-                                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                                <Stack.Screen
-                                    name="chat-room"
-                                    options={{
-                                        headerShown: false,
-                                        presentation: 'card',
-                                        animation: 'default',
-                                    }}
-                                />
-                                <Stack.Screen
-                                    name="(screens)"
-                                    options={{
-                                        headerShown: false,
-                                        presentation: Platform.OS === 'ios' ? 'fullScreenModal' : 'modal',
-                                        animation: 'slide_from_bottom',
-                                        gestureEnabled: true,
-                                        fullScreenGestureEnabled: Platform.OS === 'ios',
-                                        animationMatchesGesture: Platform.OS === 'ios',
-                                    }}
-                                />
-                            </Stack.Protected>
-                        </Stack>
-                    </>
+                    <RootStack
+                        hasCompletedOnboarding={hasCompletedOnboarding}
+                        isLoggedIn={isLoggedIn}
+                        shouldCreateAccount={shouldCreateAccount}
+                    />
                 </ThemeProvider>
             </QueryClientProvider>
         </GestureHandlerRootView>
+    );
+}
+
+function RootStack({
+    hasCompletedOnboarding,
+    isLoggedIn,
+    shouldCreateAccount,
+}: {
+    hasCompletedOnboarding: boolean;
+    isLoggedIn: boolean;
+    shouldCreateAccount: boolean;
+}) {
+    const { screenOptions } = useThemedNavigation();
+
+    return (
+        <>
+            <NetworkToastBridge />
+            <Stack screenOptions={screenOptions}>
+                <Stack.Protected guard={!hasCompletedOnboarding}>
+                    <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                </Stack.Protected>
+                <Stack.Protected guard={!isLoggedIn && hasCompletedOnboarding}>
+                    <Stack.Screen name="index" />
+                    <Stack.Screen
+                        name="sign-in"
+                        options={{
+                            title: 'Sign In',
+                            presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+                            sheetGrabberVisible: true,
+                            sheetAllowedDetents: [0.4],
+                            sheetCornerRadius: 24,
+                            headerShown: false,
+                            contentStyle: { backgroundColor: 'transparent' },
+                        }}
+                    />
+                    <Stack.Screen
+                        name="forgot-password"
+                        options={{ headerShown: false, presentation: 'card' }}
+                    />
+                    <Stack.Screen
+                        name="reset-password"
+                        options={{ headerShown: false, presentation: 'card' }}
+                    />
+                    <Stack.Protected guard={shouldCreateAccount}>
+                        <Stack.Screen
+                            name="create-account"
+                            options={{
+                                title: 'Create Account',
+                                presentation: Platform.OS === 'ios' ? 'formSheet' : 'modal',
+                                sheetGrabberVisible: true,
+                                sheetAllowedDetents: [0.4],
+                                sheetCornerRadius: 24,
+                                headerShown: false,
+                                contentStyle: { backgroundColor: 'transparent' },
+                            }}
+                        />
+                    </Stack.Protected>
+                </Stack.Protected>
+                <Stack.Protected guard={isLoggedIn}>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen
+                        name="chat-room"
+                        options={{
+                            headerShown: false,
+                            presentation: 'card',
+                            animation: 'default',
+                        }}
+                    />
+                    <Stack.Screen
+                        name="(screens)"
+                        options={{
+                            headerShown: false,
+                            presentation: Platform.OS === 'ios' ? 'fullScreenModal' : 'modal',
+                            animation: 'slide_from_bottom',
+                            gestureEnabled: true,
+                            fullScreenGestureEnabled: Platform.OS === 'ios',
+                            animationMatchesGesture: Platform.OS === 'ios',
+                        }}
+                    />
+                </Stack.Protected>
+            </Stack>
+        </>
     );
 }
