@@ -11,7 +11,7 @@ import {
   PlayCircle,
   X
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   Platform,
@@ -311,15 +311,48 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
   }, [course]);
 
   const [selectedWeekId, setSelectedWeekId] = useState<number | null>(null);
-  const [expandedModuleId, setExpandedModuleId] = useState<number | null>(null);
+  const [expandedModuleOverride, setExpandedModuleOverride] = useState<{
+    weekId: number | null;
+    moduleId: number | null;
+  } | null>(null);
   const [activeVideo, setActiveVideo] = useState<ActiveVideoState | null>(null);
-  const [selectedTab, setSelectedTab] = useState<DetailTab>("lectures");
-  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [selectedTabState, setSelectedTabState] = useState(() => ({
+    courseId,
+    value: "lectures" as DetailTab,
+  }));
+  const [descriptionState, setDescriptionState] = useState(() => ({
+    courseId,
+    value: false,
+  }));
+  const selectedTab =
+    selectedTabState.courseId === courseId ? selectedTabState.value : "lectures";
+  const setSelectedTab = useCallback(
+    (value: DetailTab) => {
+      setSelectedTabState({ courseId, value });
+    },
+    [courseId],
+  );
+  const showFullDescription =
+    descriptionState.courseId === courseId ? descriptionState.value : false;
+  const setShowFullDescription = useCallback(
+    (next: boolean | ((value: boolean) => boolean)) => {
+      setDescriptionState((previous) => {
+        const currentValue =
+          previous.courseId === courseId ? previous.value : false;
+        return {
+          courseId,
+          value:
+            typeof next === "function"
+              ? next(currentValue)
+              : next,
+        };
+      });
+    },
+    [courseId],
+  );
 
   useEffect(() => {
     didBootstrapWeekFromProgress.current = false;
-    setSelectedTab("lectures");
-    setShowFullDescription(false);
   }, [courseId]);
 
   useEffect(() => {
@@ -358,7 +391,31 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     [sortedWeeks, selectedWeekId],
   );
 
-  const modules = selectedWeek?.course_module ?? [];
+  const modules = useMemo(
+    () => selectedWeek?.course_module ?? [],
+    [selectedWeek],
+  );
+
+  const defaultExpandedModuleId = useMemo(() => {
+    if (!selectedWeek) return null;
+    if (currentLessonId != null) {
+      const moduleWithCurrent = modules.find((module) =>
+        module.course_lessons?.some((lesson) => lesson.id === currentLessonId),
+      );
+      if (moduleWithCurrent) return moduleWithCurrent.id;
+    }
+
+    const firstPlayableModule = modules.find((module) =>
+      module.course_lessons?.some((lesson) => lesson.video_url?.trim()),
+    );
+    const firstModule = modules[0];
+    return firstPlayableModule?.id ?? firstModule?.id ?? null;
+  }, [selectedWeek, modules, currentLessonId]);
+
+  const expandedModuleId =
+    expandedModuleOverride?.weekId === selectedWeekId
+      ? expandedModuleOverride.moduleId
+      : defaultExpandedModuleId;
 
   const resumeLesson = useMemo(() => {
     if (!sortedWeeks.length) return null;
@@ -374,25 +431,6 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
       resumeLesson ? findLessonContext(sortedWeeks, resumeLesson.id) : null,
     [sortedWeeks, resumeLesson],
   );
-
-  useEffect(() => {
-    if (!selectedWeek) return;
-    if (currentLessonId != null) {
-      const moduleWithCurrent = selectedWeek.course_module.find((module) =>
-        module.course_lessons?.some((lesson) => lesson.id === currentLessonId),
-      );
-      if (moduleWithCurrent) {
-        setExpandedModuleId(moduleWithCurrent.id);
-        return;
-      }
-    }
-
-    const firstPlayableModule = selectedWeek.course_module.find((module) =>
-      module.course_lessons?.some((lesson) => lesson.video_url?.trim()),
-    );
-    const firstModule = selectedWeek.course_module?.[0];
-    setExpandedModuleId(firstPlayableModule?.id ?? firstModule?.id ?? null);
-  }, [selectedWeek, currentLessonId]);
 
   useEffect(() => {
     if (!activeVideo) return;
@@ -560,9 +598,16 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
   }
 
   function toggleModule(moduleId: number) {
-    setExpandedModuleId((previous) =>
-      previous === moduleId ? null : moduleId,
-    );
+    setExpandedModuleOverride((previous) => {
+      const currentModuleId =
+        previous?.weekId === selectedWeekId
+          ? previous.moduleId
+          : defaultExpandedModuleId;
+      return {
+        weekId: selectedWeekId,
+        moduleId: currentModuleId === moduleId ? null : moduleId,
+      };
+    });
   }
 
   function handleHelperAction() {

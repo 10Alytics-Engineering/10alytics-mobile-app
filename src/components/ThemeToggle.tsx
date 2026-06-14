@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Pressable, Animated } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import Feather from '@expo/vector-icons/Feather';
 import useThemeColors from '@/contexts/ThemeColors';
+import { useAnimatedValue } from '@/hooks/use-animated-value';
 
 interface ThemeToggleProps {
   value?: boolean;
@@ -12,8 +13,8 @@ interface ThemeToggleProps {
 const ThemeToggle: React.FC<ThemeToggleProps> = ({ value, onChange }) => {
   const colors = useThemeColors();
   const { theme, toggleTheme } = useTheme();
-  const scale = useRef(new Animated.Value(1)).current;
-  const rotate = useRef(new Animated.Value(0)).current;
+  const scale = useAnimatedValue(1);
+  const rotate = useAnimatedValue(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const animateIcon = () => {

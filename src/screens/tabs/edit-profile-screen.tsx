@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,6 +16,9 @@ import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 import { useAuthStore } from "@/utils/auth-store";
 
 const ACCENT = "#DA6728";
+
+type CurrentUser = NonNullable<Awaited<ReturnType<typeof apiClient.getCurrentUser>>["data"]>;
+type ThemeColors = ReturnType<typeof useThemeColors>;
 
 function ProfileField({
   label,
@@ -52,7 +55,6 @@ function ProfileField({
 export function EditProfileScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const { setUser } = useAuthStore();
 
   const { data: user, isPending } = useQuery({
     queryKey: ["current-user"],
@@ -63,20 +65,60 @@ export function EditProfileScreen() {
     },
   });
 
-  const [firstName, setFirstName] = useState("");
-  const [otherNames, setOtherNames] = useState("");
-  const [phone, setPhone] = useState("");
-  const [classTime, setClassTime] = useState("");
-  const [saving, setSaving] = useState(false);
+  const formKey = [
+    user?.id ?? "anonymous",
+    user?.first_name ?? "",
+    user?.other_names ?? "",
+    user?.phone ?? "",
+    user?.saturday_schedule ?? "",
+  ].join(":");
 
-  useEffect(() => {
-    if (user) {
-      setFirstName(user.first_name ?? "");
-      setOtherNames(user.other_names ?? "");
-      setPhone(user.phone ?? "");
-      setClassTime(user.saturday_schedule ?? "");
-    }
-  }, [user]);
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1, backgroundColor: colors.bg }}
+    >
+      <View
+        className="flex-row items-center border-b border-border/40 px-4 pb-3"
+        style={{ paddingTop: insets.top + 8 }}
+      >
+        <Pressable
+          onPress={() => router.back()}
+          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="chevron-back" size={24} color={ACCENT} />
+        </Pressable>
+        <Text className="flex-1 font-outfit-bold text-lg text-text">
+          Edit Profile
+        </Text>
+      </View>
+
+      {isPending ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={ACCENT} />
+        </View>
+      ) : (
+        <EditProfileForm key={formKey} user={user ?? null} colors={colors} />
+      )}
+    </KeyboardAvoidingView>
+  );
+}
+
+function EditProfileForm({
+  user,
+  colors,
+}: {
+  user: CurrentUser | null;
+  colors: ThemeColors;
+}) {
+  const { setUser } = useAuthStore();
+  const [firstName, setFirstName] = useState(() => user?.first_name ?? "");
+  const [otherNames, setOtherNames] = useState(() => user?.other_names ?? "");
+  const [phone, setPhone] = useState(() => user?.phone ?? "");
+  const [classTime, setClassTime] = useState(() => user?.saturday_schedule ?? "");
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     if (!firstName.trim() || !otherNames.trim() || !phone.trim()) {
@@ -119,92 +161,64 @@ export function EditProfileScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1, backgroundColor: colors.bg }}
+    <ScrollView
+      contentContainerClassName="px-5 pt-6"
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
     >
-      <View
-        className="flex-row items-center border-b border-border/40 px-4 pb-3"
-        style={{ paddingTop: insets.top + 8 }}
-      >
-        <Pressable
-          onPress={() => router.back()}
-          className="mr-2 h-10 w-10 items-center justify-center rounded-full bg-secondary/80"
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Ionicons name="chevron-back" size={24} color={ACCENT} />
-        </Pressable>
-        <Text className="flex-1 font-outfit-bold text-lg text-text">
-          Edit Profile
+      <ProfileField
+        label="First name"
+        value={firstName}
+        onChangeText={setFirstName}
+        placeholder="First name"
+        placeholderColor={colors.placeholder}
+      />
+      <ProfileField
+        label="Other names"
+        value={otherNames}
+        onChangeText={setOtherNames}
+        placeholder="Other names"
+        placeholderColor={colors.placeholder}
+      />
+      <ProfileField
+        label="Phone"
+        value={phone}
+        onChangeText={setPhone}
+        placeholder="Phone number"
+        keyboardType="phone-pad"
+        placeholderColor={colors.placeholder}
+      />
+      <ProfileField
+        label="Class Time"
+        value={classTime}
+        onChangeText={setClassTime}
+        placeholder="e.g. Saturdays 10am – 12pm"
+        placeholderColor={colors.placeholder}
+      />
+
+      <View className="mb-4">
+        <Text className="mb-2 text-sm font-semibold text-text opacity-70">
+          Email
+        </Text>
+        <View className="rounded-2xl border border-border bg-secondary/20 px-4 py-4">
+          <Text className="text-base text-text opacity-60">
+            {user?.email ?? "—"}
+          </Text>
+        </View>
+        <Text className="mt-1 text-xs text-text opacity-50">
+          Email can&apos;t be changed here.
         </Text>
       </View>
 
-      {isPending ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={ACCENT} />
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerClassName="px-5 pt-6"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <ProfileField
-            label="First name"
-            value={firstName}
-            onChangeText={setFirstName}
-            placeholder="First name"
-            placeholderColor={colors.placeholder}
-          />
-          <ProfileField
-            label="Other names"
-            value={otherNames}
-            onChangeText={setOtherNames}
-            placeholder="Other names"
-            placeholderColor={colors.placeholder}
-          />
-          <ProfileField
-            label="Phone"
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Phone number"
-            keyboardType="phone-pad"
-            placeholderColor={colors.placeholder}
-          />
-          <ProfileField
-            label="Class Time"
-            value={classTime}
-            onChangeText={setClassTime}
-            placeholder="e.g. Saturdays 10am – 12pm"
-            placeholderColor={colors.placeholder}
-          />
-
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-text opacity-70">
-              Email
-            </Text>
-            <View className="rounded-2xl border border-border bg-secondary/20 px-4 py-4">
-              <Text className="text-base text-text opacity-60">
-                {user?.email ?? "—"}
-              </Text>
-            </View>
-            <Text className="mt-1 text-xs text-text opacity-50">
-              Email can&apos;t be changed here.
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={handleSave}
-            disabled={saving}
-            className={`mt-2 items-center rounded-2xl bg-text py-4 ${saving ? "opacity-70" : "active:opacity-90"}`}
-          >
-            <Text className="text-base font-bold text-invert">
-              {saving ? "Saving..." : "Save changes"}
-            </Text>
-          </Pressable>
-        </ScrollView>
-      )}
-    </KeyboardAvoidingView>
+      <Pressable
+        onPress={handleSave}
+        disabled={saving}
+        className={`mt-2 items-center rounded-2xl bg-text py-4 ${saving ? "opacity-70" : "active:opacity-90"}`}
+      >
+        <Text className="text-base font-bold text-invert">
+          {saving ? "Saving..." : "Save changes"}
+        </Text>
+      </Pressable>
+    </ScrollView>
   );
 }

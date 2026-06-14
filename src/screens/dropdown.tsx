@@ -2,32 +2,76 @@ import { StatusBar } from "expo-status-bar";
 import { View, Text, Image, ImageBackground, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Feather from "@expo/vector-icons/Feather";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate } from "react-native-reanimated";
+import Animated, { type SharedValue, useSharedValue, useAnimatedStyle, withSpring, interpolate } from "react-native-reanimated";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
+import { useState, type ComponentProps } from "react";
 
 const DROPDOWN_LINKS = [
     { icon: "user", label: "Profile" },
     { icon: "settings", label: "Settings" },
     { icon: "bell", label: "Notifications" },
     { icon: "log-out", label: "Logout" },
-];
+] as const;
+
+type FeatherIconName = ComponentProps<typeof Feather>["name"];
+
+function DropdownLink({
+    icon,
+    label,
+    index,
+    isExpanded,
+}: {
+    icon: FeatherIconName;
+    label: string;
+    index: number;
+    isExpanded: SharedValue<number>;
+}) {
+    const linkAnimatedStyle = useAnimatedStyle(() => {
+        const delay = index * 0.08;
+        const progress = isExpanded.get();
+        const adjustedProgress = Math.max(0, Math.min(1, (progress - delay) / (1 - delay)));
+        const opacity = interpolate(adjustedProgress, [0, 0.5, 1], [0, 0, 1]);
+        const translateY = interpolate(adjustedProgress, [0, 1], [10, 0]);
+        return {
+            opacity,
+            transform: [{ translateY }],
+        };
+    });
+
+    return (
+        <Animated.View style={linkAnimatedStyle}>
+            <Pressable
+                className="flex-row items-center py-3 pl-4 pr-3 mb-2 rounded-3xl border border-white/5"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+            >
+                <Feather name={icon} size={17} color="white" />
+                <Text className="text-white text-base font-medium ml-3">{label}</Text>
+                <Feather name="chevron-right" size={14} color="white" className="ml-auto opacity-60" />
+            </Pressable>
+        </Animated.View>
+    );
+}
 
 export default function Dropdown() {
     const insets = useSafeAreaInsets();
     const isExpanded = useSharedValue(0);
+    const [expanded, setExpanded] = useState(false);
 
     const toggleDropdown = () => {
-        isExpanded.value = withSpring(isExpanded.value === 0 ? 1 : 0, {
+        const nextExpanded = !expanded;
+        setExpanded(nextExpanded);
+        isExpanded.set(withSpring(nextExpanded ? 1 : 0, {
             damping: 90,
             stiffness: 700,
-        });
+        }));
     };
 
     const dropdownAnimatedStyle = useAnimatedStyle(() => {
-        const width = interpolate(isExpanded.value, [0, 1], [160, 260]);
-        const height = interpolate(isExpanded.value, [0, 1], [48, 290]);
-        const borderRadius = interpolate(isExpanded.value, [0, 1], [30, 30]);
+        const progress = isExpanded.get();
+        const width = interpolate(progress, [0, 1], [160, 260]);
+        const height = interpolate(progress, [0, 1], [48, 290]);
+        const borderRadius = interpolate(progress, [0, 1], [30, 30]);
 
         return {
             width,
@@ -37,53 +81,44 @@ export default function Dropdown() {
     });
 
     const iconAnimatedStyle = useAnimatedStyle(() => {
-        const rotate = interpolate(isExpanded.value, [0, 1], [0, 0]);
-        const translateX = interpolate(isExpanded.value, [0, 1], [0, -10]);
-        const translateY = interpolate(isExpanded.value, [0, 1], [0, 10]);
+        const progress = isExpanded.get();
+        const rotate = interpolate(progress, [0, 1], [0, 0]);
+        const translateX = interpolate(progress, [0, 1], [0, -10]);
+        const translateY = interpolate(progress, [0, 1], [0, 10]);
         return {
             transform: [{ rotate: `${rotate}deg` }, { translateX }, { translateY }],
         };
     });
 
-    const getLinkAnimatedStyle = (index: number) => {
-        return useAnimatedStyle(() => {
-            const delay = index * 0.08;
-            const adjustedProgress = Math.max(0, Math.min(1, (isExpanded.value - delay) / (1 - delay)));
-            const opacity = interpolate(adjustedProgress, [0, 0.5, 1], [0, 0, 1]);
-            const translateY = interpolate(adjustedProgress, [0, 1], [10, 0]);
-            return {
-                opacity,
-                transform: [{ translateY }],
-            };
-        });
-    };
     const onlineAnimatedStyle = useAnimatedStyle(() => {
-        const scale = interpolate(isExpanded.value, [0, 1], [0, 1]);
+        const scale = interpolate(isExpanded.get(), [0, 1], [0, 1]);
         return {
             transform: [{ scale }],
         };
     });
 
     const profileAnimatedStyle = useAnimatedStyle(() => {
-        const scale = interpolate(isExpanded.value, [0, 1], [1, 1.3]);
-        const translateX = interpolate(isExpanded.value, [0, 1], [0, 10]);
-        const translateY = interpolate(isExpanded.value, [0, 1], [0, 10]);
+        const progress = isExpanded.get();
+        const scale = interpolate(progress, [0, 1], [1, 1.3]);
+        const translateX = interpolate(progress, [0, 1], [0, 10]);
+        const translateY = interpolate(progress, [0, 1], [0, 10]);
         return {
             transform: [{ scale }, { translateX }, { translateY }],
         };
     });
 
     const nameAnimatedStyle = useAnimatedStyle(() => {
-        const scale = interpolate(isExpanded.value, [0, 1], [1, 1.3]);
-        const translateX = interpolate(isExpanded.value, [0, 1], [0, 20]);
-        const translateY = interpolate(isExpanded.value, [0, 1], [0, 10]);
+        const progress = isExpanded.get();
+        const scale = interpolate(progress, [0, 1], [1, 1.3]);
+        const translateX = interpolate(progress, [0, 1], [0, 20]);
+        const translateY = interpolate(progress, [0, 1], [0, 10]);
         return {
             transform: [{ scale }, { translateX }, { translateY }],
         };
     });
 
     const rotateAnimatedStyle = useAnimatedStyle(() => {
-        const rotate = interpolate(isExpanded.value, [0, 1], [0, 180]);
+        const rotate = interpolate(isExpanded.get(), [0, 1], [0, 180]);
         return {
             transform: [{ rotate: `${rotate}deg` }],
         };
@@ -137,18 +172,15 @@ export default function Dropdown() {
                         </Pressable>
 
                         {/* Dropdown Links */}
-                        <View className="px-4 pt-8" pointerEvents={isExpanded.value > 0.5 ? "auto" : "none"}>
+                        <View className="px-4 pt-8" pointerEvents={expanded ? "auto" : "none"}>
                             {DROPDOWN_LINKS.map((link, index) => (
-                                <Animated.View key={index} style={getLinkAnimatedStyle(index)}>
-                                    <Pressable
-                                        className="flex-row items-center py-3 pl-4 pr-3 mb-2 rounded-3xl border border-white/5"
-                                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                                    >
-                                        <Feather name={link.icon as any} size={17} color="white" />
-                                        <Text className="text-white text-base font-medium ml-3">{link.label}</Text>
-                                        <Feather name="chevron-right" size={14} color="white" className="ml-auto opacity-60" />
-                                    </Pressable>
-                                </Animated.View>
+                                <DropdownLink
+                                    key={link.label}
+                                    icon={link.icon}
+                                    label={link.label}
+                                    index={index}
+                                    isExpanded={isExpanded}
+                                />
                             ))}
                         </View>
                     </Animated.View>

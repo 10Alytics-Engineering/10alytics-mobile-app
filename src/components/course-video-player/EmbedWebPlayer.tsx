@@ -28,18 +28,36 @@ export function EmbedWebPlayer({
   reloadOnCrash = false,
   onComplete,
 }: EmbedWebPlayerProps) {
+  return (
+    <EmbedWebPlayerContent
+      key={html}
+      html={html}
+      baseUrl={baseUrl}
+      height={height}
+      openUrl={openUrl}
+      reloadOnCrash={reloadOnCrash}
+      onComplete={onComplete}
+    />
+  );
+}
+
+function EmbedWebPlayerContent({
+  html,
+  baseUrl,
+  height,
+  openUrl,
+  reloadOnCrash = false,
+  onComplete,
+}: EmbedWebPlayerProps) {
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const webRef = useRef<WebView>(null);
 
-  // Reset state and restart the 12 s fallback timer whenever the HTML changes
-  // (i.e. when a new video is selected).
+  // Hide the loading overlay if the embed never posts an iframe-loaded message.
   useEffect(() => {
-    setFailed(false);
-    setLoading(true);
     const timer = setTimeout(() => setLoading(false), 12000);
     return () => clearTimeout(timer);
-  }, [html]);
+  }, []);
 
   if (failed) {
     return <VideoErrorFallback height={height} openUrl={openUrl} />;

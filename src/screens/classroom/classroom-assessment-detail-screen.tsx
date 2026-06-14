@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -89,13 +89,8 @@ function SubmissionComposer({
   const isTurnedIn = status === "submitted" || status === "turned_in";
   const locked = isGraded || isTurnedIn;
 
-  const [text, setText] = useState(initialText ?? "");
-  const [link, setLink] = useState(initialLink ?? "");
-
-  useEffect(() => {
-    setText(initialText ?? "");
-    setLink(initialLink ?? "");
-  }, [initialText, initialLink]);
+  const [text, setText] = useState(() => initialText ?? "");
+  const [link, setLink] = useState(() => initialLink ?? "");
 
   if (locked) {
     return (
@@ -368,6 +363,12 @@ export function ClassroomAssessmentDetailScreen({
 
           {courseEnrollmentId && assignmentId ? (
             <SubmissionComposer
+              key={[
+                assignmentId,
+                data.submission?.id ?? "new",
+                data.submission_text ?? "",
+                data.submission_link ?? "",
+              ].join(":")}
               courseEnrollmentId={courseEnrollmentId}
               assignmentId={assignmentId}
               kind={kind}

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import Header from "@/components/Header";
+import { useAnimatedValue } from "@/hooks/use-animated-value";
 import useThemeColors from "../contexts/ThemeColors";
 
 const { width } = Dimensions.get("window");
@@ -62,10 +63,10 @@ export default function ParallaxScreen() {
   const colors = useThemeColors();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollX = useAnimatedValue(0);
 
-  const translateXAnim = useRef(new Animated.Value(30)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const translateXAnim = useAnimatedValue(30);
+  const scaleAnim = useAnimatedValue(0.9);
 
   useEffect(() => {
     translateXAnim.setValue(30);
@@ -83,7 +84,7 @@ export default function ParallaxScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [currentIndex]);
+  }, [currentIndex, translateXAnim, scaleAnim]);
 
   const handleScroll = (event: {
     nativeEvent: { contentOffset: { x: number } };

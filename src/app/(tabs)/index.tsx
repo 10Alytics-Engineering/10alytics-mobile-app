@@ -120,7 +120,7 @@ export default function Home() {
                         Hello, {user?.first_name}!
                     </Text>
                     <Text className="text-text text-lg opacity-50">
-                        Let's continue your learning journey
+                        Let&apos;s continue your learning journey
                     </Text>
                 </View>
 

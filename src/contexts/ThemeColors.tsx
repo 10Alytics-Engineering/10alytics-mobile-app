@@ -2,7 +2,7 @@ import { useTheme } from './ThemeContext';
 
 const brandPrimary = '#DA6728';
 
-export const useThemeColors = () => {
+const useThemeColors = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 

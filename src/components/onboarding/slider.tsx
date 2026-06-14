@@ -40,82 +40,82 @@ const Slider = ({
   const left = useVector(MIN_LEDGE, HEIGHT / 2);
   const right = useVector(MIN_LEDGE, HEIGHT / 2);
 
-  const panGesture = Gesture.Pan()
-    .onStart(({ x }) => {
-      if (x <= MARGIN_WIDTH && hasPrev) {
-        activeSide.value = Side.LEFT;
-        zIndex.value = 100;
-      } else if (x >= WIDTH - MARGIN_WIDTH && hasNext) {
-        activeSide.value = Side.RIGHT;
-      } else {
-        activeSide.value = Side.NONE;
-      }
-    })
-    .onUpdate(({ x, y }) => {
-      if (activeSide.value === Side.LEFT) {
-        left.x.value = Math.max(x, MARGIN_WIDTH);
-        left.y.value = y;
-      } else if (activeSide.value === Side.RIGHT) {
-        right.x.value = Math.max(WIDTH - x, MARGIN_WIDTH);
-        right.y.value = y;
-      }
-    })
-    .onEnd(({ x, velocityX, velocityY }) => {
-      if (activeSide.value === Side.LEFT) {
-        const dest = snapPoint(x, velocityX, LEFT_SNAP_POINTS);
-        isTransitionLeft.value = dest === PREV;
-        left.x.value = withSpring(
-          dest,
-          {
-            velocity: velocityX,
-            overshootClamping: isTransitionLeft.value ? true : false,
-            damping: isTransitionLeft.value ? 100 : 0.01,
-            mass: isTransitionLeft.value ? 100 : 0.01,
-          },
-          () => {
-            if (isTransitionLeft.value) {
-              runOnJS(setIndex)(index - 1);
-            } else {
-              zIndex.value = 0;
-              activeSide.value = Side.NONE;
-            }
-          }
-        );
-        left.y.value = withSpring(HEIGHT / 2, { velocity: velocityY });
-      } else if (activeSide.value === Side.RIGHT) {
-        const dest = snapPoint(x, velocityX, RIGHT_SNAP_POINTS);
-        isTransitionRight.value = dest === NEXT;
-        right.x.value = withSpring(
-          WIDTH - dest,
-          {
-            velocity: velocityX,
-            overshootClamping: isTransitionRight.value ? true : false,
-            damping: isTransitionRight.value ? 100 : 0.01,
-            mass: isTransitionRight.value ? 100 : 0.01,
-          },
-          () => {
-            if (isTransitionRight.value) {
-              runOnJS(setIndex)(index + 1);
-            } else {
-              activeSide.value = Side.NONE;
-            }
-          }
-        );
-        right.y.value = withSpring(HEIGHT / 2, { velocity: velocityY });
-      }
-    });
+	  const panGesture = Gesture.Pan()
+	    .onStart(({ x }) => {
+	      if (x <= MARGIN_WIDTH && hasPrev) {
+	        activeSide.set(Side.LEFT);
+	        zIndex.set(100);
+	      } else if (x >= WIDTH - MARGIN_WIDTH && hasNext) {
+	        activeSide.set(Side.RIGHT);
+	      } else {
+	        activeSide.set(Side.NONE);
+	      }
+	    })
+	    .onUpdate(({ x, y }) => {
+	      if (activeSide.get() === Side.LEFT) {
+	        left.x.set(Math.max(x, MARGIN_WIDTH));
+	        left.y.set(y);
+	      } else if (activeSide.get() === Side.RIGHT) {
+	        right.x.set(Math.max(WIDTH - x, MARGIN_WIDTH));
+	        right.y.set(y);
+	      }
+	    })
+	    .onEnd(({ x, velocityX, velocityY }) => {
+	      if (activeSide.get() === Side.LEFT) {
+	        const dest = snapPoint(x, velocityX, LEFT_SNAP_POINTS);
+	        isTransitionLeft.set(dest === PREV);
+	        left.x.set(withSpring(
+	          dest,
+	          {
+	            velocity: velocityX,
+	            overshootClamping: isTransitionLeft.get() ? true : false,
+	            damping: isTransitionLeft.get() ? 100 : 0.01,
+	            mass: isTransitionLeft.get() ? 100 : 0.01,
+	          },
+	          () => {
+	            if (isTransitionLeft.get()) {
+	              runOnJS(setIndex)(index - 1);
+	            } else {
+	              zIndex.set(0);
+	              activeSide.set(Side.NONE);
+	            }
+	          }
+	        ));
+	        left.y.set(withSpring(HEIGHT / 2, { velocity: velocityY }));
+	      } else if (activeSide.get() === Side.RIGHT) {
+	        const dest = snapPoint(x, velocityX, RIGHT_SNAP_POINTS);
+	        isTransitionRight.set(dest === NEXT);
+	        right.x.set(withSpring(
+	          WIDTH - dest,
+	          {
+	            velocity: velocityX,
+	            overshootClamping: isTransitionRight.get() ? true : false,
+	            damping: isTransitionRight.get() ? 100 : 0.01,
+	            mass: isTransitionRight.get() ? 100 : 0.01,
+	          },
+	          () => {
+	            if (isTransitionRight.get()) {
+	              runOnJS(setIndex)(index + 1);
+	            } else {
+	              activeSide.set(Side.NONE);
+	            }
+	          }
+	        ));
+	        right.y.set(withSpring(HEIGHT / 2, { velocity: velocityY }));
+	      }
+	    });
 
-  const leftStyle = useAnimatedStyle(() => ({
-    zIndex: zIndex.value,
-  }));
+	  const leftStyle = useAnimatedStyle(() => ({
+	    zIndex: zIndex.get(),
+	  }));
 
-  useEffect(() => {
-    if (Platform.OS === "ios") {
-      right.x.value = withSpring(WIDTH * 0.167);
-    } else {
-      right.x.value = withSpring(WIDTH * 0.185);
-    }
-  }, [left, right]);
+	  useEffect(() => {
+	    if (Platform.OS === "ios") {
+	      right.x.set(withSpring(WIDTH * 0.167));
+	    } else {
+	      right.x.set(withSpring(WIDTH * 0.185));
+	    }
+	  }, [left, right]);
 
   return (
     <GestureDetector gesture={panGesture}>

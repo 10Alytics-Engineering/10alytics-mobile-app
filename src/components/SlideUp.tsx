@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Image, Pressable, Text, Animated, Easing, ImageSourcePropType } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useThemeColors from "@/contexts/ThemeColors";
+import { useAnimatedValue } from "@/hooks/use-animated-value";
 import { shadowPresets } from "@/utils/useShadow";
 interface SlideUpProps {
     visible?: boolean;
@@ -12,13 +12,14 @@ interface SlideUpProps {
 
 export default function SlideUp({ visible = true, onClose, avatarSource, name }: SlideUpProps) {
     const insets = useSafeAreaInsets();
-    const colors = useThemeColors();
     const [showComponent, setShowComponent] = useState(visible);
-    const slideAnim = useRef(new Animated.Value(1000)).current;
-    const opacityAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useAnimatedValue(1000);
+    const opacityAnim = useAnimatedValue(0);
 
     useEffect(() => {
         if (visible) {
+            // The component stays mounted long enough to animate out when `visible` becomes false.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShowComponent(true);
             Animated.parallel([
                 Animated.timing(slideAnim, {
@@ -52,7 +53,7 @@ export default function SlideUp({ visible = true, onClose, avatarSource, name }:
                 setShowComponent(false);
             });
         }
-    }, [visible]);
+    }, [visible, slideAnim, opacityAnim]);
 
     const handleClose = () => {
         if (onClose) onClose();

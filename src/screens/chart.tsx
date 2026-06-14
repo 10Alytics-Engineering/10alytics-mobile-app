@@ -1,10 +1,11 @@
 import { View, ScrollView, Pressable, Animated, Text, Easing } from 'react-native';
 import Header from '@/components/Header';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import Feather from '@expo/vector-icons/Feather';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useThemeColors from '@/contexts/ThemeColors';
+import { useAnimatedValue } from '@/hooks/use-animated-value';
 
 export default function JournalCardsScreen() {
     const insets = useSafeAreaInsets();
@@ -40,7 +41,7 @@ const Chart = ({ currentDataIndex }: { currentDataIndex: number }) => {
         <View className='mx-global mb-8 bg-background'>
             <View className="flex-row">
                 <View className="mr-3" style={{ height: maxBarHeight + 20 }}>
-                    {yAxisLabels.reverse().map((label, index) => (
+                    {[...yAxisLabels].reverse().map((label) => (
                         <View
                             key={label}
                             className="flex-1 justify-center"
@@ -71,7 +72,7 @@ const Chart = ({ currentDataIndex }: { currentDataIndex: number }) => {
 };
 
 const ChartBar = ({ height, index, dataIndex }: { height: number; index: number; dataIndex: number }) => {
-    const animatedHeight = useRef(new Animated.Value(0)).current;
+    const animatedHeight = useAnimatedValue(0);
 
     useEffect(() => {
         Animated.timing(animatedHeight, {
@@ -80,7 +81,7 @@ const ChartBar = ({ height, index, dataIndex }: { height: number; index: number;
             //easing: Easing.bezier(0.1, 1, 0.94, 1),
             useNativeDriver: false,
         }).start();
-    }, [height, dataIndex]);
+    }, [height, dataIndex, animatedHeight]);
 
     return (
         <View className="flex-1 items-center mx-0.5 bg-red-500">
@@ -104,8 +105,8 @@ const ChartBar = ({ height, index, dataIndex }: { height: number; index: number;
 const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: number; setCurrentDataIndex: (index: number) => void }) => {
     const colors = useThemeColors();
     const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
-    const fadeAnim = useRef(new Animated.Value(1)).current;
-    const countAnim = useRef(new Animated.Value(0)).current;
+    const fadeAnim = useAnimatedValue(1);
+    const countAnim = useAnimatedValue(0);
 
     const monthsData = [
         { month: 'this month', amount: 10201 },
@@ -179,7 +180,7 @@ const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: 
 
     return (
         <View className='mt-6 mb-20 px-global'>
-            <Text className='text-5xl font-semibold text-text'>You've made</Text>
+            <Text className='text-5xl font-semibold text-text'>You&apos;ve made</Text>
             <Text className='text-5xl text-rose-500 font-semibold'>
                 ${displayAmount.toLocaleString()}
             </Text>
@@ -210,7 +211,6 @@ const Counter = ({ currentDataIndex, setCurrentDataIndex }: { currentDataIndex: 
         </View>
     );
 };
-
 
 
 

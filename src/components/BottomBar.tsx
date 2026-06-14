@@ -2,8 +2,8 @@ import { View, Text, Pressable, Animated, Easing } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { Feather as FeatherIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import useThemeColors from '@/contexts/ThemeColors';
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { useAnimatedValue } from '@/hooks/use-animated-value';
 import { shadowPresets } from "@/utils/useShadow";
 
 type FeatherIconName = keyof typeof FeatherIcons.glyphMap;
@@ -71,9 +71,8 @@ interface BottomBarItemProps {
 }
 
 const BottomBarItem = ({ icon, title, isActive, onPress }: BottomBarItemProps) => {
-    const colors = useThemeColors();
-    const widthAnim = useRef(new Animated.Value(isActive ? 100 : 40)).current;
-    const textOpacityAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+    const widthAnim = useAnimatedValue(isActive ? 100 : 40);
+    const textOpacityAnim = useAnimatedValue(isActive ? 1 : 0);
 
     React.useEffect(() => {
         Animated.parallel([

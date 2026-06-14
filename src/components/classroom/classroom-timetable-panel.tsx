@@ -76,12 +76,12 @@ export function ClassroomTimetablePanel({
   }, [rows, selected]);
 
   const upcomingEvents = useMemo(() => {
-    const now = Date.now();
+    const now = today.getTime();
     const mapped = Array.isArray(rows) ? rows.map(mapCalendarEvent) : [];
     return mapped
       .filter((event) => event.at >= now)
       .sort((a, b) => a.at - b.at);
-  }, [rows]);
+  }, [rows, today]);
 
   return (
     <View className="gap-5">

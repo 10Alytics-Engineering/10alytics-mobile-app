@@ -52,7 +52,7 @@ export function CourseInlineVideoPlayer({
   const { height: screenHeight } = useWindowDimensions();
   const playerHeight = Math.round(screenHeight * 0.35);
 
-  const [hasStarted, setHasStarted] = useState(false);
+  const [startedUrl, setStartedUrl] = useState<string | null>(null);
 
   // Guard so a lesson only fires onComplete once per URL.
   const completedRef = useRef(false);
@@ -83,22 +83,19 @@ export function CourseInlineVideoPlayer({
     return resolvedPreview ?? getProviderThumbnail(parsed);
   }, [parsed, previewUrl]);
 
-  // Reset playback when the lesson URL changes.
-  useEffect(() => {
-    setHasStarted(false);
-  }, [rawUrl]);
+  const hasStarted = absoluteUrl != null && startedUrl === absoluteUrl;
 
   // Auto-play after 5 s. Cancelled immediately on manual tap. Resets on lesson change.
   useEffect(() => {
     if (!absoluteUrl) return;
-    const timer = setTimeout(() => setHasStarted(true), 5000);
+    const timer = setTimeout(() => setStartedUrl(absoluteUrl), 5000);
     return () => clearTimeout(timer);
   }, [absoluteUrl]);
 
   const handleStart = useCallback(() => {
     hapticLight();
-    setHasStarted(true);
-  }, []);
+    setStartedUrl(absoluteUrl);
+  }, [absoluteUrl]);
 
   const openInBrowser = useCallback(() => {
     hapticLight();
