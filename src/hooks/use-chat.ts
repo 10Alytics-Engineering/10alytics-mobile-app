@@ -231,7 +231,11 @@ export function useChatPresenceHeartbeat(
 }
 
 export function getConversationTitle(conversation?: ChatConversation | null) {
-  return conversation?.title ?? conversation?.name ?? "Chat Room";
+  const title = conversation?.title ?? conversation?.name ?? "Chat Room";
+
+  if (conversation?.type !== "classroom") return title;
+
+  return formatClassroomConversationTitle(title);
 }
 
 export function getChatMessageText(message?: ChatMessage | null) {
@@ -276,4 +280,47 @@ function dedupeMessages(messages: ChatMessage[]) {
     if (byDate !== 0) return byDate;
     return a.id.localeCompare(b.id);
   });
+}
+
+function formatClassroomConversationTitle(title: string) {
+  const parts = title.trim().split(/\s+/).filter(Boolean);
+  const cohortCode = parts[0];
+
+  if (!/^C\d{2}-\d{2}$/i.test(cohortCode) || parts.length < 2) {
+    return title;
+  }
+
+  let suffixStart = parts.length;
+  const last = parts.at(-1)?.toUpperCase();
+  const secondLast = parts.at(-2)?.toUpperCase();
+
+  if (last && isClassroomShiftCode(last)) {
+    suffixStart = parts.length - 1;
+  } else if (secondLast && isClassroomShiftCode(secondLast)) {
+    suffixStart = parts.length - 2;
+  }
+
+  const courseName = parts.slice(1, suffixStart).join(" ");
+  const courseCode = initialsFromCourseName(courseName);
+
+  if (!courseCode) return title;
+
+  return [cohortCode.toUpperCase(), courseCode, ...parts.slice(suffixStart)]
+    .join(" ")
+    .trim();
+}
+
+function initialsFromCourseName(courseName: string) {
+  const ignoredWords = new Set(["and", "a", "an", "for", "in", "of", "the", "to", "with"]);
+
+  return courseName
+    .split(/[^a-z0-9]+/i)
+    .filter((word) => word && !/^\d+$/.test(word))
+    .filter((word) => !ignoredWords.has(word.toLowerCase()))
+    .map((word) => word.slice(0, 1).toUpperCase())
+    .join("");
+}
+
+function isClassroomShiftCode(value: string) {
+  return value === "EU" || value === "NA" || value === "AF";
 }

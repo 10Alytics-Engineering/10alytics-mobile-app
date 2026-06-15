@@ -42,14 +42,14 @@ export default function CourseActionCard({
     const muted = isDark ? "rgba(255,255,255,0.7)" : "rgba(17,17,17,0.6)";
 
     return (
-        <View className="rounded-[30px] overflow-hidden" style={{ backgroundColor: surface }}>
+        <View className="rounded-[30px] overflow-hidden" style={{ backgroundColor: surface, width: "100%" }}>
             <LinearGradient
                 colors={isDark ? ["#1B1410", "#0F0F0F"] : ["#FFF7EE", "#F1E7DC"]}
                 style={{ padding: 20 }}
             >
                 {/* Top row */}
-                <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-3">
+                <View className="flex-row items-center" style={{ minWidth: 0 }}>
+                    <View className="flex-row items-center gap-3" style={{ flex: 1, minWidth: 0 }}>
                         {(thumbnail || icon) && (
                             <View
                                 className="items-center justify-center rounded-2xl"
@@ -72,26 +72,46 @@ export default function CourseActionCard({
                                 )}
                             </View>
                         )}
-                        <View>
-                            <Text style={{ color: colors.text }} className="text-xl font-bold">
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text
+                                numberOfLines={2}
+                                ellipsizeMode="tail"
+                                style={{ color: colors.text, flexShrink: 1 }}
+                                className="text-xl font-bold leading-6"
+                            >
                                 {title}
                             </Text>
-                            <Text style={{ color: muted }} className="text-xs uppercase tracking-wider mt-1">
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={{ color: muted }}
+                                className="text-xs uppercase tracking-wider mt-1"
+                            >
                                 {action === "continue" ? "In progress" : action === "start" ? "Not started" : "New course"}
                             </Text>
                         </View>
                     </View>
                 </View>
 
-                <View className="flex-row items-center justify-between gap-2">
+                <View className="mt-4 flex-row items-center gap-2" style={{ minWidth: 0 }}>
 
                     {/* Subtitle */}
-                    <Text style={{ color: muted }} className="text-sm mt-4">
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{ color: muted, flex: 1, minWidth: 0 }}
+                        className="text-sm"
+                    >
                         {subtitle}
                     </Text>
 
                     {cohortName && (
-                        <Text style={{ color: muted }} className="text-sm mt-4">
+                        <Text
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            style={{ color: muted, flexShrink: 1, maxWidth: "45%" }}
+                            className="text-sm"
+                        >
                             {cohortName}
                         </Text>
                     )}

@@ -1,9 +1,14 @@
 import Echo from "laravel-echo";
-import Pusher from "pusher-js/react-native";
+import PusherModule, { type Options as PusherOptions } from "pusher-js/react-native";
 
 import { apiClient, type ChatMessage } from "@/lib/api-client";
 
 type EchoInstance = Echo<"reverb">;
+type PusherInstance = InstanceType<typeof PusherModule>;
+type PusherConstructor = new (
+  key: string,
+  options: PusherOptions,
+) => PusherInstance;
 type PrivateConversationChannel = ReturnType<EchoInstance["private"]>;
 type PresenceConversationChannel = ReturnType<EchoInstance["join"]>;
 type RetainedChannel<T> = {
@@ -36,6 +41,21 @@ type ChatEventHandlers = {
 let echo: EchoInstance | null = null;
 const channelRefs = new Map<string, number>();
 
+const ResolvedPusher = (
+  (
+    PusherModule as unknown as {
+      Pusher?: PusherConstructor;
+      default?: PusherConstructor;
+    }
+  ).Pusher ??
+  (
+    PusherModule as unknown as {
+      default?: PusherConstructor;
+    }
+  ).default ??
+  PusherModule
+) as PusherConstructor;
+
 export async function getChatEcho() {
   const token = await apiClient.getAuthToken();
   const key = process.env.EXPO_PUBLIC_REVERB_APP_KEY;
@@ -47,7 +67,7 @@ export async function getChatEcho() {
   try {
     echo = new Echo({
       broadcaster: "reverb",
-      client: new Pusher(key, {
+      client: new ResolvedPusher(key, {
         cluster: process.env.EXPO_PUBLIC_REVERB_CLUSTER ?? "mt1",
         wsHost: host,
         wsPort: Number(process.env.EXPO_PUBLIC_REVERB_WS_PORT ?? 443),
